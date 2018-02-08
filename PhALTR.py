@@ -3253,12 +3253,12 @@ def shortHelp():
 	  [--nhmmer_inclusion_evalue <int|float>] [--repbase_tblastx_evalue <int|float>] 
 	  [--keep_conflicting_classificaitons] [--keep_no_classifications] [--min_clust_size <int>]
 	  [--wicker] [--wicker_pId <int|float>] [--wicker_minLen <int>] [--wicker_pAln <int|float>]
-	  [--mcl] [-I <int|float>] [--nosmalls] [--geneconvltrs] [--geneconv_g <[g0[,g1[,g2]]]>]
-	  [--ltrdivergence] [--remove_GC_from_modeltest_aln] [--modeltest_criterion <str>]
-	  [--gc_ltr_div_scaling <int>] [--maxiterate_small_clusters <int>] [--maxiterate_large_clusters <int>]
-	  [--min_clustsize_for_faster_aln <int>] [--mafft_retree <int>] [--geneconvclusters] [--DTT] [--phylo] 
-	  [--bootstrap_reps] [--bpflank <int>] [--flank_evalue <int|float>] [--flank_pId <int|float>]
-	  [--flank_plencutoff <int|float>]
+	  [--wicker_no_ltrs] [--wicker_no_internals] [--mcl] [-I <int|float>] [--nosmalls]
+	  [--geneconvltrs] [--geneconv_g <[g0[,g1[,g2]]]>] [--ltrdivergence] [--remove_GC_from_modeltest_aln]
+	  [--modeltest_criterion <str>] [--gc_ltr_div_scaling <int>] [--maxiterate_small_clusters <int>]
+	  [--maxiterate_large_clusters <int>] [--min_clustsize_for_faster_aln <int>] [--mafft_retree <int>]
+	  [--geneconvclusters] [--DTT] [--phylo] [--bootstrap_reps] [--bpflank <int>]
+	  [--flank_evalue <int|float>] [--flank_pId <int|float>][--flank_plencutoff <int|float>]
 	  ''', file=sys.stderr)
 
 def help2():
@@ -3298,6 +3298,8 @@ def help2():
 	--wicker_pId			    <int|float>		80
 	--wicker_minLen			    <int>		80
 	--wicker_pAln			    <int|float>		80
+	--wicker_no_internals		    BINARY		OFF
+	--wicker_no_ltrs		    BINARY		OFF
 	--mcl				    BINARY		MCL
 	-I				    <int|float>		6
 	--nosmalls			    BINARY		OFF
@@ -3364,6 +3366,8 @@ def help():
   	  --wicker_minLen			Minimum alignment length to considered. (default 80)
   	  --wicker_pAln				Minimum percentage of whole sequence (LTRs or internal region) for alignment
 	  					to be considered. (default 80)
+	  --wicker_no_internals			(default OFF)
+	  --wicker_no_ltrs			(default OFF)
 	  --phylo
 	  --DTT
 
@@ -3778,12 +3782,12 @@ if '--flank_plencutoff' in args:
 	flank_plencutoff = float(args[args.index('--flank_plencutoff')+1])
 else:
 	flank_plencutoff = 70.0
-if '--wicker_use_ltrs' in args:
-	wicker_use_ltrs = args[args.index('--wicker_use_ltrs')+1]
+if '--wicker_no_ltrs' in args:
+	wicker_use_ltrs = False
 else:
 	wicker_use_ltrs = True
-if '--wicker_use_internal' in args:
-	wicker_use_internal = args[args.index('--wicker_use_internal')+1]
+if '--wicker_no_internals' in args:
+	wicker_use_internal = False
 else:
 	wicker_use_internal = True
 	
