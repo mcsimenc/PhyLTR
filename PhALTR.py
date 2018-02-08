@@ -2255,7 +2255,10 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 		chunk_size = ceil(num_pairs/procs)
 		# Write to log file here about chunk size and processors used
 		append2logfile(paths['output_top_dir'], mainlogfile, 'For align_ltrs(): procs={0} chunk_size={1}'.format(procs,chunk_size))
+		print(GFFKey)
 		if not checkStatusFl(GFFKey):
+			print(2)
+			print(GFFKey)
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Writing GFF3s for each LTR pair:\n{0}'.format(paths[GFFKey]) )
 			with Pool(processes=procs) as p: # Write GFF3s for each LTR pair
 				p.map(write_ltrs_gff3, ltrs.values(), chunksize=chunk_size)
@@ -3883,11 +3886,11 @@ if WICKER:
 
 		# 3. GENECONV for each MSA
 		if GENECONV_G0:
-			geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+			geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 		if GENECONV_G1:
-			geneconvClusters(trimal=True, g='/g1', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+			geneconvClusters(trimal=True, g='/g1', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 		if GENECONV_G2:
-			geneconvClusters(trimal=True, g='/g2', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+			geneconvClusters(trimal=True, g='/g2', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 
 		# 4. Modeltesting  for each cluster
 		modeltest(iters=1, I=None, removegeneconv=remove_GC_from_modeltest_aln, part='entire', clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
