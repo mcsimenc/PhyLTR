@@ -1,0 +1,11 @@
+There are many additional function parameters that can be set for most of the programs used.
+
+Need >=HMMER 3.1 for nhmmer (tested with 3.1b2)
+
+R packages needed (tested with R 3.3.3 on a Mac)
+# For divergence plots
+ggplot2
+# For LTT plots
+ape
+phangorn
+phytools
