@@ -844,6 +844,7 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
 
 			MakeDir('WickerFam_{0}_dir'.format(classif), '{0}/{1}'.format(OutDir, classif))
 			cOutDir = paths['WickerFam_{0}_dir'.format(classif)]
+			G = {} # Dictionary representation of a graph that will hold the blast results
 
 			if WICKERINTERNAL:
 				# Extract internal regions of selected elements
@@ -865,7 +866,6 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
 
 				# Parse blast hits to define families
 				InternalsBlastPth = paths['Internals_{0}_selfBlastnOut'.format(classif)]
-				G = {} # Dictionary representation of a graph that will hold the blast results
 				with open(InternalsBlastPth, 'r') as blastFl:
 					internal_aln_lens = {}
 					for line in blastFl:
@@ -925,6 +925,7 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
 						element_combined_ltr_lengths[el] += ltrs_seq_lengths[ltr]
 					else:
 						element_combined_ltr_lengths[el] = ltrs_seq_lengths[ltr]
+				elements = list(element_combined_ltr_lengths.keys())
 				# blast all by all LTRs
 				paths['LTRs_{0}_selfBlastnOut'.format(classif)] = '{0}/LTRs_selfBlastn.tab'.format(cOutDir)
 				runblast(query=paths['LTRs_{0}_Fasta'.format(classif)], subject=paths['LTRs_{0}_Fasta'.format(classif)], out=paths['LTRs_{0}_selfBlastnOut'.format(classif)], outfmt='7', evalue='1e-5', percid=pId, blast='blastn', procs=procs)
