@@ -3935,7 +3935,7 @@ if WICKER:
 		geneconvLTRs(g='/g1', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})	# Identify LTR RTs with gene conversion. Most relaxed - mismatches in fragments
 	if GENECONV_G2:
 		geneconvLTRs(g='/g2', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})	# Identify LTR RTs with gene conversion. Medium relaxed
-if MCL:
+if USEMCL:
 	align_ltrs(I=MCL_I, clustering_method='MCL', WickerParams=None)	# Runs if need to use geneconvLTRs or estimate divergences
 	#
 	if GENECONV_G0:
