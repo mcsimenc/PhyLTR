@@ -3648,8 +3648,6 @@ if '--nhmmer_inclusion_evalue' in args:
 else:
 	nhmmer_inclusion_evalue = 1e-5
 
-
-
 if '--wicker' in args:
 	WICKER = True
 else:
