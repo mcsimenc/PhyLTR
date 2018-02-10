@@ -734,17 +734,18 @@ def addORFs(maingff, orfgff, newgff):
 					if CHANGESTRAND:
 						gffLine.strand = change_strand
 					firstLTRend = int(gffLine.end)
-					ORFSADDED = True
-					orfsAdded = 0
-					# Add all orfs. The will be removed later if they overlap and existing feature.
-					#print(len(orfs[element]))
-					lines.append(gffLine)
-					for orf in orfs[element]:
-						orf.start = firstLTRend + orf.start
-						orf.end = firstLTRend + orf.end
-						orf.seqid = gffLine.seqid # Change the scaffold name
-						lines.append(orf)
-						orfsAdded += 1
+					if element in orfs:
+						ORFSADDED = True
+						orfsAdded = 0
+						# Add all orfs. The will be removed later if they overlap and existing feature.
+						#print(len(orfs[element]))
+						lines.append(gffLine)
+						for orf in orfs[element]:
+							orf.start = firstLTRend + orf.start
+							orf.end = firstLTRend + orf.end
+							orf.seqid = gffLine.seqid # Change the scaffold name
+							lines.append(orf)
+							orfsAdded += 1
 				else:
 					lines.append(gffLine)
 					firstLTRend = None
