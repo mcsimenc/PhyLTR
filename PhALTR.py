@@ -764,7 +764,7 @@ def addORFs(maingff, orfgff, newgff):
 						orfsAdded -= 1
 						lines.pop(i)
 
-					lines.insert(-1-orfsAdded, gffLine)
+					lines.insert(-orfsAdded, gffLine)
 				else:
 					lines.append(gffLine)
 	with open(newgff, 'w') as outFl:
