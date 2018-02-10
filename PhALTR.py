@@ -687,9 +687,12 @@ def bestORFs(fasta, outdir, gff, minLen=240):
 
 def addORFs(maingff, orfgff, newgff):
 	'''
+	Inserts ORFs into existing LTRdigest/LTRharvest GFF. Expects Orfs were obtained from EMBOSS getorf on output from writeLTRretrotransposonInternalRegions()
+	Existing features take precedence, and if ORFs overlap existing features, those ORFs are not included in the final output, newgff.
 	'''
 	# Read orf gff store lines in lists in dict with parent as key
 	orfs = {}
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Incorporating ORFs in {0} with GFF {1} in to {2}'.format(orfgff, maingff, newgff))
 	with open(orfgff, 'r') as inFl:
 		for line in inFl:
 			if not line.startswith('#'):
@@ -725,8 +728,6 @@ def addORFs(maingff, orfgff, newgff):
 					lines.append(gffLine)
 			elif gffLine.type == 'target_site_duplication':
 				lines.append(gffLine)
-					
-
 			elif gffLine.type =='long_terminal_repeat':
 				if firstLTRend == None:
 					# Assign strandedness.
@@ -766,6 +767,25 @@ def addORFs(maingff, orfgff, newgff):
 					lines.append(gffLine)
 	with open(newgff, 'w') as outFl:
 		outFl.write('\n'.join([str(gffline) for gffline in lines]))
+
+
+def AnnotateORFs(minLen):
+
+	global paths
+
+	MakeDir('ORFsDir', '{0}/AnnotateORFs'.format(paths['output_top_dir']))
+	internalGFF = '{0}/internals.fasta'.format(paths['ORFsDir'])
+	internalFASTA = '{0}/internals.gff'.format(paths['ORFsDir'])
+	writeLTRretrotransposonInternalRegions(paths['CurrentGFF'], internalGFF, elementSet=None, truncateParent=False)
+	getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', internalGFF ]
+	makecall(getfasta_call, internalFASTA)
+	ChangeFastaHeaders(internalFASTA, internalGFF, attribute='Parent')
+	bestORFs(fasta=internalFASTA, outdir=paths['ORFsDir'], gff=paths['CurrentGFF'], minLen=minLen)
+	orfgff = '{0}/{1}.orfs.gff'.format(paths['ORFsDir'], internalFASTA.split('/')[-1])
+	addORFs(maingff=paths['CurrentGFF'], orfgff=orfgff, newgff='{0}/FullWithORFs_gt_{1}bp.gff'.format(paths['ORFsDir'], minLen))
+	sys.exit()
+
+
 
 def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbase_tblastx_evalue=1e-5, nhmmer_reporting_evalue=5e-2, nhmmer_inclusion_evalue=1e-2):
 
@@ -4142,12 +4162,6 @@ elif 'LTRharvestGFF' in paths:
 # They'll also be skipped if the are not supposed to run for the requested procedure
 # If they run they will append to the log
 
-writeLTRretrotransposonInternalRegions(paths['CurrentGFF'], 'internals.gff', elementSet=None, truncateParent=False)
-getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', 'internals.gff' ]
-makecall(getfasta_call, 'internals.fasta')
-ChangeFastaHeaders('internals.fasta', 'internals.gff', attribute='Parent')
-
-sys.exit()
 
 sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
 
