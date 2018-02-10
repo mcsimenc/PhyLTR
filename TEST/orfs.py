@@ -283,6 +283,7 @@ def addORFs(maingff, orfgff, newgff):
 	orfsAdded = None
 	CHANGESTRAND = False
 	ORFSADDED = False
+	firstLTRend = None
 	with open(maingff, 'r') as inFl:
 		for line in inFl:
 			if line.startswith('#'):
@@ -300,14 +301,21 @@ def addORFs(maingff, orfgff, newgff):
 						change_strand = orfs[element][0].strand
 						gffLine.strand = change_strand
 					lines.append(gffLine)
+			elif gffLine.type =='long_terminal_repeat'
+				if firstLTRend == None:
+					firstLTRend = int(gffLine.end)
 					ORFSADDED = True
 					orfsAdded = 0
 					# Add all orfs. The will be removed later if they overlap and existing feature.
 					#print(len(orfs[element]))
 					for orf in orfs[element]:
+						orf.start = firstLTRend + orf.start
+						orf.end = firstLTRend + orf.end
 						orf.seqid = gffLine.seqid # Change the scaffold name
 						lines.append(orf)
 						orfsAdded += 1
+				else:
+					firstLTRend == None
 			else:
 				# Assign strandedness.
 				if CHANGESTRAND:

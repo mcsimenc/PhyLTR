@@ -3338,7 +3338,19 @@ def help():
 	  
 	  Description:
 	  ------------
-	  Takes sequences in FASTA format as input and 
+	  The main options would be:
+	  phaltr --fasta fasta.fa \\
+	  	 --procs 40 \\
+		 --ltrharvest \\
+		 --ltrdigest \\				Use: phaltr -h
+		 --classify \\				   to see the defaults
+		 --mcl \\
+		 --wicker \\
+		 --geneconvltrs \\
+		 --geneconvclusters \\
+		 --ltrdivergence \\
+		 --DTT
+
 	  
 	  ------------------------------
 	  Global Options:
@@ -3348,32 +3360,9 @@ def help():
 	  -c | --clean				Remove all temporary files (NOT IMPLEMENTED YET)
 	  -o | --output_dir		<path>	Output directory. Default is "LTRan_output
 	  --logfile			<path>  Path to where log file is written (default <output_dir>/log.txt)
+	  -h					Defaults
+	  -help					Long help
 	  
-	  Things to do:
-	  ------------
-	  -lh | --ltrharvest			Run LTRharvest on file given by --fasta (default ON)
-	  -ld | --ltrdigest			Run LTRdigest on file given by --fasta and --ltrharvest results (GFF) (default ON)
-	  --classify				Do both Dfam and Repbase classifications
-	  --classify_dfam			Run hmmsearch on Dfam database (default ON)
-	  --classify_repbase			Run tblastx on Repbase database (default ON)
-	  --ltrdivergence			Find statistially best supported (BIC) substitution model for each cluster (default ON)
-	  					and estimate substitutions per site between LTRs for each element. 
-	  --remove_GC_from_modeltest_aln	Don't include elements with evidence of intercluster gene conversion in model testing alignments
-	  --geneconvltrs
-	  --geneconvclusters
-	  --min_clust_size			Minimum allowed cluster size. Clusters with < minclustsize elements get assembled together
-	  					but no model testing, gene conversion, or outgroup/DTT analysis is done.
-  	  --mcl					Cluster using MCL
-	  -I					Inflation/granularity parameter for MCL (default 6)
-  	  --wicker				Cluster using '80-80-80' rule, or custom values specified below.
-  	  --wicker_pId				Minimum % ID in pairwise alignment between any two elements (default 80)
-  	  --wicker_minLen			Minimum alignment length to considered. (default 80)
-  	  --wicker_pAln				Minimum percentage of whole sequence (LTRs or internal region) for alignment
-	  					to be considered. (default 80)
-	  --wicker_no_internals			(default OFF)
-	  --wicker_no_ltrs			(default OFF)
-	  --phylo
-	  --DTT
 
 	  -------------------------
 	  Program-specific Options:
@@ -3381,6 +3370,7 @@ def help():
 
 	  LTRharvest
 	  ----------
+	  -lh | --ltrharvest			Run LTRharvest on file given by --fasta (default ON)
   	  --minlenltr	<int>		minimum length allowed for LTRs for element calling (default 100 bp)
   	  --maxlenltr	<int>		maximum length allowed for LTRs for element caling (default 1000 bp)
   	  --mindistltr	<int>		minimum distance allowed between LTRs for element calling (default 1000 bp)
@@ -3398,6 +3388,7 @@ def help():
 
 	  LTRdigest
 	  ---------
+	  -ld | --ltrdigest			Run LTRdigest on file given by --fasta and --ltrharvest results (GFF) (default ON)
 	  --dfam_hmmsearch_table	<path>	?
 	  --ltrdigest_hmms		<path>	Path to a file with one or more protein profile HMMs for LTRdigest (HMMER)
 	  					(default {0})
@@ -3405,6 +3396,9 @@ def help():
 
 	  Classification of LTR RTs to superfamily using homology to annotated sequences in Repbase and/or Dfam
 	  -----------------------------------------------------------------------------------------------------
+	  --classify				Do both Dfam and Repbase classifications
+	  --classify_dfam			Run hmmsearch on Dfam database (default ON)
+	  --classify_repbase			Run tblastx on Repbase database (default ON)
 	  --keep_conflicting_classifications		If an element has two classifications that disagree (i.e. Repbase and Dfam) and one classification
 	  						is an LTR RT hit and one is a non-LTR RT hit, and this flag is set, the element will be kept.
 							(default OFF; the element is discarded as a false positive)
@@ -3415,23 +3409,43 @@ def help():
 	  --nhmmer_inclusion_evalue	<int|float>	(default 1e-2)
 
 
-	  MAFFT (for cluster alignment)
+	  Clustering
+	  -----------
+	  --min_clust_size			Minimum allowed cluster size. Clusters with < minclustsize elements get assembled together
+	  					but no model testing, gene conversion, or outgroup/DTT analysis is done.
+  	  --mcl					Cluster using MCL
+	  -I					Inflation/granularity parameter for MCL (default 6)
+  	  --wicker				Cluster using '80-80-80' rule, or custom values specified below.
+  	  --wicker_pId				Minimum % ID in pairwise alignment between any two elements (default 80)
+  	  --wicker_minLen			Minimum alignment length to considered. (default 80)
+  	  --wicker_pAln				Minimum percentage of whole sequence (LTRs or internal region) for alignment
+	  					to be considered. (default 80)
+	  --wicker_no_internals			(default OFF)
+	  --wicker_no_ltrs			(default OFF)
+
+
+	  MAFFT (for cluster, not LTR alignment)
 	  -----------------------------
-	  --maxiterate_small_clusters		<int>	How many iterations to do during MAFFT alignments. Lower number will speed
-	  						the pipeline up but the alignments will probably be poorer. (default 30)
-	  --min_clustsize_for_faster_aln	<int>	(default 40)
-	  --maxiterate_large_clusters		<int>	(default 3)
+	  --maxiterate_small_clusters		<int>	Max number of iterations for MAFFT algorithm. 1 is fastest; greater numbers will improve the
+	  						alignment (default 30)
+	  --maxiterate_large_clusters		<int>	Number of iterations for MAFFT algorithm for large clusters (default 3)
+	  --min_clustsize_for_faster_aln	<int>	Clusters smaller than this will be aligned using the settings from --maxiterate_small_clusters,
+	  						while those larger will get aligned using the settings from --maxiterate_large_clusters (default 40)
 	  --retree				<int>	Guide tree is built <int> times in the progressive stage. Valid with 6mer distance. (default 2)
-	  --nosmalls					Do not combine and assemble clusters smaller than --min_clust_size
+	  --nosmalls					Do not combine and assemble clusters smaller than --min_clust_size (see clustering options)
 
 	  GENECONV
 	  --------
 	  --geneconv_g	<comma-sep-list>	A comma-separated list of the values for the 'g' parameter of GENECONV. Valid values are g0, g1, and g2.
 	  					(default g0,g1,g2)
+	  --geneconvltrs
+	  --geneconvclusters
 
 
 	  LTR divergence estimation
 	  -------------------------
+	  --ltrdivergence			Find statistially best supported (BIC) substitution model for each cluster (default ON)
+	  					and estimate substitutions per site between LTRs for each element. 
 	  --modeltest_criterion		<str>	AIC, AICc, or BIC. (default BIC)
 						MULTIPLE CHOICES NOT YET IMPLEMENTED
 	  --gc_ltr_div_scaling		<int>	For reporting scaled divergence estimates to account for effects of gene conversion, if observed. (default 1)
@@ -3440,7 +3454,7 @@ def help():
 	  --default_model		<str>	When model testing is not possible (i.e. cluster is too small) HKY85 or JC,
 	  					if HKY85 is not possible due to dinucleotide LTRs.
 	  					MULTIPLE CHOICES NOT YET IMPLEMENTED
-	  --remove_GC_from_modeltest_aln
+	  --remove_GC_from_modeltest_aln	Remove elements with suspected gene conversion tracts.
 
 
 	  Finding pairs of elements within clusters that have homologous flanking regions
@@ -3456,6 +3470,7 @@ def help():
 
 	  Phylogenetic analysis
 	  ---------------------
+	  --phylo				##### not implemented yet
 	  --nosmalls				Do not combine and perform phylogentic analyses on clusters smaller than --min_clust_size.
 	  --DTT					Turns on --rmhomoflank, --convert_to_ultrametric, and --auto_outgroup. Generates and attempts to run
 	  					Rscript that generates a DTT (LTT) plot for each cluster for which rooting is possible.
@@ -3836,6 +3851,12 @@ elif 'LTRharvestGFF' in paths:
 # They'll also be skipped if the are not supposed to run for the requested procedure
 # If they run they will append to the log
 
+writeLTRretrotransposonInternalRegions(paths['CurrentGFF'], 'internals.gff', elementSet=None, truncateParent=True)
+getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', 'internals.gff' ]
+makecall(getfasta_call, 'internals.fasta')
+ChangeFastaHeaders('internals.fasta', 'internals.gff', attribute='Parent')
+
+sys.exit()
 
 sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
 
