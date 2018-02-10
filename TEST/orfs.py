@@ -189,6 +189,8 @@ def bestORFs(fasta, outdir, gff, minLen=30):
 		best_orf_sets = {'+':None, '-':None}
 		for s in strand:
 			i = 0
+			if s not in orfs_ordered_lengths[element]:
+				continue
 			orfs_ordered_lengths[element][s].sort(reverse=True, key=lambda x:x[1])
 			orfs_ordered_coords[element][s].sort(key=lambda x:x[0])
 			while len(orfs_ordered_lengths[element][s]) > i+1: # orfs_ordered_length is a list that is modified. i gets incremented
@@ -282,15 +284,15 @@ def addORFs(maingff, orfgff, newgff):
 				CHANGESTRAND = False
 				ORFSADDED = False
 				element = 'LTR_retrotransposon' + gffLine.attributes['ID'][13:]
-				if element in orfgff:
-					ORFSADDED = True
-					orfsAdded = 0
+				if element in orfs:
 					# Check is strandedness needs to be assigned.
 					if gffLine.strand != '-' and gffLine.strand != '+':
 						CHANGESTRAND = True
 						change_strand = orfs[element][0].strand
 						gffLine.strand = change_strand
-						lines.append(gffLine)
+					lines.append(gffLine)
+					ORFSADDED = True
+					orfsAdded = 0
 					# Add all orfs. The will be removed later if they overlap and existing feature.
 					for orf in orfs[element]:
 						orf.seqid = gffLine.seqid # Change the scaffold name
@@ -303,14 +305,14 @@ def addORFs(maingff, orfgff, newgff):
 				# Check if these lines overlap
 				if ORFSADDED:
 					to_remove = []
-					for i in range(-1, -1-orfsAdded, -1):
+					for i in range(-orfsAdded, 0, 1):
 						if Overlaps([gffLine.start, gffLine.end], [lines[i].start, lines[i].end]):
 							to_remove.append(i)
 					orfsAdded - len(to_remove)
 					for i in to_remove:
 						lines.pop(i)
 
-					lines.insert(-1-orfsAdded, gffLine)
+					lines.insert(-orfsAdded, gffLine)
 				else:
 					lines.append(gffLine)
 	with open(newgff, 'w') as outFl:
@@ -359,4 +361,4 @@ gff = args[2]
 outgff = '{0}/{1}.withorfs.gff'.format(outdir, fasta.split('/')[-1])
 orfgff = '{0}/{1}.orfs.gff'.format(outdir, fasta.split('/')[-1])
 bestORFs(fasta, outdir, gff, minLen=100)
-addORFs(maingff=gff, orfgff=orfgff, newgff=outgff):
+addORFs(maingff=gff, orfgff=orfgff, newgff=outgff)
