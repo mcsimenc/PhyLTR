@@ -475,6 +475,297 @@ def ltrdigest():
 				statusFlAppend.write('LTRdigestGFF\t{0}\n'.format(paths['LTRdigestGFF']))
 			paths['CurrentGFF'] = paths['LTRdigestGFF']
 
+def Overlaps(j, k):
+	'''
+	Inputs, j and k, are tuples/lists with a start and a end coordinate as in: (start, end)
+	If they overlap True is returned, if they do not overlap, False is returned.
+	'''
+	j = sorted([int(i) for i in j])
+	k = sorted([int(i) for i in k])
+	jk = sorted([j,k], key=lambda x:x[0])
+	if jk[0][1] >= jk[1][0]:
+		return True
+	else:
+		return False
+
+
+def bestORFs(fasta, outdir, gff, minLen=240):
+	'''
+	Finds all ORFs in fasta using EMBOSS getorf and writes the best ones to a GFF3 and protein FASTA.
+	The best ORFs are the set of non-overlapping ORFs containing the longest ORF out of sets on that
+	strand,
+	given by records in gff, or, if strand is unknown, the best set out of all.
+
+	The coordinates output by getorf are 1-based
+
+	Only ORFs with nucleotide sequences longer than minLen are kept. (default 240 bp = 80 aa)
+	'''
+	outgff = '{0}/{1}.orfs.gff'.format(outdir, fasta.split('/')[-1])
+	if os.path.isfile(outgff):
+		os.remove(outgff)
+	# Get strandedness for each element into a dictionary
+	strands = {}
+	with open(gff, 'r') as gffFl:
+		for line in gffFl:
+			if '\tLTR_retrotransposon\t' in line:
+				gffLine = GFF3_line(line)
+				el = gffLine.attributes['ID']
+				strand = gffLine.strand
+				strands[el] = strand
+	# Run EMBOSS getorf
+	outseq = '{0}/{1}.orfs'.format(outdir, fasta.split('/')[-1])
+	if os.path.isfile(outseq):
+		os.remove(outseq)
+	getorf_call = [ executables['getorf'], '-sequence', fasta, '-outseq', outseq ]
+	makecall(getorf_call)
+
+	# Read getorf output and put info into dicts
+	orfs = list(SeqIO.parse(outseq, 'fasta'))
+	nonredundant_orfs = list()
+	unique_orfs = set()
+	for seqio in orfs:
+		if not seqio.description in unique_orfs:
+			unique_orfs.add(seqio.description)
+			nonredundant_orfs.append(seqio)
+	orfs_ordered_lengths = {}
+	orfs_ordered_coords = {}
+	orfs_seqs_dct = {}
+	orfs_coords = {}
+	coords2lenkey = {}
+	for orf in nonredundant_orfs:
+		element = '_'.join(orf.id.split('_')[:-1])
+		strand_gff = strands[element]
+		orfnum = orf.id.split('_')[-1]
+		desc = orf.description
+		seq = str(orf.seq)
+		if 'REVERSE' in desc:
+			if strand_gff == '+': # don't consider reverse strand ORFs if the element is already assigned to the forward strand.
+				continue
+			strand = '-'
+			start, end = sorted([int(desc.split()[1][1:]), int(desc.split()[3][:-1])])
+			length = end - start + 1
+			if length < minLen:
+				continue
+		else:
+			if strand_gff == '-': # don't consider forward strand ORFs if the element is already assigned to the reverse strand.
+				continue
+			strand = '+'
+			start, end = sorted([int(desc.split()[1][1:]), int(desc.split()[3][:-1])])
+			length = end - start + 1
+			if length < minLen:
+				continue
+
+		if element in orfs_coords:
+			if strand in orfs_coords[element]:
+				orfs_coords[element][strand][orfnum] = (start, end)
+			else:
+				orfs_coords[element][strand] = {orfnum:(start,end)}
+		else:
+			orfs_coords[element] = {strand:{orfnum:(start,end)}}
+
+		if element in coords2lenkey:
+			if strand in coords2lenkey[element]:
+				coords2lenkey[element][strand][(start, end)] = (orfnum, length)
+			else:
+				coords2lenkey[element][strand] = {(start,end):(orfnum, length)}
+		else:
+			coords2lenkey[element] = {strand:{(start,end):(orfnum, length)}}
+
+		if element in orfs_ordered_lengths:
+			if strand in orfs_ordered_lengths[element]:
+				orfs_ordered_lengths[element][strand].append((orfnum, length))
+			else:
+				orfs_ordered_lengths[element][strand] = [(orfnum, length)]
+		else:
+			orfs_ordered_lengths[element] = {strand:[(orfnum, length)]}
+
+		if element in orfs_ordered_coords:
+			if strand in orfs_ordered_coords[element]:
+				orfs_ordered_coords[element][strand].append((start, end))
+			else:
+				orfs_ordered_coords[element][strand] = [(start, end)]
+		else:
+			orfs_ordered_coords[element] = {strand:[(start, end)]}
+
+		if element in orfs_seqs_dct:
+			if strand in orfs_seqs_dct[element]:
+				orfs_seqs_dct[element][strand][orfnum] = seq
+			else:
+				orfs_seqs_dct[element][strand] = {orfnum:seq}
+		else:
+			orfs_seqs_dct[element] = {strand:{orfnum:seq}}
+
+	# For each element, find ORFs for its strand or both strands if strand = ?
+	# Order ORFs names in list from element/strand longest to shortest.
+	# Order another ORF name list with coordinate position of starts, smallest to largest
+	# Make a dict with the sequences to use after selecting which orfs to keep
+	sorted_elements = sorted(list(orfs_ordered_lengths.keys()))
+	for element in sorted_elements:
+		strand = strands[element]
+		if strand == '?' or strand == '.':
+			strand = ['+', '-']
+		else:
+			strand = [strand]
+		best_orf_sets = {'+':None, '-':None}
+		for s in strand:
+			i = 0
+			if s not in orfs_ordered_lengths[element]:
+				continue
+			orfs_ordered_lengths[element][s].sort(reverse=True, key=lambda x:x[1])
+			orfs_ordered_coords[element][s].sort(key=lambda x:x[0])
+			while len(orfs_ordered_lengths[element][s]) > i+1: # orfs_ordered_length is a list that is modified. i gets incremented
+
+				orfnum = orfs_ordered_lengths[element][s][i][0]
+				coord = orfs_coords[element][s][orfnum] # coords of the current orf
+
+				j = orfs_ordered_coords[element][s].index(coord) # current largest orf
+				k = j+1 # check for overlaps with next in proximity
+				# Compare j with successively further away orfs until a non-overlap is reached
+				if not k > len(orfs_ordered_coords[element][s])-1:
+					J = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][j]]) # corresponding occurence in lengths dict for j, the current longest ORF
+					K = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][k]]) # corresponding occurence in lengths dict for k, the current ORF closest to j if moving toward position 0
+					while Overlaps( orfs_ordered_coords[element][s][j], orfs_ordered_coords[element][s][k] ):
+						# k overlaps j. remove k. because it is shorter than j.
+						coord_removed = orfs_ordered_coords[element][s][k]
+						orfs_ordered_coords[element][s] = [ item for item in orfs_ordered_coords[element][s] if not item == coord_removed ]
+						lenkey = coords2lenkey[element][s][coord_removed]
+						orfs_ordered_lengths[element][s].remove(lenkey)
+						j = orfs_ordered_coords[element][s].index(coord) # current largest orf
+						k = j+1 # check for overlaps with next in proximity
+						if k > len(orfs_ordered_coords[element][s])-1:
+							break
+						J = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][j]]) # corresponding occurence in lengths dict for j, the current longest ORF
+						K = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][k]]) # corresponding occurence in lengths dict for k, the current ORF closest to j if moving toward position 0
+				# Compare j with successively further away orfs until a non-overlap is reached
+				j = orfs_ordered_coords[element][s].index(coord) # current largest orf
+				m = j-1 # check for overlaps with previous in proximity
+				if m > 0:
+					J = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][j]]) # corresponding occurence in lengths dict for j, the current longest ORF
+					M = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][m]]) # corresponding occurence in lengths dict for m, the current ORF closest to j if moving toward position 0
+					while Overlaps( orfs_ordered_coords[element][s][j], orfs_ordered_coords[element][s][m] ):
+						coord_removed = orfs_ordered_coords[element][s][m]
+						orfs_ordered_coords[element][s] = [ item for item in orfs_ordered_coords[element][s] if not item == coord_removed ]
+						lenkey = coords2lenkey[element][s][coord_removed]
+						orfs_ordered_lengths[element][s].remove(lenkey)
+						j = orfs_ordered_coords[element][s].index(coord) # current largest orf
+						m = j-1 # check for overlaps with previous in proximity
+						if m < 0:
+							break
+						J = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][j]]) # corresponding occurence in lengths dict for j, the current longest ORF
+						M = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][m]]) # corresponding occurence in lengths dict for m, the current ORF closest to j if moving toward position 0
+				i += 1
+			
+			orf_ids = [ p[0] for p in orfs_ordered_lengths[element][s] ]
+			best_orfs = [ [element, s, orf_id, orfs_seqs_dct[element][s][orf_id], orfs_coords[element][s][orf_id]]  for orf_id in orf_ids ]
+			best_orf_sets[s] = best_orfs
+
+		if best_orf_sets['+'] == None and best_orf_sets['-'] == None:
+			sys.exit('bestORFs() did not populate best_orf_sets')
+		if best_orf_sets['+'] == None:
+			best_orfs = best_orf_sets['-']
+			strand_used = '-'
+		elif best_orf_sets['-'] == None:
+			best_orfs = best_orf_sets['+']
+			strand_used = '+'
+		else:
+			lengths_plus = sum([ i[4][1]-i[4][0]+1 for i in best_orf_sets['+']])
+			lengths_minus = sum([ i[4][1]-i[4][0]+1 for i in best_orf_sets['-']])
+			if lengths_plus > lengths_minus:
+				best_orfs = best_orf_sets['+']
+				strand_used = '+'
+			else:
+				best_orfs = best_orf_sets['-']
+				strand_used = '-'
+		
+		best_orfs.sort(key=lambda x:x[4][0])
+		for orf in best_orfs:
+			element, s, orf_id, seq, coords = orf
+			start, end = coords
+			with open(outgff, 'a') as outFl:
+				outFl.write('{0}\tgetorf\tORF\t{1}\t{2}\t.\t{3}\t.\tParent={4};translated_seq={5}\n'.format(element, start, end, strand_used, element, seq))
+
+
+def addORFs(maingff, orfgff, newgff):
+	'''
+	'''
+	# Read orf gff store lines in lists in dict with parent as key
+	orfs = {}
+	with open(orfgff, 'r') as inFl:
+		for line in inFl:
+			if not line.startswith('#'):
+				#print(line)
+				gffLine = GFF3_line(line)
+				parent = gffLine.attributes['Parent']
+				if parent in orfs:
+					orfs[parent].append(gffLine)
+				else:
+					orfs[parent] = [gffLine]
+	# Read in main gff
+	lines = []
+	orfsAdded = None
+	CHANGESTRAND = False
+	ORFSADDED = False
+	firstLTRend = None
+	with open(maingff, 'r') as inFl:
+		for line in inFl:
+			if line.startswith('#'):
+				continue
+			else:
+				gffLine = GFF3_line(line)
+			if gffLine.type == 'repeat_region':
+				CHANGESTRAND = False
+				ORFSADDED = False
+				element = 'LTR_retrotransposon' + gffLine.attributes['ID'][13:]
+				if element in orfs:
+					# Check is strandedness needs to be assigned.
+					if gffLine.strand != '-' and gffLine.strand != '+':
+						CHANGESTRAND = True
+						change_strand = orfs[element][0].strand
+						gffLine.strand = change_strand
+					lines.append(gffLine)
+			elif gffLine.type == 'target_site_duplication':
+				lines.append(gffLine)
+					
+
+			elif gffLine.type =='long_terminal_repeat':
+				if firstLTRend == None:
+					# Assign strandedness.
+					if CHANGESTRAND:
+						gffLine.strand = change_strand
+					firstLTRend = int(gffLine.end)
+					ORFSADDED = True
+					orfsAdded = 0
+					# Add all orfs. The will be removed later if they overlap and existing feature.
+					#print(len(orfs[element]))
+					lines.append(gffLine)
+					for orf in orfs[element]:
+						orf.start = firstLTRend + orf.start
+						orf.end = firstLTRend + orf.end
+						orf.seqid = gffLine.seqid # Change the scaffold name
+						lines.append(orf)
+						orfsAdded += 1
+				else:
+					lines.append(gffLine)
+					firstLTRend == None
+			else:
+				# Assign strandedness.
+				if CHANGESTRAND:
+					gffLine.strand = change_strand
+				# Check if these lines overlap
+				if ORFSADDED:
+					to_remove = []
+					for i in range(-orfsAdded, 0, 1):
+						if Overlaps([gffLine.start, gffLine.end], [lines[i].start, lines[i].end]):
+							to_remove.append(i)
+					orfsAdded - len(to_remove)
+					for i in to_remove:
+						lines.pop(i)
+
+					lines.insert(-1-orfsAdded, gffLine)
+				else:
+					lines.append(gffLine)
+	with open(newgff, 'w') as outFl:
+		outFl.write('\n'.join([str(gffline) for gffline in lines]))
 
 def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbase_tblastx_evalue=1e-5, nhmmer_reporting_evalue=5e-2, nhmmer_inclusion_evalue=1e-2):
 
@@ -3851,7 +4142,7 @@ elif 'LTRharvestGFF' in paths:
 # They'll also be skipped if the are not supposed to run for the requested procedure
 # If they run they will append to the log
 
-writeLTRretrotransposonInternalRegions(paths['CurrentGFF'], 'internals.gff', elementSet=None, truncateParent=True)
+writeLTRretrotransposonInternalRegions(paths['CurrentGFF'], 'internals.gff', elementSet=None, truncateParent=False)
 getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', 'internals.gff' ]
 makecall(getfasta_call, 'internals.fasta')
 ChangeFastaHeaders('internals.fasta', 'internals.gff', attribute='Parent')
