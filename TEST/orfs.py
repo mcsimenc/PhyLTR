@@ -306,41 +306,48 @@ def addORFs(maingff, orfgff, newgff):
 					for i in range(-1, -1-orfsAdded, -1):
 						if Overlaps([gffLine.start, gffLine.end], [lines[i].start, lines[i].end]):
 							to_remove.append(i)
+					orfsAdded - len(to_remove)
+					for i in to_remove:
+						lines.pop(i)
+
+					lines.insert(-1-orfsAdded, gffLine)
 				else:
 					lines.append(gffLine)
+	with open(newgff, 'w') as outFl:
+		outFl.write('\n'.join([str(gffline) for gffline in lines]))
 
 	# If orf 
 
-Chr3	LTRharvest	target_site_duplication	13609156	13609159	.	+	.	Parent=repeat_region996
-###
-Chr3	LTRharvest	repeat_region	13621608	13629632	.	-	.	ID=repeat_region997
-Chr3	LTRharvest	target_site_duplication	13621608	13621611	.	-	.	Parent=repeat_region997
-Chr3	LTRharvest	LTR_retrotransposon	13621612	13629628	.	-	.	ID=LTR_retrotransposon997;Parent=repeat_region997;ltr_similarity=95.92;seq_number=2;dfamClassification=ACCORD_I;repbaseClassification=None
-Chr3	LTRharvest	long_terminal_repeat	13621612	13622040	.	-	.	Parent=LTR_retrotransposon997
-Chr3	LTRdigest	RR_tract	13622029	13622037	.	-	.	Parent=LTR_retrotransposon997
-Chr3	LTRdigest	protein_match	13625394	13625634	9.6e-16	-	.	Parent=LTR_retrotransposon997;reading_frame=1;name=rve
-Chr3	LTRdigest	protein_match	13626881	13627349	6.5e-15	-	.	Parent=LTR_retrotransposon997;reading_frame=2;name=RVT_1
-Chr3	LTRdigest	protein_match	13628385	13628553	1.1e-07	-	.	Parent=LTR_retrotransposon997;reading_frame=1;name=Retrotrans_gag
-Chr3	LTRharvest	long_terminal_repeat	13629188	13629628	.	-	.	Parent=LTR_retrotransposon997
-Chr3	LTRharvest	target_site_duplication	13629629	13629632	.	-	.	Parent=repeat_region997
-###
-Chr3	LTRharvest	repeat_region	13641518	13655375	.	+	.	ID=repeat_region998
-Chr3	LTRharvest	target_site_duplication	13641518	13641521	.	+	.	Parent=repeat_region998
-Chr3	LTRharvest	LTR_retrotransposon	13641522	13655371	.	+	.	ID=LTR_retrotransposon998;Parent=repeat_region998;ltr_similarity=97.67;seq_number=2;dfamClassification=None;repbaseClassification=None
-Chr3	LTRharvest	long_terminal_repeat	13641522	13641649	.	+	.	Parent=LTR_retrotransposon998
-Chr3	LTRdigest	protein_match	13645536	13645815	1.4e-25	+	.	Parent=LTR_retrotransposon998;reading_frame=0;name=Retrotrans_gag
-Chr3	LTRdigest	protein_match	13649572	13649680	8.3e-09	+	.	Parent=LTR_retrotransposon998;reading_frame=1;name=ATHILA
-Chr3	LTRdigest	protein_match	13649675	13650884	0	+	.	Parent=LTR_retrotransposon998;reading_frame=2;name=ATHILA
-Chr3	LTRharvest	long_terminal_repeat	13655243	13655371	.	+	.	Parent=LTR_retrotransposon998
-Chr3	LTRharvest	target_site_duplication	13655372	13655375	.	+	.	Parent=repeat_region998
-###
-Chr3	LTRharvest	repeat_region	13780796	13783648	.	?	.	ID=repeat_region999
-Chr3	LTRharvest	target_site_duplication	13780796	13780799	.	?	.	Parent=repeat_region999
-Chr3	LTRharvest	LTR_retrotransposon	13780800	13783644	.	?	.	ID=LTR_retrotransposon999;Parent=repeat_region999;ltr_similarity=99.37;seq_number=2;dfamClassification=None;repbaseClassification=None
-Chr3	LTRharvest	long_terminal_repeat	13780800	13781116	.	?	.	Parent=LTR_retrotransposon999
-Chr3	LTRharvest	long_terminal_repeat	13783326	13783644	.	?	.	Parent=LTR_retrotransposon999
-Chr3	LTRharvest	target_site_duplication	13783645	13783648	.	?	.	Parent=repeat_region999
-###
+#Chr3	LTRharvest	target_site_duplication	13609156	13609159	.	+	.	Parent=repeat_region996
+####
+#Chr3	LTRharvest	repeat_region	13621608	13629632	.	-	.	ID=repeat_region997
+#Chr3	LTRharvest	target_site_duplication	13621608	13621611	.	-	.	Parent=repeat_region997
+#Chr3	LTRharvest	LTR_retrotransposon	13621612	13629628	.	-	.	ID=LTR_retrotransposon997;Parent=repeat_region997;ltr_similarity=95.92;seq_number=2;dfamClassification=ACCORD_I;repbaseClassification=None
+#Chr3	LTRharvest	long_terminal_repeat	13621612	13622040	.	-	.	Parent=LTR_retrotransposon997
+#Chr3	LTRdigest	RR_tract	13622029	13622037	.	-	.	Parent=LTR_retrotransposon997
+#Chr3	LTRdigest	protein_match	13625394	13625634	9.6e-16	-	.	Parent=LTR_retrotransposon997;reading_frame=1;name=rve
+#Chr3	LTRdigest	protein_match	13626881	13627349	6.5e-15	-	.	Parent=LTR_retrotransposon997;reading_frame=2;name=RVT_1
+#Chr3	LTRdigest	protein_match	13628385	13628553	1.1e-07	-	.	Parent=LTR_retrotransposon997;reading_frame=1;name=Retrotrans_gag
+#Chr3	LTRharvest	long_terminal_repeat	13629188	13629628	.	-	.	Parent=LTR_retrotransposon997
+#Chr3	LTRharvest	target_site_duplication	13629629	13629632	.	-	.	Parent=repeat_region997
+####
+#Chr3	LTRharvest	repeat_region	13641518	13655375	.	+	.	ID=repeat_region998
+#Chr3	LTRharvest	target_site_duplication	13641518	13641521	.	+	.	Parent=repeat_region998
+#Chr3	LTRharvest	LTR_retrotransposon	13641522	13655371	.	+	.	ID=LTR_retrotransposon998;Parent=repeat_region998;ltr_similarity=97.67;seq_number=2;dfamClassification=None;repbaseClassification=None
+#Chr3	LTRharvest	long_terminal_repeat	13641522	13641649	.	+	.	Parent=LTR_retrotransposon998
+#Chr3	LTRdigest	protein_match	13645536	13645815	1.4e-25	+	.	Parent=LTR_retrotransposon998;reading_frame=0;name=Retrotrans_gag
+#Chr3	LTRdigest	protein_match	13649572	13649680	8.3e-09	+	.	Parent=LTR_retrotransposon998;reading_frame=1;name=ATHILA
+#Chr3	LTRdigest	protein_match	13649675	13650884	0	+	.	Parent=LTR_retrotransposon998;reading_frame=2;name=ATHILA
+#Chr3	LTRharvest	long_terminal_repeat	13655243	13655371	.	+	.	Parent=LTR_retrotransposon998
+#Chr3	LTRharvest	target_site_duplication	13655372	13655375	.	+	.	Parent=repeat_region998
+####
+#Chr3	LTRharvest	repeat_region	13780796	13783648	.	?	.	ID=repeat_region999
+#Chr3	LTRharvest	target_site_duplication	13780796	13780799	.	?	.	Parent=repeat_region999
+#Chr3	LTRharvest	LTR_retrotransposon	13780800	13783644	.	?	.	ID=LTR_retrotransposon999;Parent=repeat_region999;ltr_similarity=99.37;seq_number=2;dfamClassification=None;repbaseClassification=None
+#Chr3	LTRharvest	long_terminal_repeat	13780800	13781116	.	?	.	Parent=LTR_retrotransposon999
+#Chr3	LTRharvest	long_terminal_repeat	13783326	13783644	.	?	.	Parent=LTR_retrotransposon999
+#Chr3	LTRharvest	target_site_duplication	13783645	13783648	.	?	.	Parent=repeat_region999
+####
 
 
 
@@ -349,4 +356,7 @@ outdir = '.'
 strandsDct = {}
 fasta = args[1]
 gff = args[2]
+outgff = '{0}/{1}.withorfs.gff'.format(outdir, fasta.split('/')[-1])
+orfgff = '{0}/{1}.orfs.gff'.format(outdir, fasta.split('/')[-1])
 bestORFs(fasta, outdir, gff, minLen=100)
+addORFs(maingff=gff, orfgff=orfgff, newgff=outgff):
