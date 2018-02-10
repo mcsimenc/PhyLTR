@@ -747,7 +747,7 @@ def addORFs(maingff, orfgff, newgff):
 						orfsAdded += 1
 				else:
 					lines.append(gffLine)
-					firstLTRend == None
+					firstLTRend = None
 			else:
 				# Assign strandedness.
 				if CHANGESTRAND:
@@ -760,6 +760,7 @@ def addORFs(maingff, orfgff, newgff):
 							to_remove.append(i)
 					orfsAdded - len(to_remove)
 					for i in to_remove:
+						orfsAdded -= 1
 						lines.pop(i)
 
 					lines.insert(-1-orfsAdded, gffLine)
@@ -770,21 +771,30 @@ def addORFs(maingff, orfgff, newgff):
 
 
 def AnnotateORFs(minLen):
-
+	'''
+	Uses bestORFs() and addORFs() to add ORFs of length > minLen
+	to the GFF3 if they don't overlap existing features.
+	'''
 	global paths
 
-	MakeDir('ORFsDir', '{0}/AnnotateORFs'.format(paths['output_top_dir']))
-	internalGFF = '{0}/internals.fasta'.format(paths['ORFsDir'])
-	internalFASTA = '{0}/internals.gff'.format(paths['ORFsDir'])
-	writeLTRretrotransposonInternalRegions(paths['CurrentGFF'], internalGFF, elementSet=None, truncateParent=False)
-	getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', internalGFF ]
-	makecall(getfasta_call, internalFASTA)
-	ChangeFastaHeaders(internalFASTA, internalGFF, attribute='Parent')
-	bestORFs(fasta=internalFASTA, outdir=paths['ORFsDir'], gff=paths['CurrentGFF'], minLen=minLen)
-	orfgff = '{0}/{1}.orfs.gff'.format(paths['ORFsDir'], internalFASTA.split('/')[-1])
-	addORFs(maingff=paths['CurrentGFF'], orfgff=orfgff, newgff='{0}/FullWithORFs_gt_{1}bp.gff'.format(paths['ORFsDir'], minLen))
-	sys.exit()
-
+	if not checkStatusFl('WithORFsGFF'):
+		MakeDir('ORFsDir', '{0}/AnnotateORFs'.format(paths['output_top_dir']))
+		internalGFF = '{0}/internals.fasta'.format(paths['ORFsDir'])
+		internalFASTA = '{0}/internals.gff'.format(paths['ORFsDir'])
+		writeLTRretrotransposonInternalRegions(paths['CurrentGFF'], internalGFF, elementSet=None, truncateParent=False)
+		getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', internalGFF ]
+		makecall(getfasta_call, internalFASTA)
+		ChangeFastaHeaders(internalFASTA, internalGFF, attribute='Parent')
+		bestORFs(fasta=internalFASTA, outdir=paths['ORFsDir'], gff=paths['CurrentGFF'], minLen=minLen)
+		orfgff = '{0}/{1}.orfs.gff'.format(paths['ORFsDir'], internalFASTA.split('/')[-1])
+		withorfsgff='{0}/FullWithORFs_gt_{1}bp.gff'.format(paths['ORFsDir'], minLen)
+		print('here')
+		addORFs(maingff=paths['CurrentGFF'], orfgff=orfgff, newgff=withorfsgff)
+		paths['WithORFsGFF'] = '{0}/{1}.withORFs_gt_{2}bp.gff'.format(paths['GFFOutputDir'], '.'.join(paths['CurrentGFF'].split('/')[-1].split('.')[:-1]), minLen)
+		copyfile(withorfsgff, paths['WithORFsGFF'])
+		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+			statusFlAppend.write('WithORFsGFF\t{0}\n'.format(paths['WithORFsGFF']))
+		paths['CurrentGFF'] = paths['WithORFsGFF']
 
 
 def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbase_tblastx_evalue=1e-5, nhmmer_reporting_evalue=5e-2, nhmmer_inclusion_evalue=1e-2):
@@ -3574,6 +3584,7 @@ def shortHelp():
 	  [--maxiterate_large_clusters <int>] [--min_clustsize_for_faster_aln <int>] [--mafft_retree <int>]
 	  [--geneconvclusters] [--DTT] [--phylo] [--bootstrap_reps] [--bpflank <int>]
 	  [--flank_evalue <int|float>] [--flank_pId <int|float>][--flank_plencutoff <int|float>]
+	  [--min_orf_len <int>]
 	  ''', file=sys.stderr)
 
 def help2():
@@ -3636,6 +3647,7 @@ def help2():
 	--flank_evalue			    <int|float>		1e-5
 	--flank_pId			    <int|float>		70
 	--flank_plencutoff		    <int|float>		70
+	--min_orf_len			    <int>		240
 
 	'''.format('{0}/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
 
@@ -3695,6 +3707,10 @@ def help():
   	  --mis		<int>		mismatchscore score for extension-alignment (default -2)
   	  --ins		<int>		insertionscore for extension-alignment (default -3)
   	  --del		<int>		deletionscore for extension-alignment (default -3)
+
+
+
+	  --min_orf_len			<int>	(default 240)
 
 
 	  LTRdigest
@@ -3939,6 +3955,10 @@ if '--ltrdigest_hmms' in args: # Check for user-supplied location of HMMs for LT
 	paths['LTRdigestHMMs'] = args[args.index('--ltrdigest_hmms') + 1]
 else:
 	paths['LTRdigestHMMs'] = '{0}/LTRdigest_HMMs/hmms'.format(paths['selfDir'])
+if '--min_orf_len' in args:
+	min_orf_len = int(args[args.index('--min_orf_len')+1])
+else:
+	min_orf_len = 240
 
 
 # Classification Parameters
@@ -4151,6 +4171,8 @@ elif 'GFFwithRepbaseClassification' in paths:
 	paths['CurrentGFF'] = paths['GFFwithRepbaseClassification']
 elif 'GFFwithDfamClassification' in paths:
 	paths['CurrentGFF'] = paths['GFFwithDfamClassification']
+elif 'WithORFsGFF' in paths:
+	paths['CurrentGFF'] = paths['WithORFsGFF']
 elif 'LTRdigestGFF' in paths:
 	paths['CurrentGFF'] = paths['LTRdigestGFF']
 elif 'LTRharvestGFF' in paths:
@@ -4180,7 +4202,7 @@ ltrdigest()	# Identify parts of element internal regions with evidence of homolo
 #		# Output: LTRdigest GFF3
 #
 #	3. Classify elements to superfamily using homology evidence in Dfam and/or Repbase
-AnnotateORFs(minLen = 240)
+AnnotateORFs(minLen = min_orf_len)
 #
 classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, repbase_tblastx_evalue=repbase_tblastx_evalue, nhmmer_reporting_evalue=nhmmer_reporting_evalue, nhmmer_inclusion_evalue=nhmmer_inclusion_evalue)  # Extract LTR_retrotransposon sequences for classification using homology
 #			# Find evidence of homology to repeats in Dfam using HMMER. NEED TO CHANGE THIS SO REVERSE COMPLEMENT IS ALSO SEARCHED (nhmmsearch I think)
