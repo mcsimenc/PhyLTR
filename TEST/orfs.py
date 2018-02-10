@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import subprocess
 from Bio import SeqIO
@@ -80,6 +81,9 @@ def bestORFs(fasta, outdir, gff, minLen=30):
 
 	Only ORFs with nucleotide sequences longer than minLen are kept. (default 30 bp)
 	'''
+	outgff = '{0}/{1}.orfs.gff'.format(outdir, fasta.split('/')[-1])
+	if os.path.isfile(outgff):
+		os.remove(outgff)
 	# Get strandedness for each element into a dictionary
 	strands = {}
 	with open(gff, 'r') as gffFl:
@@ -250,7 +254,6 @@ def bestORFs(fasta, outdir, gff, minLen=30):
 		for orf in best_orfs:
 			element, s, orf_id, seq, coords = orf
 			start, end = coords
-			outgff = '{0}/{1}.orfs.gff'.format(outdir, fasta.split('/')[-1])
 			with open(outgff, 'a') as outFl:
 				outFl.write('{0}\tgetorf\tORF\t{1}\t{2}\t.\t{3}\t.\tParent={4};translated_seq={5}\n'.format(element, start, end, strand_used, element, seq))
 
@@ -263,17 +266,23 @@ def addORFs(maingff, orfgff, newgff):
 	with open(orfgff, 'r') as inFl:
 		for line in inFl:
 			if not line.startswith('#'):
+				#print(line)
 				gffLine = GFF3_line(line)
 				parent = gffLine.attributes['Parent']
 				if parent in orfs:
 					orfs[parent].append(gffLine)
 				else:
 					orfs[parent] = [gffLine]
+	#for o in orfs:
+	#	for a in orfs[o]:
+	#		print(a)
+	#print('next')
 
 	# Read in main gff
 	lines = []
 	orfsAdded = None
 	CHANGESTRAND = False
+	ORFSADDED = False
 	with open(maingff, 'r') as inFl:
 		for line in inFl:
 			if line.startswith('#'):
@@ -294,6 +303,7 @@ def addORFs(maingff, orfgff, newgff):
 					ORFSADDED = True
 					orfsAdded = 0
 					# Add all orfs. The will be removed later if they overlap and existing feature.
+					#print(len(orfs[element]))
 					for orf in orfs[element]:
 						orf.seqid = gffLine.seqid # Change the scaffold name
 						lines.append(orf)
