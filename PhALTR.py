@@ -4180,6 +4180,7 @@ ltrdigest()	# Identify parts of element internal regions with evidence of homolo
 #		# Output: LTRdigest GFF3
 #
 #	3. Classify elements to superfamily using homology evidence in Dfam and/or Repbase
+AnnotateORFs(minLen = 240)
 #
 classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, repbase_tblastx_evalue=repbase_tblastx_evalue, nhmmer_reporting_evalue=nhmmer_reporting_evalue, nhmmer_inclusion_evalue=nhmmer_inclusion_evalue)  # Extract LTR_retrotransposon sequences for classification using homology
 #			# Find evidence of homology to repeats in Dfam using HMMER. NEED TO CHANGE THIS SO REVERSE COMPLEMENT IS ALSO SEARCHED (nhmmsearch I think)
