@@ -492,7 +492,7 @@ def Overlaps(j, k):
 		return False
 
 
-def bestORFs(fasta, outdir, gff, minLen=300):
+def bestORFs(fasta, outdir, gff, minLen=240):
 	'''
 	Finds all ORFs in fasta using EMBOSS getorf and writes the best ones to a GFF3 and protein FASTA.
 	The best ORFs are the set of non-overlapping ORFs containing the longest ORF out of sets on that
@@ -501,7 +501,7 @@ def bestORFs(fasta, outdir, gff, minLen=300):
 
 	The coordinates output by getorf are 1-based
 
-	Only ORFs with nucleotide sequences longer than minLen are kept. (default 300 bp = 80 aa)
+	Only ORFs with nucleotide sequences longer than minLen are kept. (default 240 bp = 80 aa)
 	'''
 	outgff = '{0}/{1}.orfs.gff'.format(outdir, fasta.split('/')[-1])
 	if os.path.isfile(outgff):
@@ -689,6 +689,98 @@ def bestORFs(fasta, outdir, gff, minLen=300):
 			with open(outgff, 'a') as outFl:
 				outFl.write('{0}\tgetorf\tORF\t{1}\t{2}\t.\t{3}\t.\tParent={4};translated_seq={5}\n'.format(element, start, end, strand_used, element, seq))
 
+#def addORFs(maingff, orfgff, newgff):
+#	'''
+#	Inserts ORFs into existing LTRdigest/LTRharvest GFF. Expects Orfs were obtained from EMBOSS getorf on output from writeLTRretrotransposonInternalRegions()
+#	Existing features take precedence, and if ORFs overlap existing features, those ORFs are not included in the final output, newgff.
+#	'''
+#	# Read orf gff store lines in lists in dict with parent as key
+#	orfs = {}
+#	append2logfile(paths['output_top_dir'], mainlogfile, 'Incorporating ORFs in {0} with GFF {1} in to {2}'.format(orfgff, maingff, newgff))
+#	with open(orfgff, 'r') as inFl:
+#		for line in inFl:
+#			if not line.startswith('#'):
+#				#print(line)
+#				gffLine = GFF3_line(line)
+#				parent = gffLine.attributes['Parent']
+#				if parent in orfs:
+#					orfs[parent].append(gffLine)
+#				else:
+#					orfs[parent] = [gffLine]
+#	# Read in main gff
+#	lines = []
+#	orfsAdded = None
+#	CHANGESTRAND = False
+#	ORFSADDED = False
+#	firstLTRend = None
+#	with open(maingff, 'r') as inFl:
+#		for line in inFl:
+#			if line.startswith('#'):
+#				continue
+#			else:
+#				gffLine = GFF3_line(line)
+#			if gffLine.type == 'repeat_region':
+#				CHANGESTRAND = False
+#				ORFSADDED = False
+#				element = 'LTR_retrotransposon' + gffLine.attributes['ID'][13:]
+#				if element in orfs:
+#					# Check is strandedness needs to be assigned.
+#					if gffLine.strand != '-' and gffLine.strand != '+':
+#						CHANGESTRAND = True
+#						change_strand = orfs[element][0].strand
+#						gffLine.strand = change_strand
+#				lines.append(gffLine)
+#			elif gffLine.type == 'target_site_duplication':
+#				lines.append(gffLine)
+#			elif gffLine.type =='long_terminal_repeat':
+#				if firstLTRend == None:
+#					# Assign strandedness.
+#					if CHANGESTRAND:
+#						gffLine.strand = change_strand
+#					firstLTRend = int(gffLine.end)
+#					if element in orfs:
+#						ORFSADDED = True
+#						#orfsAdded = 0
+#						# Add all orfs. The will be removed later if they overlap and existing feature.
+#						#print(len(orfs[element]))
+#						lines.append(gffLine)
+#						for orf in orfs[element]:
+#							orf.start = firstLTRend + orf.start
+#							orf.end = firstLTRend + orf.end
+#							orf.seqid = gffLine.seqid # Change the scaffold name
+#							lines.append(orf)
+#							#orfsAdded += 1
+#				else:
+#					lines.append(gffLine)
+#					firstLTRend = None
+#			else:
+#				# Assign strandedness.
+#				if CHANGESTRAND:
+#					gffLine.strand = change_strand
+#				# Check if these lines overlap
+#				if ORFSADDED:
+#					print("ORFSADDED")
+#					for i in range(-1,-5,-1):
+#						print(str(lines[i]))
+#					to_remove = []
+#					i = -1
+#					while lines[i].type == 'ORF':
+#						if Overlaps([gffLine.start, gffLine.end], [lines[i].start, lines[i].end]):
+#							to_remove.append(i)
+#						i -= 1
+#
+#					to_remove = [ len(lines)+i for i in to_remove ]
+#					lines = [ lines[i] for i in range(len(lines)) if not i in to_remove ]
+#					print("REMOVED")
+#					for i in range(-1,-5,-1):
+#						print(str(lines[i]))
+#					i = -1
+#					while  int(lines[i].start) > int(gffLine.start):
+#						i -= 1
+#					lines.insert(i-1, gffLine)
+#				else:
+#					lines.append(gffLine)
+#	with open(newgff, 'w') as outFl:
 #		outFl.write('\n'.join([str(gffline) for gffline in lines]))
 
 def addORFs(maingff, orfgff, newgff):
@@ -3644,7 +3736,7 @@ def help2():
 	--flank_evalue			    <int|float>		1e-5
 	--flank_pId			    <int|float>		70
 	--flank_plencutoff		    <int|float>		70
-	--min_orf_len			    <int>		300
+	--min_orf_len			    <int>		240
 
 	'''.format('{0}/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
 
@@ -3690,7 +3782,7 @@ def help():
 
 	  LTRharvest
 	  ----------
-	  -lh | --ltrharvest		Run LTRharvest on file given by --fasta (default ON)
+	  -lh | --ltrharvest			Run LTRharvest on file given by --fasta (default ON)
   	  --minlenltr	<int>		minimum length allowed for LTRs for element calling (default 100 bp)
   	  --maxlenltr	<int>		maximum length allowed for LTRs for element caling (default 1000 bp)
   	  --mindistltr	<int>		minimum distance allowed between LTRs for element calling (default 1000 bp)
@@ -3707,7 +3799,7 @@ def help():
 
 
 
-	  --min_orf_len			<int>	(default 300)
+	  --min_orf_len			<int>	(default 240)
 
 
 	  LTRdigest
@@ -3808,60 +3900,14 @@ def help():
 		'''.format('{0}/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
 args=sys.argv
 
-# get executable paths from CONFIG file, which should be in the same directory as this script
-executables = {}
-commentPattern = re.compile('#.*$')
-with open('{0}/CONFIG'.format(os.path.dirname(os.path.realpath(__file__)))) as config_file:
-	paths = [ re.sub(commentPattern, '', line) for line in config_file.read().strip().split('\n') ]
-	for path in paths:
-		if not path == '':
-			p = path.split('=')
-			executables[p[0]] = p[1]
-	
-filenames = {}
-paths = {}
-paths_toClean = {}
-params = {}
-# paths may contain:
-# inputFasta			Input fasta
-# inputFastaSuffixArray		Basename for suffixerator output
-# LTRharvestGFF			GFF3 output from LTRharvest
-# LTRdigestOutputPrefix		Prefix for LTRdigest output files
-# LTRdigestHMMs			Directory for individual Pfam HMMs for LTR retrotransposon domains
-
-paths['selfDir'] = '/'.join(os.path.realpath(__file__).split('/')[:-1])
-paths['scriptsDir'] = '{0}/scripts'.format(paths['selfDir'])
-
-if '-h' in args or '--h' in args:
-	help2()
-	sys.exit(0)
-
-if '-help' in args or '--help' in args:
-	help()
-	sys.exit(0)
-if len(args) < 3:
-	shortHelp()
-	sys.exit(0)
-
-if '--fasta' in args:
-	paths['inputFasta'] = args[args.index('--fasta') + 1]
-elif '-f' in args:
-	paths['inputFasta'] = args[args.index('-f') + 1]
-else:
-	help()
-	print('''
-
-		MUST SPECIFY INPUT FASTA WITH -f or --fasta
-
-		''', file=sys.stderr)
-	sys.exit(0)
-
-filenames['inputFasta'] = paths['inputFasta'].split('/')[-1]
 
 if '--nosmalls' in args:
 	SMALLS = False
 else:
 	SMALLS = True
+
+
+
 if '--del' in args:
 	ltrharvest_del = int(args[args.index('--del')+1])
 else:
@@ -3919,6 +3965,56 @@ if '--logfile' in args:
 else:
 	mainlogfile = 'log.txt'
 
+
+# get executable paths from CONFIG file, which should be in the same directory as this script
+executables = {}
+commentPattern = re.compile('#.*$')
+with open('{0}/CONFIG'.format(os.path.dirname(os.path.realpath(__file__)))) as config_file:
+	paths = [ re.sub(commentPattern, '', line) for line in config_file.read().strip().split('\n') ]
+	for path in paths:
+		if not path == '':
+			p = path.split('=')
+			executables[p[0]] = p[1]
+	
+filenames = {}
+paths = {}
+paths_toClean = {}
+params = {}
+# paths may contain:
+# inputFasta			Input fasta
+# inputFastaSuffixArray		Basename for suffixerator output
+# LTRharvestGFF			GFF3 output from LTRharvest
+# LTRdigestOutputPrefix		Prefix for LTRdigest output files
+# LTRdigestHMMs			Directory for individual Pfam HMMs for LTR retrotransposon domains
+
+paths['selfDir'] = '/'.join(os.path.realpath(__file__).split('/')[:-1])
+paths['scriptsDir'] = '{0}/scripts'.format(paths['selfDir'])
+if '-h' in args or '--h' in args:
+	help2()
+	sys.exit(0)
+
+if '-help' in args or '--help' in args:
+	help()
+	sys.exit(0)
+if len(args) < 3:
+	shortHelp()
+	sys.exit(0)
+
+if '--fasta' in args:
+	paths['inputFasta'] = args[args.index('--fasta') + 1]
+elif '-f' in args:
+	paths['inputFasta'] = args[args.index('-f') + 1]
+else:
+	help()
+	print('''
+
+		MUST SPECIFY INPUT FASTA WITH -f or --fasta
+
+		''', file=sys.stderr)
+	sys.exit(0)
+
+filenames['inputFasta'] = paths['inputFasta'].split('/')[-1]
+
 # Number of processors for parallelizable components. Default is 1 processor
 if '--procs' in args:
 	procs = int(args[args.index('--procs') + 1])
@@ -3926,7 +4022,6 @@ if '-p' in args:
 	procs = int(args[args.index('-p') + 1])
 else:
 	procs = 1
-
 # Make directory for writing files
 if '--output_dir' in args:
 	MakeDir('output_top_dir', args[args.index('--output_dir') + 1])
@@ -3952,7 +4047,8 @@ else:
 if '--min_orf_len' in args:
 	min_orf_len = int(args[args.index('--min_orf_len')+1])
 else:
-	min_orf_len = 300
+	min_orf_len = 240
+
 
 # Classification Parameters
 if '--classify_dfam' or '--classify' in args:
@@ -3998,6 +4094,7 @@ if '--mcl' in args:
 		MCL_I = args[args.index('-I')+1]
 	else:
 		MCL_I = '6'
+		#sys.exit('Pick a value for MCL inflation paramater with -I')
 
 else:
 	USEMCL = False
@@ -4133,6 +4230,7 @@ else:
 	
 paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase.annotations.LTR.names.cleaned.map'.format(paths['selfDir'])
 paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam.annotations.LTR.names.cleaned.map'.format(paths['selfDir'])
+
 MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
 MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
 paths['CurrentGFF'] = None # This path will have the path to the best GFF3 to use.
