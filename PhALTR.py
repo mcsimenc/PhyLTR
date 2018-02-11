@@ -762,7 +762,7 @@ def addORFs(maingff, orfgff, newgff):
 							orf_ct += 1
 							orf.attributes['ID'] = '{0}.ORF.{1:02d}'.format(orf.attributes['Parent'], orf_ct)
 							orf.attributes_order.insert(0, 'ID')
-							orf.refreshAttrSt()
+							orf.refreshAttrStr()
 							with open(orffasta, 'a') as outFl:
 								outFl.write('>{0}\n{1}\n'.format(orf.attributes['ID'], orf.attributes['translated_seq']))
 							internalparts.append(orf)
