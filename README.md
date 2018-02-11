@@ -1,4 +1,4 @@
-# Phylogenetic analysis of long terminal repeat retrotransposons
+## Phylogenetic analysis of long terminal repeat retrotransposons
 ## PhALTR
   
 ### Dependencies
