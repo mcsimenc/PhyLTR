@@ -702,9 +702,9 @@ def addORFs(maingff, orfgff, newgff):
 	# Read orf gff store lines in lists in dict with parent as key
 	orfs = {}
 	if newgff.endswith('.gff'):
-		orffasta = '{0}/{1}'.format('/'.join(newgffsplit('/')[:-1]), '{0}.ORFs.fasta'.format(newgff.split('/')[-1][:-4]))
+		orffasta = '{0}/{1}'.format('/'.join(newgff.split('/')[:-1]), '{0}.ORFs.fasta'.format(newgff.split('/')[-1][:-4]))
 	else:
-		orffasta = '{0}/{1}'.format('/'.join(newgffsplit('/')[:-1]), '{0}.ORFs.fasta'.format(newgff.split('/')[-1]))
+		orffasta = '{0}/{1}'.format('/'.join(newgff.split('/')[:-1]), '{0}.ORFs.fasta'.format(newgff.split('/')[-1]))
 	if os.path.isfile(orffasta):
 		os.remove(orffasta)
 
