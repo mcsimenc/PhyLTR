@@ -1,5 +1,5 @@
-# Phylogenetic analysis of long terminal repeat retrotransposons
-## PhALTR
+## Phylogenetic analysis of long terminal repeat retrotransposons
+# PhALTR
   
 ### Dependencies
 Program			Version tested with PhALTR	Process using program  
