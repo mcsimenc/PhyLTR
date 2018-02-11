@@ -303,7 +303,7 @@ def writeLTRretrotransposonInternalRegions(inputGFFpth, outputGFFpth, elementSet
 	''' 
 	Requires Class GFF3_line
 	Writes GFF3 for region between two LTRs from a LTRharvest-type file
-	Only for elements in elementSet if provided
+	Only for elements in elementSet if provided, if elementSet == None, all elements are written.
 	if truncateParent=True, Parent attribute has 'LTR_retrotranspson' trimmed from it
 	'''
 	with open(inputGFFpth, 'r') as inGFF:
@@ -346,9 +346,9 @@ def writeLTRretrotransposonInternalRegions(inputGFFpth, outputGFFpth, elementSet
 def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None):
 	''' 
 	Requires Class GFF3_line
-	Writes GFF3 for region between two LTRs from a LTRharvest-type file
-	Only for elements in elementSet if provided
-	if truncateParent=True, Parent attribute has 'LTR_retrotranspson' trimmed from it
+	Writes GFF3 for LTR_retrotransposon type features from a LTRharvest-type file.
+	Only for elements in elementSet if provided, if elementSet == None, all elements are written.
+	If truncateParent=True, Parent attribute has 'LTR_retrotranspson' trimmed from it.
 	'''
 	global paths
 
@@ -371,8 +371,8 @@ def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None):
 def writeLTRsGFF(inputGFFpth, outputGFFpth, elementSet=None):
 	''' 
 	Requires Class GFF3_line
-	Writes GFF3 for region between two LTRs from a LTRharvest-type file
-	Only for elements in elementSet if provided
+	Writes one GFF3 for each pair of LTRs from a LTRharvest-type file.
+	Only for elements in elementSet if provided, if elementSet == None, all elements are written.
 	if truncateParent=True, Parent attribute has 'LTR_retrotranspson' trimmed from it
 	'''
 	global paths
@@ -402,7 +402,10 @@ def writeLTRsGFF(inputGFFpth, outputGFFpth, elementSet=None):
 						outFl.write(str(gffLine)+'\n')
 							
 def ltrharvest():
-
+	'''
+	Runs LTRharvest. LTRharvest options can be specified on the command line.
+	See phaltr -h for defaults and phaltr -help for explanation.
+	'''
 	global paths
 	global filenames
 
@@ -450,7 +453,9 @@ def ltrharvest():
 
 
 def ltrdigest():
-
+	'''
+	Runs LTRdigest. Domains to search for can be be given as a multi HMM with the command line flag: --ltrdigest_hmms
+	'''
 	global paths
 	global filenames
 
@@ -661,8 +666,6 @@ def bestORFs(fasta, outdir, gff, minLen=300):
 			orf_ids = [ p[0] for p in orfs_ordered_lengths[element][s] ]
 			best_orfs = [ [element, s, orf_id, orfs_seqs_dct[element][s][orf_id], orfs_coords[element][s][orf_id]]  for orf_id in orf_ids ]
 			best_orf_sets[s] = best_orfs
-			#for o in orfs_seqs_dct[element][s]:
-			#	print('{0}\n{1}\n'.format(o, orfs_seqs_dct[element][s][o]))
 
 		if best_orf_sets['+'] == None and best_orf_sets['-'] == None:
 			sys.exit('bestORFs() did not populate best_orf_sets')
@@ -689,7 +692,6 @@ def bestORFs(fasta, outdir, gff, minLen=300):
 			with open(outgff, 'a') as outFl:
 				outFl.write('{0}\tgetorf\tORF\t{1}\t{2}\t.\t{3}\t.\tParent={4};translated_seq={5}\n'.format(element, start, end, strand_used, element, seq))
 
-#		outFl.write('\n'.join([str(gffline) for gffline in lines]))
 
 def addORFs(maingff, orfgff, newgff):
 	'''
@@ -3713,7 +3715,6 @@ def help():
 	  LTRdigest
 	  ---------
 	  -ld | --ltrdigest			Run LTRdigest on file given by --fasta and --ltrharvest results (GFF) (default ON)
-	  --dfam_hmmsearch_table	<path>	?
 	  --ltrdigest_hmms		<path>	Path to a file with one or more protein profile HMMs for LTRdigest (HMMER)
 	  					(default {0})
 
