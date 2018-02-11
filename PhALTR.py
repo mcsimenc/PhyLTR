@@ -824,16 +824,19 @@ def addORFs(maingff, orfgff, newgff):
 		elif gl.type == 'long_terminal_repeat':
 			if firstLTRend != None:
 				if el in orfs:
+					print(internalparts)
 					for orf in orfs[el]:
+						orf.start = firstLTRend + int(orf.start)
+						orf.end = firstLTRend + int(orf.end)
+						orf.seqid = gffLine.seqid # Change the scaffold name
 						OVERLAP = False
 						for part in internalparts:
+							print([orf.start, orf.end], [part.start, part.end])
+							print(Overlaps([orf.start, orf.end], [part.start, part.end]))
 							if Overlaps([orf.start, orf.end], [part.start, part.end]):
 								OVERLAP = True
 								break
 						if not OVERLAP:
-							orf.start = firstLTRend + int(orf.start)
-							orf.end = firstLTRend + int(orf.end)
-							orf.seqid = gffLine.seqid # Change the scaffold name
 							internalparts.append(orf)
 				internalparts.sort(key=lambda x:int(x.start))
 				NewGFFLines += internalparts
@@ -4285,7 +4288,6 @@ ltrdigest()	# Identify parts of element internal regions with evidence of homolo
 #
 #	3. Classify elements to superfamily using homology evidence in Dfam and/or Repbase
 AnnotateORFs(minLen = min_orf_len)
-sys.exit()
 #
 classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, repbase_tblastx_evalue=repbase_tblastx_evalue, nhmmer_reporting_evalue=nhmmer_reporting_evalue, nhmmer_inclusion_evalue=nhmmer_inclusion_evalue)  # Extract LTR_retrotransposon sequences for classification using homology
 #			# Find evidence of homology to repeats in Dfam using HMMER. NEED TO CHANGE THIS SO REVERSE COMPLEMENT IS ALSO SEARCHED (nhmmsearch I think)
