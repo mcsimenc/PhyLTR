@@ -54,6 +54,7 @@ def write2summary(text):
 	'''
 	Write text to a hardcoded summary file at output_dir/summary
 	'''
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Writing to summary file at {0}'.format('{0}/summary'.format(paths['output_top_dir'])))
 	with open('{0}/summary'.format(paths['output_top_dir']), 'a') as summaryFl:
 		summaryFl.write('{0}\n'.format(text))
 
@@ -700,6 +701,13 @@ def addORFs(maingff, orfgff, newgff):
 	'''
 	# Read orf gff store lines in lists in dict with parent as key
 	orfs = {}
+	if newgff.endswith('.gff'):
+		orffasta = '{0}/{1}'.format('/'.join(newgffsplit('/')[:-1]), '{0}.ORFs.fasta'.format(newgff.split('/')[-1][:-4]))
+	else:
+		orffasta = '{0}/{1}'.format('/'.join(newgffsplit('/')[:-1]), '{0}.ORFs.fasta'.format(newgff.split('/')[-1]))
+	if os.path.isfile(orffasta):
+		os.remove(orffasta)
+
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Incorporating ORFs in {0} with GFF {1} in to {2}'.format(orfgff, maingff, newgff))
 	with open(orfgff, 'r') as inFl:
 		for line in inFl:
@@ -737,19 +745,26 @@ def addORFs(maingff, orfgff, newgff):
 		elif gl.type == 'long_terminal_repeat':
 			if firstLTRend != None:
 				if el in orfs:
-					print(internalparts)
+					#print(internalparts)
+					orf_ct = 0
 					for orf in orfs[el]:
 						orf.start = firstLTRend + int(orf.start)
 						orf.end = firstLTRend + int(orf.end)
 						orf.seqid = gffLine.seqid # Change the scaffold name
 						OVERLAP = False
 						for part in internalparts:
-							print([orf.start, orf.end], [part.start, part.end])
-							print(Overlaps([orf.start, orf.end], [part.start, part.end]))
+						#	print([orf.start, orf.end], [part.start, part.end])
+						#	print(Overlaps([orf.start, orf.end], [part.start, part.end]))
 							if Overlaps([orf.start, orf.end], [part.start, part.end]):
 								OVERLAP = True
 								break
 						if not OVERLAP:
+							orf_ct += 1
+							orf.attributes['ID'] = '{0}.ORF.{1:02d}'.format(orf.attributes['Parent'], orf_ct)
+							orf.attributes_order.insert(0, 'ID')
+							orf.refreshAttrSt()
+							with open(orffasta, 'a') as outFl:
+								outFl.write('>{0}\n{1}\n'.format(orf.attributes['ID'], orf.attributes['translated_seq']))
 							internalparts.append(orf)
 				internalparts.sort(key=lambda x:int(x.start))
 				NewGFFLines += internalparts
