@@ -658,6 +658,8 @@ def bestORFs(fasta, outdir, gff, minLen=240):
 			orf_ids = [ p[0] for p in orfs_ordered_lengths[element][s] ]
 			best_orfs = [ [element, s, orf_id, orfs_seqs_dct[element][s][orf_id], orfs_coords[element][s][orf_id]]  for orf_id in orf_ids ]
 			best_orf_sets[s] = best_orfs
+			#for o in orfs_seqs_dct[element][s]:
+			#	print('{0}\n{1}\n'.format(o, orfs_seqs_dct[element][s][o]))
 
 		if best_orf_sets['+'] == None and best_orf_sets['-'] == None:
 			sys.exit('bestORFs() did not populate best_orf_sets')
@@ -684,6 +686,99 @@ def bestORFs(fasta, outdir, gff, minLen=240):
 			with open(outgff, 'a') as outFl:
 				outFl.write('{0}\tgetorf\tORF\t{1}\t{2}\t.\t{3}\t.\tParent={4};translated_seq={5}\n'.format(element, start, end, strand_used, element, seq))
 
+#def addORFs(maingff, orfgff, newgff):
+#	'''
+#	Inserts ORFs into existing LTRdigest/LTRharvest GFF. Expects Orfs were obtained from EMBOSS getorf on output from writeLTRretrotransposonInternalRegions()
+#	Existing features take precedence, and if ORFs overlap existing features, those ORFs are not included in the final output, newgff.
+#	'''
+#	# Read orf gff store lines in lists in dict with parent as key
+#	orfs = {}
+#	append2logfile(paths['output_top_dir'], mainlogfile, 'Incorporating ORFs in {0} with GFF {1} in to {2}'.format(orfgff, maingff, newgff))
+#	with open(orfgff, 'r') as inFl:
+#		for line in inFl:
+#			if not line.startswith('#'):
+#				#print(line)
+#				gffLine = GFF3_line(line)
+#				parent = gffLine.attributes['Parent']
+#				if parent in orfs:
+#					orfs[parent].append(gffLine)
+#				else:
+#					orfs[parent] = [gffLine]
+#	# Read in main gff
+#	lines = []
+#	orfsAdded = None
+#	CHANGESTRAND = False
+#	ORFSADDED = False
+#	firstLTRend = None
+#	with open(maingff, 'r') as inFl:
+#		for line in inFl:
+#			if line.startswith('#'):
+#				continue
+#			else:
+#				gffLine = GFF3_line(line)
+#			if gffLine.type == 'repeat_region':
+#				CHANGESTRAND = False
+#				ORFSADDED = False
+#				element = 'LTR_retrotransposon' + gffLine.attributes['ID'][13:]
+#				if element in orfs:
+#					# Check is strandedness needs to be assigned.
+#					if gffLine.strand != '-' and gffLine.strand != '+':
+#						CHANGESTRAND = True
+#						change_strand = orfs[element][0].strand
+#						gffLine.strand = change_strand
+#				lines.append(gffLine)
+#			elif gffLine.type == 'target_site_duplication':
+#				lines.append(gffLine)
+#			elif gffLine.type =='long_terminal_repeat':
+#				if firstLTRend == None:
+#					# Assign strandedness.
+#					if CHANGESTRAND:
+#						gffLine.strand = change_strand
+#					firstLTRend = int(gffLine.end)
+#					if element in orfs:
+#						ORFSADDED = True
+#						#orfsAdded = 0
+#						# Add all orfs. The will be removed later if they overlap and existing feature.
+#						#print(len(orfs[element]))
+#						lines.append(gffLine)
+#						for orf in orfs[element]:
+#							orf.start = firstLTRend + orf.start
+#							orf.end = firstLTRend + orf.end
+#							orf.seqid = gffLine.seqid # Change the scaffold name
+#							lines.append(orf)
+#							#orfsAdded += 1
+#				else:
+#					lines.append(gffLine)
+#					firstLTRend = None
+#			else:
+#				# Assign strandedness.
+#				if CHANGESTRAND:
+#					gffLine.strand = change_strand
+#				# Check if these lines overlap
+#				if ORFSADDED:
+#					print("ORFSADDED")
+#					for i in range(-1,-5,-1):
+#						print(str(lines[i]))
+#					to_remove = []
+#					i = -1
+#					while lines[i].type == 'ORF':
+#						if Overlaps([gffLine.start, gffLine.end], [lines[i].start, lines[i].end]):
+#							to_remove.append(i)
+#						i -= 1
+#
+#					to_remove = [ len(lines)+i for i in to_remove ]
+#					lines = [ lines[i] for i in range(len(lines)) if not i in to_remove ]
+#					print("REMOVED")
+#					for i in range(-1,-5,-1):
+#						print(str(lines[i]))
+#					i = -1
+#					while  int(lines[i].start) > int(gffLine.start):
+#						i -= 1
+#					lines.insert(i-1, gffLine)
+#				else:
+#					lines.append(gffLine)
+#	with open(newgff, 'w') as outFl:
+#		outFl.write('\n'.join([str(gffline) for gffline in lines]))
 
 def addORFs(maingff, orfgff, newgff):
 	'''
@@ -704,71 +799,58 @@ def addORFs(maingff, orfgff, newgff):
 				else:
 					orfs[parent] = [gffLine]
 	# Read in main gff
-	lines = []
-	orfsAdded = None
-	CHANGESTRAND = False
-	ORFSADDED = False
-	firstLTRend = None
+	GFFLines = []
+	NewGFFLines = []
 	with open(maingff, 'r') as inFl:
 		for line in inFl:
 			if line.startswith('#'):
 				continue
 			else:
 				gffLine = GFF3_line(line)
-			if gffLine.type == 'repeat_region':
-				CHANGESTRAND = False
-				ORFSADDED = False
-				element = 'LTR_retrotransposon' + gffLine.attributes['ID'][13:]
-				if element in orfs:
-					# Check is strandedness needs to be assigned.
-					if gffLine.strand != '-' and gffLine.strand != '+':
-						CHANGESTRAND = True
-						change_strand = orfs[element][0].strand
-						gffLine.strand = change_strand
-					lines.append(gffLine)
-			elif gffLine.type == 'target_site_duplication':
-				lines.append(gffLine)
-			elif gffLine.type =='long_terminal_repeat':
-				if firstLTRend == None:
-					# Assign strandedness.
-					if CHANGESTRAND:
-						gffLine.strand = change_strand
-					firstLTRend = int(gffLine.end)
-					if element in orfs:
-						ORFSADDED = True
-						orfsAdded = 0
-						# Add all orfs. The will be removed later if they overlap and existing feature.
-						#print(len(orfs[element]))
-						lines.append(gffLine)
-						for orf in orfs[element]:
-							orf.start = firstLTRend + orf.start
-							orf.end = firstLTRend + orf.end
+				GFFLines.append(gffLine)
+	internalparts = []
+	el = None
+	firstLTRend = None
+	for i in range(len(GFFLines)):
+		gl = GFFLines[i]
+		if gl.type == 'repeat_region':
+			internalparts = []
+			el = 'LTR_retrotransposon' + gl.attributes['ID'][13:]
+			NewGFFLines.append(gl)
+		elif gl.type == 'target_site_duplication':
+			NewGFFLines.append(gl)
+		elif gl.type == 'LTR_retrotransposon':
+			NewGFFLines.append(gl)
+		elif gl.type == 'long_terminal_repeat':
+			if firstLTRend != None:
+				if el in orfs:
+					for orf in orfs[el]:
+						OVERLAP = False
+						for part in internalparts:
+							if Overlaps([orf.start, orf.end], [part.start, part.end]):
+								OVERLAP = True
+								break
+						if not OVERLAP:
+							orf.start = firstLTRend + int(orf.start)
+							orf.end = firstLTRend + int(orf.end)
 							orf.seqid = gffLine.seqid # Change the scaffold name
-							lines.append(orf)
-							orfsAdded += 1
-				else:
-					lines.append(gffLine)
-					firstLTRend = None
-			else:
-				# Assign strandedness.
-				if CHANGESTRAND:
-					gffLine.strand = change_strand
-				# Check if these lines overlap
-				if ORFSADDED:
-					to_remove = []
-					for i in range(-orfsAdded, 0, 1):
-						if Overlaps([gffLine.start, gffLine.end], [lines[i].start, lines[i].end]):
-							to_remove.append(i)
-					orfsAdded - len(to_remove)
-					for i in to_remove:
-						orfsAdded -= 1
-						lines.pop(i)
-
-					lines.insert(-orfsAdded, gffLine)
-				else:
-					lines.append(gffLine)
+							internalparts.append(orf)
+				internalparts.sort(key=lambda x:int(x.start))
+				NewGFFLines += internalparts
+				NewGFFLines.append(gl)
+				firstLTRend = None
+			elif firstLTRend == None:
+				firstLTRend = int(gl.end)
+				NewGFFLines.append(gl)
+		else:
+			internalparts.append(gl)
+	
 	with open(newgff, 'w') as outFl:
-		outFl.write('\n'.join([str(gffline) for gffline in lines]))
+		outFl.write('##gff-version 3\n')
+		for gl in NewGFFLines:
+			if gl.type == 'repeat_region':
+				outFl.write('###\n')
+			outFl.write('{0}\n'.format(str(gl)))
 
 
 def AnnotateORFs(minLen):
@@ -789,7 +871,6 @@ def AnnotateORFs(minLen):
 		bestORFs(fasta=internalFASTA, outdir=paths['ORFsDir'], gff=paths['CurrentGFF'], minLen=minLen)
 		orfgff = '{0}/{1}.orfs.gff'.format(paths['ORFsDir'], internalFASTA.split('/')[-1])
 		withorfsgff='{0}/FullWithORFs_gt_{1}bp.gff'.format(paths['ORFsDir'], minLen)
-		print('here')
 		addORFs(maingff=paths['CurrentGFF'], orfgff=orfgff, newgff=withorfsgff)
 		paths['WithORFsGFF'] = '{0}/{1}.withORFs_gt_{2}bp.gff'.format(paths['GFFOutputDir'], '.'.join(paths['CurrentGFF'].split('/')[-1].split('.')[:-1]), minLen)
 		copyfile(withorfsgff, paths['WithORFsGFF'])
@@ -4204,6 +4285,7 @@ ltrdigest()	# Identify parts of element internal regions with evidence of homolo
 #
 #	3. Classify elements to superfamily using homology evidence in Dfam and/or Repbase
 AnnotateORFs(minLen = min_orf_len)
+sys.exit()
 #
 classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, repbase_tblastx_evalue=repbase_tblastx_evalue, nhmmer_reporting_evalue=nhmmer_reporting_evalue, nhmmer_inclusion_evalue=nhmmer_inclusion_evalue)  # Extract LTR_retrotransposon sequences for classification using homology
 #			# Find evidence of homology to repeats in Dfam using HMMER. NEED TO CHANGE THIS SO REVERSE COMPLEMENT IS ALSO SEARCHED (nhmmsearch I think)
