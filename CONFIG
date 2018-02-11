@@ -17,3 +17,4 @@ rscript=/home/derstudent/software/R/Rscript
 perl=/home/derstudent/perl5/perlbrew/perls/perl-5.24.1/bin/perl
 circos=/home/derstudent/software/circos/circos-0.69-6/bin/circos
 pathd8=/home/derstudent/software/PATHd8/PATHd8
+getorf=/home/derstudent/software/EMBOSS-6.6.0/bin/getorf
