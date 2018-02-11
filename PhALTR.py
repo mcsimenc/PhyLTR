@@ -2882,6 +2882,7 @@ def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='Wick
 					summaryFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(element, sim_p, alnLen, start, end, tractLen, ratio))
 
 		append2logfile(paths['output_top_dir'], mainlogfile, 'GENECONV output and a summary written to:\n{0}\n{1}'.format(paths['GENECONV_output'], paths['GENECONVsummary'] ))
+		paths[SummaryKey] = paths['GENECONVsummary']
 		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 			statusFlAppend.write('{0}\t{1}\n'.format(SummaryKey, paths['GENECONVsummary']))
 
