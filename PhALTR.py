@@ -2018,6 +2018,7 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
 
 		elif ALIGNCLUSTERS:
 			if AUTO_OUTGROUP:
+				# Write header for record of outgroups file, overwriting an old file if it exisits.
 				if clustering_method == 'WickerFam':
 					OutgroupSummaryKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.{6}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc, strHomoflank, strOutgroup)
 				elif clustering_method == 'MCL':
@@ -3286,12 +3287,6 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
 				if  alnPth in paths:
 					alnPthKeys.append(alnPth)
 
-			###################
-			# SMALL SMALL SMALL
-			###################
-			###################
-			# SMALL SMALL SMALL
-			###################
 			# clustersmall will be left out of OUTGROUP. No DTT for clustersmall
 			if combine_and_do_small_clusters:
 				if WICKERCLUST:
@@ -3523,7 +3518,10 @@ def div2Rplots(I=6):
 	subprocess.call(call)
 
 def circos(window='1000000'):
-
+	'''
+	Generate a Circos plot for each cluster, showing gene interelement gene conversion tracts
+	by using links.
+	'''
 	global paths
 
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning making Circos plots')
@@ -3537,7 +3535,7 @@ def circos(window='1000000'):
 				gffLine = GFF3_line(line)
 				classif = classifs_by_element[gffLine.attributes['ID']]
 				MakeDir('classifDir', '{0}/{1}'.format(paths['CircosTopDir'], classif))
-				GFFoutPth = '{0}/{1}.gff'.format(classifDir, classif)
+				GFFoutPth = '{0}/{1}.gff'.format(paths['classifDir'], classif)
 				with open(GFFoutPth, 'a') as GFFoutFl:
 					GFFoutFl.write(line)
 				with open(allGFFoutPth, 'a') as GFFoutFl:
@@ -3934,16 +3932,12 @@ if '--logfile' in args:
 	mainlogfile = args[args.index('--logfile')+1]
 else:
 	mainlogfile = 'log.txt'
-
-# Number of processors for parallelizable components. Default is 1 processor
 if '--procs' in args:
 	procs = int(args[args.index('--procs') + 1])
 if '-p' in args:
 	procs = int(args[args.index('-p') + 1])
 else:
 	procs = 1
-
-# Make directory for writing files
 if '--output_dir' in args:
 	MakeDir('output_top_dir', args[args.index('--output_dir') + 1])
 if '-o' in args:
@@ -4226,7 +4220,6 @@ classifs = set(list(clusters_by_classif.keys()))
 #
 #		# Input: LTR RT structures (GFF3) and Sequences (FASTA)
 #		# Output: List of elements with evidence of intra element LTR gene conversion (text table)
-# circos(window='1000000')
 #
 #
 #  II. Clustering, divergence, gene conversion, and phylogenetic analysis
@@ -4279,6 +4272,9 @@ if USEMCL:
 #
 #
 #  
+circos(window='1000000')
+#
+sys.exit()
 #
 if WICKER:
 	align_ltrs(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})	# Runs if need to use geneconvLTRs or estimate divergences
