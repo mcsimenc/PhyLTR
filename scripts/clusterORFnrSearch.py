@@ -157,7 +157,6 @@ if '-skipblast' not in args:
 	with open(clusterFl, 'r') as inFl:
 		i=0
 		for line in inFl:
-			i+=1
 			outfasta = '{0}/{1}.cluster_{2}.orfs.prot.fasta'.format(outdir, fasta_basename, i)
 			outbase = '{1}.cluster_{2}.orfs.prot.fasta'.format(outdir, fasta_basename, i)
 			elements = set(line.strip().split())
@@ -170,6 +169,7 @@ if '-skipblast' not in args:
 				if os.path.isfile(outblast):
 					packet = (outblast, nr, min_pid)
 					blast_files.append(packet)
+			i+=1
 
 	print('Done with getting cluster ORF FASTAs.', file=sys.stderr)
 
