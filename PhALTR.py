@@ -3864,6 +3864,12 @@ data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtilefl.split('/'
 					print(circos_conf_str)
 					with open(conffl, 'w') as outFl:
 						outFl.write(circos_conf_str)
+					
+					circos_call = [executables['circos'], '-conf', conffl]
+					current_wd = os.getcwd()
+					os.chdir(circosdir)
+					makecall(circos_call)
+					os.chdir(current_wd)
 
 
 
