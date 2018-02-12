@@ -103,6 +103,33 @@ def blast2nrsummary(packet):
 				outFl.write(orfs[orf][hit]['blastresult']+'\n')
 				outFl.write(orfs[orf][hit]['nrdesc']+'\n\n')
 
+def summarizeHits(hitsfl, outfl, maxhits=3):
+	'''
+	Parse and write summary for this routine.
+	'''
+	best_orfs = {}
+	query = None
+	with open(hitsfl, 'r') as infl:
+		for line in sys.stdin:
+			if line.startswith('LTR'):
+				query, subject, pid, alnlen, mis, gapo, qstart, qend, sstart, send, evalue, bitscore = line.strip().split('\t')
+				alnlen = int(alnlen)
+				if query in best_orfs:
+					best_orfs[query].append([alnlen])
+				else:
+					best_orfs[query] = [[alnlen]]
+			elif line.startswith('>'):
+				desc = ' '.join(line.strip().split(' ')[1:])
+				best_orfs[query][-1].append(desc)
+
+	with open(outfl, 'w') as outFl:
+		for orf in best_orfs:
+			best_orfs[orf].sort(reverse=True, key=lambda x:x[0])
+			i = 0
+			while i < maxhits and i < len(best_orfs[orf])-1:
+				outFl.write('{0}\t{1}\t{2}\n'.format(orf, best_orfs[orf][i][0], best_orfs[orf][i][1]))
+				i += 1
+
 def help():
 	print('''
 	description:
@@ -122,6 +149,7 @@ def help():
 		-outdir		Where to write the files.
 		-p		processors. default 1
 		-skipblast	path to file with list of three column rows: blast output, nr location, % identity threshold
+		-maxhits	most hits to return in summary. Longest first.
 	''', file=sys.stderr)
 
 
@@ -149,6 +177,10 @@ if '-evalue' in args:
 	evalue = float(args[args.index('-evalue')+1])
 else:
 	evalue = 1e-2
+if '-maxhits' in args:
+	evalue = int(args[args.index('-maxhits')+1])
+else:
+	evalue = 3
 
 fasta_basename = '.'.join(orffasta.split('/')[-1].split('.')[:-1])
 
@@ -184,5 +216,11 @@ chunk_size = ceil(len(blast_files)/p)
 with Pool(processes=p) as pl:
 	pl.map(blast2nrsummary, blast_files, chunksize=chunk_size)
 pl.join()
+
+for fl in os.listdir(outdir):
+	if fl.endswith('.with_nr_descriptions.txt'):
+		newfl = '{0}.Summary'.format('.'.join(fl.split('.')[:-1]))
+		summarizeHits(fl, newfl, maxhits)
+
 
 print('All done.', file=sys.stderr)
