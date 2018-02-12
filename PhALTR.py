@@ -2191,13 +2191,7 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 					else:
 						if combine_and_do_small_clusters:
 							smalls += clusters[j]
-						
-				###################
-				# SMALL SMALL SMALL
-				###################
-				###################
-				# SMALL SMALL SMALL
-				###################
+
 				if combine_and_do_small_clusters:
 					if smalls != []:
 						if MCLCLUST:
@@ -3516,6 +3510,46 @@ def div2Rplots(I=6):
 		RcallFl.write(call_str+'\n')
 	#makecall(call)
 	subprocess.call(call)
+
+
+def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile):
+	'''
+	Converts GI tract pairs from geneconvClusters() output and writes a links file for Circos
+	The GFF3 is needed to get the scaffold name.
+	seqlengths needs to be a dictionary with the lengths of the sequences whose names correspond
+	to the sequence names in the gff for the features with gene conversion tracts.
+	Assumes LTR_retrotransposon features were used.
+	'''
+	global paths
+
+	#lengths = { l[0]:int(l[1]) for  l in open(seqlengths).read().strip().split('\n')}
+
+	seqs = {}
+	starts = {}
+	with open(ltrharvestgff, 'r') as inFl:
+		for line in inFl:
+			if line.startswith('#'):
+				continue
+			if '\tLTR_retrotransposon\t' in line:
+				gffLine = GFF3_line(line)
+				element = gffLine.attributes['ID']
+				scaf = gffLine.seqid
+				seqs[element] = scaf
+				starts[element] = int(gffLine.start)
+	
+	with open(outfile, 'w') as outFl:
+		with open(geneconvfile, 'r') as inFl:
+			for line in inFl:
+				if line.startswith('GI'):
+					rec = line.strip().split('\t')
+					el1, el2 = [ 'LTR_retrotransposon{0}'.format(e[1:]) for e in rec[1].split(';') ]
+					el1start  = int(rec[7]) + starts[el1] - 1
+					el1end  = int(rec[8]) + starts[el1] - 1
+					el2start  = int(rec[10]) + starts[el2] - 1
+					el2end  = int(rec[11]) + starts[el2] - 1
+					el1seq = seqs[el1]
+					el2seq = seqs[el2]
+					outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 
 def circos(window='1000000'):
 	'''
