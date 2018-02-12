@@ -4,6 +4,7 @@ import sys
 import os
 from multiprocessing import Pool, Manager
 import subprocess
+from math import ceil
 
 def makecall(call, stdout=None, stderr=None, stdin=None):
 	'''
@@ -112,7 +113,7 @@ def help():
 
 
 	usage:
-		clusterORFnrSearch.py -cluster <path> -orffasta <path> -nr <path> -outdir <path> [-evalue <num>] [-min_pid <num>] [-p <int>]
+		clusterORFnrSearch.py -cluster <path> -orffasta <path> -nr <path> -outdir <path> [-evalue <num>] [-min_pid <num>] [-p <int>] [-skipblast <path>]
 
 		-cluster	A cluster file from WickerFam or MCL from the PhILTH pipeline.
 		-nr		Path to nr blast-formatted database.
@@ -120,6 +121,7 @@ def help():
 		-min_pid	Minimum percent id to include in output. default 60.0
 		-outdir		Where to write the files.
 		-p		processors. default 1
+		-skipblast	path to file with list of three column rows: blast output, nr location, % identity threshold
 	''', file=sys.stderr)
 
 
@@ -150,29 +152,37 @@ else:
 
 fasta_basename = '.'.join(orffasta.split('/')[-1].split('.')[:-1])
 
-blast_files = []
-with open(clusterFl, 'r') as inFl:
-	i=0
-	for line in inFl:
-		i+=1
-		outfasta = '{0}/{1}.cluster_{2}.orfs.prot.fasta'.format(outdir, fasta_basename, i)
-		outbase = '{1}.cluster_{2}.orfs.prot.fasta'.format(outdir, fasta_basename, i)
-		elements = set(line.strip().split())
-		getORFsFASTA(elements, orffasta, outfasta)
-		outblast = '{0}/{1}.blastp-nr.pid_{2}.evalue_{3}.tab'.format(outdir, outbase, min_pid, evalue)
-		if os.path.isfile(outfasta):
-			call = ['/home/derstudent/software/ncbi-blast-2.2.31+/bin/blastp', '-query', outfasta, '-db', nr, '-outfmt', '7', '-evalue', str(evalue), '-out', outblast, '-num_threads', str(p)]
-			print(' '.join(call))
-			makecall(call)
-			if os.path.isfile(outblast):
-				packet = (outblast, nr, min_pid)
-				blast_files.append(packet)
+if '-skipblast' not in args:
+	blast_files = []
+	with open(clusterFl, 'r') as inFl:
+		i=0
+		for line in inFl:
+			i+=1
+			outfasta = '{0}/{1}.cluster_{2}.orfs.prot.fasta'.format(outdir, fasta_basename, i)
+			outbase = '{1}.cluster_{2}.orfs.prot.fasta'.format(outdir, fasta_basename, i)
+			elements = set(line.strip().split())
+			getORFsFASTA(elements, orffasta, outfasta)
+			outblast = '{0}/{1}.blastp-nr.pid_{2}.evalue_{3}.tab'.format(outdir, outbase, min_pid, evalue)
+			if os.path.isfile(outfasta):
+				call = ['/home/derstudent/software/ncbi-blast-2.2.31+/bin/blastp', '-query', outfasta, '-db', nr, '-outfmt', '7', '-evalue', str(evalue), '-out', outblast, '-num_threads', str(p)]
+				print(' '.join(call))
+				makecall(call)
+				if os.path.isfile(outblast):
+					packet = (outblast, nr, min_pid)
+					blast_files.append(packet)
 
-print('Done with getting cluster ORF FASTAs.', file=sys.stderr)
+	print('Done with getting cluster ORF FASTAs.', file=sys.stderr)
+
+elif '-skipblast' in args:
+	blast_files = []
+	with open(args[args.index('-skipblast')+1], 'r') as blastoutputlist:
+		for line in blastoutputlist:
+			packet = line.strip().split('\t')
+			blast_files.append(packet)
 
 chunk_size = ceil(len(blast_files)/p)
-with Pool(processes=procs) as p:
-	p.map(blast2nrsummary, blast_files, chunksize=chunk_size)
-p.join()
+with Pool(processes=p) as pl:
+	pl.map(blast2nrsummary, blast_files, chunksize=chunk_size)
+pl.join()
 
 print('All done.', file=sys.stderr)
