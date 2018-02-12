@@ -7,7 +7,7 @@ import time
 import os.path
 import subprocess
 import random
-from shutil import copyfile, rmtree
+from shutil import copyfile, copytree
 from datetime import datetime
 from math import ceil
 from Bio import SeqIO, AlignIO
@@ -3783,6 +3783,75 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 				p.map(makecallMultiprocessing, heatmapcalls, chunksize=chunk_size)
 			p.join()
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Converted GFFs to heatmap tracks for Circos.')
+			
+			for i in range(len(clusters)):
+				if len(clusters[i]) < 2:
+					GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CircosTopDir'], classif, i)
+					tilefl = '{0}.tile.track'.format(GFFoutPth)
+					linksfl = '{0}/{1}.cluster_{2}.geneconv.links.track'.format(paths['CircosTopDir'], classif, i)
+					seqfl = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CircosTopDir'], classif, i)
+					if os.path.isfile(tilefl) and os.path.isfile(linksfl) and os.path.isfile(seqfl):
+						# Files exist. copy and run Circos.
+						MakeDir('CircosClustDir{0}'.format(i), '{0}/cluster_{1}'.format(paths['CircosTopDir'], i))
+						clustdir = paths['CircosClustDir{0}'.format(i)]
+						circosdir = '{0}/circos_cluster_{1}'.format(clustdir, i)
+						copytree('{0}/circos'.paths['scriptsDir'], circosdir) # copy circos conf files and dir structure
+						newtilefl = '{0}/data/{1}'.format(circosdir, tilefl.split('/')[-1])
+						copyfile(tilefl, newtilefl)
+						newlinksfl = '{0}/data/{1}'.format(circosdir, linksfl.split('/')[-1])
+						copyfile(linksfl, newlinksfl)
+						newseqfl = '{0}/data/{1}'.format(circosdir, seqfl.split('/')[-1])
+						copyfile(seqfl, newseqfl)
+						conffl = '{0}/etc/circos.conf'.format(circosdir)
+						circos_conf_str = '''<<include colors_fonts_patterns.conf>>
+
+<<include ideogram.conf>>
+<<include ticks.conf>>
+
+<image>
+<<include etc/image.conf>>
+</image>
+
+karyotype   = data/{0}
+
+chromosomes_units           = 1000000
+
+<plots>
+
+<plot>
+type	=	tile
+thickness	=	30
+file	=	data/{1}
+color	=	vdred
+r1	=	0.99r
+r0	=	0.90r
+</plot>
+
+</plots>
+
+<links>
+
+radius = 0.88r
+crest  = 1
+ribbon           = yes
+flat             = yes
+stroke_color     = vdgrey
+stroke_thickness = 2
+color            = grey_a3
+
+bezier_radius        = 0r
+bezier_radius_purity = 0.5
+
+<link>
+file       = data/{2}
+</link>
+
+</links>
+
+<<include etc/housekeeping.conf>>
+data_out_of_range* = trim'''.format(newseqfl, newtilefl, newlinksfl)
+						with open(conffl, 'w') as outFl:
+							outFl.write(circos_conf_str)
 
 
 
