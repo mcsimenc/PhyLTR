@@ -3865,11 +3865,22 @@ data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtilefl.split('/'
 					with open(conffl, 'w') as outFl:
 						outFl.write(circos_conf_str)
 					
-					circos_call = [executables['circos'], '-conf', conffl]
+					confbasename = conffl.split('/')[-1]
+					#circos_call = [executables['circos'], '-silent', '-conf', confbasename]
+					circos_call = [executables['perl'], executables['circos'], '-conf', 'etc/{0}'.format(confbasename)]
 					current_wd = os.getcwd()
 					os.chdir(circosdir)
-					makecall(circos_call)
+					#makecall(circos_call)
+					subprocess.call(circos_call, stdout=open('out', 'w'), stderr=open('err','w'))
 					os.chdir(current_wd)
+					png = '{0}/circos.png'.format(circosdir)
+					svg = '{0}/circos.svg'.format(circosdir)
+					if os.path.isfile(png):
+						MakeDir('plotdir', '{0}/plots'.format(paths['CircosTopDir']))
+						copyfile(png, '{0}/{1}.cluster_{2}.png'.format(paths['plotdir'], classif, i))
+					if os.path.isfile(svg):
+						MakeDir('plotdir', '{0}/plots'.format(paths['CircosTopDir']))
+						copyfile(svg, '{0}/{1}.cluster_{2}.svg'.format(paths['plotdir'], classif, i))
 
 
 
