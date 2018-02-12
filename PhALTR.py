@@ -3585,20 +3585,6 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning making Circos plots')
 	MakeDir('CircosTopDir', '{0}/Circos'.format(paths['output_top_dir']))
 
-	# Separate out GFFs by classif
-	allGFFoutPth = '{0}/all.gff'.format(paths['CircosTopDir'])
-	with open(paths['CurrentGFF']) as gffFl:
-		for line in gffFl:
-			if '\tLTR_retrotransposon\t' in line:
-				gffLine = GFF3_line(line)
-				classif = classifs_by_element[gffLine.attributes['ID']]
-				MakeDir('classifDir', '{0}/{1}'.format(paths['CircosTopDir'], classif))
-				GFFoutPth = '{0}/{1}.gff'.format(paths['classifDir'], classif)
-				with open(GFFoutPth, 'a') as GFFoutFl:
-					GFFoutFl.write(line)
-				with open(allGFFoutPth, 'a') as GFFoutFl:
-					GFFoutFl.write(line)
-	append2logfile(paths['output_top_dir'], mainlogfile, 'Created GFF files for each classification for converting to Circos heatmap tracks.')
 
 	# Get seq lengths
 	scafLengthsFlPth = '{0}/seqLengths.tab'.format(paths['CircosTopDir'])
@@ -3622,6 +3608,21 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 
 	# Make track for elements!
 	if CLASSIFS:
+		# Separate out GFFs by classif
+		allGFFoutPth = '{0}/all.gff'.format(paths['CircosTopDir'])
+		with open(paths['CurrentGFF']) as gffFl:
+			for line in gffFl:
+				if '\tLTR_retrotransposon\t' in line:
+					gffLine = GFF3_line(line)
+					classif = classifs_by_element[gffLine.attributes['ID']]
+					MakeDir('classifDir', '{0}/{1}'.format(paths['CircosTopDir'], classif))
+					GFFoutPth = '{0}/{1}.gff'.format(paths['classifDir'], classif)
+					with open(GFFoutPth, 'a') as GFFoutFl:
+						GFFoutFl.write(line)
+					with open(allGFFoutPth, 'a') as GFFoutFl:
+						GFFoutFl.write(line)
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Created GFF files for each classification for converting to Circos heatmap tracks.')
+
 		for classif in classifs:
 			classifDir = '{0}/{1}'.format(paths['CircosTopDir'], classif)
 			GFFoutPth = '{0}/{1}.gff'.format(classifDir, classif)
@@ -3648,8 +3649,38 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 				sys.exit('geneconvClusters() not done yet.')
 			geneconvOutputDir = 'MCL_I{0}_GENECONVdir'.format(I)
 
+
+
 		# Create a Circos plot for each cluster
+		heatmapgffs = []
 		for classif in classifs:
+
+			# Heatmap style tracks for all clusters
+			if MCLCLUST:
+				clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
+			elif WICKERCLUST:
+				clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
+
+			clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
+
+			for i in range(len(clusters)):
+				if len(clusters[i]) < 2:
+					continue
+				with open(paths['CurrentGFF']) as gffFl:
+					for line in gffFl:
+						if '\tLTR_retrotransposon\t' in line:
+							gffLine = GFF3_line(line)
+							el = gffLine.attributes['ID']
+							if el not in clusters[i]:
+								continue
+							#MakeDir('classifDir', '{0}/{1}'.format(paths['CircosTopDir'], classif))
+							GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CircosTopDir'], classif, i)
+							heatmapgffs.append(GFFoutPth)
+							with open(GFFoutPth, 'a') as GFFoutFl:
+								GFFoutFl.write(line)
+				append2logfile(paths['output_top_dir'], mainlogfile, 'Created GFF files for each classification for converting to Circos heatmap tracks.')
+
+			# Geneconv output to circos links track
 			paths['GENECONV_{0}_dir'.format(classif)] = '{0}/{1}'.format(paths[geneconvOutputDir], classif)
 			outfile = '{0}/{1}.testlinks'.format(paths['CircosTopDir'], classif)
 			g0fl = '{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, 'g0')
@@ -3664,6 +3695,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 			if os.path.isfile(g2fl):
 				# Convert GENECONV output to Circos links track
 				geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, append=True)
+				
 
 
 def shortHelp():
