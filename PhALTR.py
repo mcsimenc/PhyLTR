@@ -3600,6 +3600,25 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						links[el1] = [outline]
 		return links
 
+def circosMultiprocessing(packet):
+	global paths
+	circosdir = packet[0]
+	circos_call = packet[1]
+	classif = packet[2]
+	i = packet[3]
+	current_wd = os.getcwd()
+	os.chdir(circosdir)
+	#makecall(circos_call)
+	subprocess.call(circos_call, stdout=open('out', 'w'), stderr=open('err','w'))
+	os.chdir(current_wd)
+	png = '{0}/circos.png'.format(circosdir)
+	svg = '{0}/circos.svg'.format(circosdir)
+	if os.path.isfile(png):
+		MakeDir('plotdir', '{0}/plots'.format(paths['CircosTopDir']))
+		copyfile(png, '{0}/{1}.cluster_{2}.png'.format(paths['plotdir'], classif, i))
+	if os.path.isfile(svg):
+		MakeDir('plotdir', '{0}/plots'.format(paths['CircosTopDir']))
+		copyfile(svg, '{0}/{1}.cluster_{2}.svg'.format(paths['plotdir'], classif, i))
 
 def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
 	'''
@@ -3709,6 +3728,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 		# Create a Circos plot for each cluster
 		heatmapcalls = []
 		tilecalls = []
+		circoscalls = []
 		for classif in classifs:
 
 			# Geneconv output to circos links track
@@ -3868,19 +3888,13 @@ data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtilefl.split('/'
 					confbasename = conffl.split('/')[-1]
 					#circos_call = [executables['circos'], '-silent', '-conf', confbasename]
 					circos_call = [executables['perl'], executables['circos'], '-conf', 'etc/{0}'.format(confbasename)]
-					current_wd = os.getcwd()
-					os.chdir(circosdir)
-					#makecall(circos_call)
-					subprocess.call(circos_call, stdout=open('out', 'w'), stderr=open('err','w'))
-					os.chdir(current_wd)
-					png = '{0}/circos.png'.format(circosdir)
-					svg = '{0}/circos.svg'.format(circosdir)
-					if os.path.isfile(png):
-						MakeDir('plotdir', '{0}/plots'.format(paths['CircosTopDir']))
-						copyfile(png, '{0}/{1}.cluster_{2}.png'.format(paths['plotdir'], classif, i))
-					if os.path.isfile(svg):
-						MakeDir('plotdir', '{0}/plots'.format(paths['CircosTopDir']))
-						copyfile(svg, '{0}/{1}.cluster_{2}.svg'.format(paths['plotdir'], classif, i))
+					circoscalls.append([circosdir, circos_call, classif, i])
+				
+			chunk_size = ceil(len(circoscalls)/procs)
+			with Pool(processes=procs) as p:
+				p.map(circosMultiprocessing, circoscalls, chunksize=chunk_size)
+			p.join()
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Made Circos plots.')
 
 
 
