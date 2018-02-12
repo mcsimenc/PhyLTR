@@ -68,9 +68,11 @@ def blast2nrsummary(packet):
 	'''
 	Packet is just a list or tuple like:
 	[blastOutputFile, nr]
+	pid is % id threshold
 	'''
 	blast = packet[0]
 	nr = packet[1]
+	pid = packet[2]
 	orfs = {}
 	with open(blast, 'r') as blastFl:
 		for line in blastFl:
@@ -163,7 +165,8 @@ with open(clusterFl, 'r') as inFl:
 			print(' '.join(call))
 			makecall(call)
 			if os.path.isfile(outblast):
-				blast_files.append(outblast)
+				packet = (outblast, nr, min_pid)
+				blast_files.append(packet)
 
 print('Done with getting cluster ORF FASTAs.', file=sys.stderr)
 
