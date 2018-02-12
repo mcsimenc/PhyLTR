@@ -3761,6 +3761,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 							with open(GFFoutPth, 'a') as GFFoutFl:
 								GFFoutFl.write(line)
 							gff2heatmapCallPacket = ([ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', GFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ], '{0}.heatmap.track'.format(GFFoutPth), None, None)
+							append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-heatmap.py:\n{0}'.format(' '.join(gff2heatmapCallPacket)))
 							heatmapcalls.append(gff2heatmapCallPacket)
 				with open('{0}/{1}.cluster_{2}.geneconv.links.track'.format(paths['CircosTopDir'], classif, i), 'w') as outFl:
 					outFl.write('\n'.join(outputlinks))
