@@ -2238,7 +2238,7 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 						with open(geneconvOutputPth, 'r') as gcFl:
 							for line in gcFl:
 								if line.startswith('GI'):
-									## Add parsing of new format here and make circos plots.
+									## Add parsing of new format here and make Circos plots.
 								#	#   Seq       Sim     BC KA    Aligned Offsets         In Seq1            In Seq2        Num  Num  Tot  MisM
 								#	#   Names    Pvalue   Pvalue   Begin  End   Len    Begin  End   Len   Begin  End   Len   Poly Dif  Difs Pen.
 								#	GI  S18;S37  0.0000  4.73e-41   235   1605 1371     235   1605 1371    229   1599 1371    213   0  229  None
@@ -3512,13 +3512,14 @@ def div2Rplots(I=6):
 	subprocess.call(call)
 
 
-def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile):
+def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False):
 	'''
 	Converts GI tract pairs from geneconvClusters() output and writes a links file for Circos
 	The GFF3 is needed to get the scaffold name.
 	seqlengths needs to be a dictionary with the lengths of the sequences whose names correspond
 	to the sequence names in the gff for the features with gene conversion tracts.
 	Assumes LTR_retrotransposon features were used.
+	append=True will append to the outfile if it exists.
 	'''
 	global paths
 
@@ -3549,15 +3550,27 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile):
 					el2end  = int(rec[11]) + starts[el2] - 1
 					el1seq = seqs[el1]
 					el2seq = seqs[el2]
-					outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
+					if 'g0.summary' in geneconvfile:
+						outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vlgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
+					elif 'g1.summary' in geneconvfile:
+						outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=green\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
+					elif 'g2.summary' in geneconvfile:
+						outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vdgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 
-def circos(window='1000000'):
+def Circos(window='1000000', plots='clusters'):
 	'''
 	Generate a Circos plot for each cluster, showing gene interelement gene conversion tracts
 	by using links.
+	plots needs to be either 'clusters' or 'classifs'
 	'''
 	global paths
 
+	CLASSIFS = False
+	if plots = 'classifs':
+		CLASSIFS = True
+	CLUSTERS = False
+	elif plots = 'clusters':
+		CLUSTERS = True
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning making Circos plots')
 	MakeDir('CircosTopDir', '{0}/Circos'.format(paths['output_top_dir']))
 
@@ -3592,23 +3605,39 @@ def circos(window='1000000'):
 		for scaf in sorted(list(scafLengths.keys())):
 			outFl.write('{0}\t{1}\n'.format(scaf, str(scafLengths[scaf])))
 
+	# Create ideogram file!
 	ideogramCall = [ '{0}/ideogramFromLengths.py'.format(paths['scriptsDir']) ]
 	makecall(ideogramCall, stdin=scafLengthsFlPth, stdout='{0}/seqs.track'.format(paths['CircosTopDir']))
 
-	for classif in classifs:
+	# Make track for elements!
+	if CLASSIFS:
+		for classif in classifs:
+			classifDir = '{0}/{1}'.format(paths['CircosTopDir'], classif)
+			GFFoutPth = '{0}/{1}.gff'.format(classifDir, classif)
+			gff2heatmapCall = [ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', GFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ]
+			makecall(gff2heatmapCall, stdout='{0}/{1}.heatmap.track'.format(classifDir, classif))
 
-		classifDir = '{0}/{1}'.format(paths['CircosTopDir'], classif)
-		GFFoutPth = '{0}/{1}.gff'.format(classifDir, classif)
-		gff2heatmapCall = [ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', GFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ]
-		makecall(gff2heatmapCall, stdout='{0}/{1}.heatmap.track'.format(classifDir, classif))
+		gff2heatmapCall = [ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', allGFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ]
+		makecall(gff2heatmapCall, stdout='{0}/all.heatmap.track'.format(paths['CircosTopDir']))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Converted GFFs to heatmap tracks for Circos')
 
-	gff2heatmapCall = [ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', allGFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ]
-	makecall(gff2heatmapCall, stdout='{0}/all.heatmap.track'.format(paths['CircosTopDir']))
-	append2logfile(paths['output_top_dir'], mainlogfile, 'Converted GFFs to heatmap tracks for Circos')
+	elif CLUSTERS:
+		# Create a Circos plot for each cluster
+		for classif in classifs:
+			outfile = '{0}/{1}.testlinks'.format(paths['CircosTopDir'], classif)
+			g0fl = '{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, 'g0')
+			g1fl = '{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, 'g1')
+			g2fl = '{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, 'g2')
+			if os.path.isfile(g0fl):
+				# Convert GENECONV output to Circos links track
+				geneconv2circoslinks(g0fl, paths['CurrentGFF'], outfile)
+			if os.path.isfile(g1fl):
+				# Convert GENECONV output to Circos links track
+				geneconv2circoslinks(g1fl, paths['CurrentGFF'], outfile, append=True)
+			if os.path.isfile(g2fl):
+				# Convert GENECONV output to Circos links track
+				geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, append=True)
 
-	# Read GENECONV output
-
-	# Convert GENECONV output to Circos links track
 
 def shortHelp():
 
@@ -4306,7 +4335,7 @@ if USEMCL:
 #
 #
 #  
-circos(window='1000000')
+Circos(window='1000000')
 #
 sys.exit()
 #
@@ -4351,8 +4380,6 @@ div2Rplots(I=MCL_I)
 #phylo(removegeneconv=False, BOOTSTRAP=True, I=MCL_I, align='clusters', removehomologouspair=True, part='entire') # Run FastTree for selections of elements/clusters
 #
 #xgmml() # for Cytoscape import
-#
-#circos() # Circos plot showing locations of LTR retrotransposons on scaffolds
 #
 #hive()
 #
