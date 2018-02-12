@@ -3527,6 +3527,10 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False):
 
 	seqs = {}
 	starts = {}
+	if append:
+		mode = 'a'
+	else:
+		mode = 'w'
 	with open(ltrharvestgff, 'r') as inFl:
 		for line in inFl:
 			if line.startswith('#'):
@@ -3538,7 +3542,7 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False):
 				seqs[element] = scaf
 				starts[element] = int(gffLine.start)
 	
-	with open(outfile, 'w') as outFl:
+	with open(outfile, mode) as outFl:
 		with open(geneconvfile, 'r') as inFl:
 			for line in inFl:
 				if line.startswith('GI'):
@@ -3551,13 +3555,14 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False):
 					el1seq = seqs[el1]
 					el2seq = seqs[el2]
 					if 'g0.summary' in geneconvfile:
-						outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vlgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
+						outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vdgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 					elif 'g1.summary' in geneconvfile:
 						outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=green\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 					elif 'g2.summary' in geneconvfile:
-						outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vdgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
+						outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vlgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 
-def Circos(window='1000000', plots='clusters'):
+
+def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
 	'''
 	Generate a Circos plot for each cluster, showing gene interelement gene conversion tracts
 	by using links.
@@ -3566,11 +3571,17 @@ def Circos(window='1000000', plots='clusters'):
 	global paths
 
 	CLASSIFS = False
-	if plots = 'classifs':
-		CLASSIFS = True
 	CLUSTERS = False
-	elif plots = 'clusters':
+	WICKERCLUST = False
+	MCLCLUST = False
+	if plots == 'classifs':
+		CLASSIFS = True
+	elif plots == 'clusters':
 		CLUSTERS = True
+	if clustering_method == 'WickerFam':
+		WICKERCLUST = True
+	elif plots == 'MCL':
+		MCLCLUST = True
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning making Circos plots')
 	MakeDir('CircosTopDir', '{0}/Circos'.format(paths['output_top_dir']))
 
@@ -3622,8 +3633,24 @@ def Circos(window='1000000', plots='clusters'):
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Converted GFFs to heatmap tracks for Circos')
 
 	elif CLUSTERS:
+		if WICKERCLUST:
+
+			WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
+			paths['Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/GENECONV'.format(WickerDir)
+			WickerGCdirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+			if not checkStatusFl(WickerGCdirkey):
+				sys.exit('geneconvClusters() not done yet.')
+			geneconvOutputDir = WickerGCdirkey
+		elif MCLCLUST:
+			MCLdir = paths['MCL_I{0}'.format(I)]
+			paths['MCL_I{0}_GENECONVdir'.format(I)] = '{0}/GENECONV'.format(MCLdir)
+			if not checkStatusFl('MCL_I{0}_GENECONVdir'.format(I)):
+				sys.exit('geneconvClusters() not done yet.')
+			geneconvOutputDir = 'MCL_I{0}_GENECONVdir'.format(I)
+
 		# Create a Circos plot for each cluster
 		for classif in classifs:
+			paths['GENECONV_{0}_dir'.format(classif)] = '{0}/{1}'.format(paths[geneconvOutputDir], classif)
 			outfile = '{0}/{1}.testlinks'.format(paths['CircosTopDir'], classif)
 			g0fl = '{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, 'g0')
 			g1fl = '{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, 'g1')
@@ -4027,8 +4054,7 @@ if '--min_orf_len' in args:
 else:
 	min_orf_len = 300
 
-# Classification Parameters
-if '--classify_dfam' or '--classify' in args:
+if '--classify_dfam' or '--classify' in args: # Classification Parameters
 	CLASSIFYDFAM = True
 else:
 	CLASSIFYDFAM = False
@@ -4059,7 +4085,6 @@ if '--nhmmer_inclusion_evalue' in args:
 	nhmmer_inclusion_evalue = float(args[args.index('--nhmmer_inclusion_evalue')+1])
 else:
 	nhmmer_inclusion_evalue = 1e-5
-
 if '--wicker' in args:
 	WICKER = True
 else:
@@ -4265,8 +4290,9 @@ ltrdigest()	# Identify parts of element internal regions with evidence of homolo
 #		# Input: Sequences (FASTA), LTRharvest GFF3, pHMMs
 #		# Output: LTRdigest GFF3
 #
+AnnotateORFs(minLen=min_orf_len)
+#
 #	3. Classify elements to superfamily using homology evidence in Dfam and/or Repbase
-AnnotateORFs(minLen = min_orf_len)
 #
 classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, repbase_tblastx_evalue=repbase_tblastx_evalue, nhmmer_reporting_evalue=nhmmer_reporting_evalue, nhmmer_inclusion_evalue=nhmmer_inclusion_evalue)  # Extract LTR_retrotransposon sequences for classification using homology
 #			# Find evidence of homology to repeats in Dfam using HMMER. NEED TO CHANGE THIS SO REVERSE COMPLEMENT IS ALSO SEARCHED (nhmmsearch I think)
@@ -4284,6 +4310,8 @@ classifs = set(list(clusters_by_classif.keys()))
 #		# Input: LTR RT structures (GFF3) and Sequences (FASTA)
 #		# Output: List of elements with evidence of intra element LTR gene conversion (text table)
 #
+Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+sys.exit()
 #
 #  II. Clustering, divergence, gene conversion, and phylogenetic analysis
 #
@@ -4335,9 +4363,11 @@ if USEMCL:
 #
 #
 #  
-Circos(window='1000000')
+if WICKER:
+	Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+if USEMCL:
+	Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
 #
-sys.exit()
 #
 if WICKER:
 	align_ltrs(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})	# Runs if need to use geneconvLTRs or estimate divergences
