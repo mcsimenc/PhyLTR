@@ -3593,7 +3593,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 		currentSeqName = None
 		for line in inFl:
 			if line.startswith('>'):
-				currentSeqName = line.strip()[1:]
+				currentSeqName = line.strip()[1:].split(' ')[0]
 				scafLengths[currentSeqName] = 0
 			else:
 				scafLengths[currentSeqName] += len(line.strip())
@@ -3603,8 +3603,9 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 			outFl.write('{0}\t{1}\n'.format(scaf, str(scafLengths[scaf])))
 
 	# Create ideogram file!
+	allscafs = '{0}/seqs.track'.format(paths['CircosTopDir'])
 	ideogramCall = [ '{0}/ideogramFromLengths.py'.format(paths['scriptsDir']) ]
-	makecall(ideogramCall, stdin=scafLengthsFlPth, stdout='{0}/seqs.track'.format(paths['CircosTopDir']))
+	makecall(ideogramCall, stdin=scafLengthsFlPth, stdout=allscafs)
 
 	# Make track for elements!
 	if CLASSIFS:
@@ -3649,10 +3650,8 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 				sys.exit('geneconvClusters() not done yet.')
 			geneconvOutputDir = 'MCL_I{0}_GENECONVdir'.format(I)
 
-
-
 		# Create a Circos plot for each cluster
-		heatmapgffs = []
+		heatmapcalls = []
 		for classif in classifs:
 
 			# Heatmap style tracks for all clusters
@@ -3666,6 +3665,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 			for i in range(len(clusters)):
 				if len(clusters[i]) < 2:
 					continue
+				clusterscafs = set()
 				with open(paths['CurrentGFF']) as gffFl:
 					for line in gffFl:
 						if '\tLTR_retrotransposon\t' in line:
@@ -3673,12 +3673,32 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 							el = gffLine.attributes['ID']
 							if el not in clusters[i]:
 								continue
+							scaf = gffLine.seqid
+							if scaf not in clusterscafs:
+								clusterscafs.add(scaf)
 							#MakeDir('classifDir', '{0}/{1}'.format(paths['CircosTopDir'], classif))
 							GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CircosTopDir'], classif, i)
-							heatmapgffs.append(GFFoutPth)
 							with open(GFFoutPth, 'a') as GFFoutFl:
 								GFFoutFl.write(line)
+							gff2heatmapCallPacket = ([ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', GFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ], '{0}.heatmap.track'.format(GFFoutPth), None, None)
+							heatmapcalls.append(gff2heatmapCallPacket)
+				# Write ideogram file for just scafs for this cluster
+				with open(allscafs, 'r') as inFl:
+					for line in inFl:
+						scaf = line.split()[2]
+						if scaf in clusterscafs:
+							ideoOut  = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CircosTopDir'], classif, i)
+							with open(ideoOut, 'a') as outFl:
+								outFl.write(line)
+#chr - Sacu_v1.1_s0011	11	0	2262239	greys-6-seq-4
+
 				append2logfile(paths['output_top_dir'], mainlogfile, 'Created GFF files for each classification for converting to Circos heatmap tracks.')
+					
+			chunk_size = ceil(len(heatmapcalls)/procs)
+			with Pool(processes=procs) as p:
+				p.map(makecallMultiprocessing, heatmapcalls, chunksize=chunk_size)
+			p.join()
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Converted GFFs to heatmap tracks for Circos.')
 
 			# Geneconv output to circos links track
 			paths['GENECONV_{0}_dir'.format(classif)] = '{0}/{1}'.format(paths[geneconvOutputDir], classif)
@@ -3695,6 +3715,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 			if os.path.isfile(g2fl):
 				# Convert GENECONV output to Circos links track
 				geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, append=True)
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Created links tracks for Circos from intra-cluster inter-element GENECONV output')
 				
 
 
