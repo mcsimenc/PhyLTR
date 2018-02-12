@@ -47,7 +47,7 @@ with open(nr, 'r') as nrFl:
 			for orf in orfs:
 				if acc in orfs[orf]:
 					orfs[orf][acc]['nrdesc'] = line.strip()
-outFlPth = '{0}.with_nr_descriptions.tab'
+outFlPth = '{0}.with_nr_descriptions.tab'.format(blast)
 fields = '# Fields: query id, subject id, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score\n'
 with open(outFlPth, 'w') as outFl:
 	for orf in sorted(list(orfs.keys())):
