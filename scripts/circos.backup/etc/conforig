@@ -1,0 +1,223 @@
+karyotype = data/seqs.track
+
+chromosomes_units           = 100000
+chromosomes_display_default = yes
+
+<<include etc/ideogram.conf>>
+<<include etc/ticks.conf>>
+<<include etc/colors_fonts_patterns.conf>>
+<<include etc/housekeeping.conf>>
+
+<image>
+<<include etc/image.conf>>
+</image>
+
+
+
+
+#
+#<highlights>
+#<highlight>
+#z = 0
+#fill_color = vvlgrey
+#file = data/seqs.track
+#r1 = 0.95r
+#r0 = 0.25r
+#</highlight>
+#</highlights>
+#
+
+<plots>
+
+<plot>
+z = 0
+type = heatmap
+color = rdpu-9-seq
+min = 0
+max = 0.028
+r1 = 0.999r
+r0 = 0.95r
+file = data/all.heatmap.track
+
+</plot>
+
+<plot>
+z = 10
+r1 = 0.95
+r0 = 0.95
+<axes>
+<axis>
+chromosomes = -Blank
+thickness = 2
+#spacing = 0.1
+color     = black
+position = 0.95
+</axis>
+</axes>
+
+</plot>
+
+
+
+<plot>
+type	=	scatter
+glyph	=	square
+file	=	data/BEL.heatmap.track
+color	=	vdred
+orientation = out
+r1	=	0.93r
+r0	=	0.93r
+
+<axes>
+<axis>
+chromosomes = -Blank
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.93
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size = eval(remap(var(value),0.00005,0.024,12,36))
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size = eval(remap(var(value),0.00005,0.024,12,36))
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size = eval(remap(var(value),0.00005,0.024,12,36))
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size = eval(remap(var(value),0.00005,0.024,12,36))
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size = eval(remap(var(value),0.00005,0.024,12,36))
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size = eval(remap(var(value),0.00005,0.024,12,36))
+</rule>
+</rules>
+
+</plot>
+
+<plot>
+type	=	scatter
+glyph	=	square
+file	=	data/Copia.heatmap.track
+color	=	vdorange
+orientation = out
+r1	=	0.90r
+r0	=	0.90r
+
+<axes>
+<axis>
+chromosomes = -Blank
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.90
+</axis>
+</axes>
+
+<rules>
+
+<rule>
+condition = 1
+glyph_size = eval(remap(var(value),0.00005,0.024,12,36))
+</rule>
+
+</rules>
+
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+<plot>
+type	=	scatter
+glyph	=	square
+file	=	data/Gypsy.heatmap.track
+color	=	vdyellow
+orientation = out
+r1	=	0.87r
+r0	=	0.87r
+
+
+
+<axes>
+<axis>
+chromosomes = -Blank
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.87
+</axis>
+</axes>
+
+<rules>
+
+<rule>
+condition = 1
+glyph_size = eval(remap(var(value),0.00005,0.024,12,36))
+</rule>
+
+</rules>
+
+
+</plot>
+
+<plot>
+type	=	scatter
+glyph	=	square
+file	=	data/Other.heatmap.track
+color	=	vdgreen
+orientation = out
+r1	=	0.84r
+r0	=	0.84r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.84
+</axis>
+</axes>
+
+<rules>
+
+<rule>
+condition = 1
+glyph_size = eval(remap(var(value),0.00005,0.024,12,36))
+</rule>
+
+</rules>
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+
+</plots>
+
+

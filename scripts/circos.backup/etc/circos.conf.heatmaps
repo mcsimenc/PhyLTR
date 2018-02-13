@@ -1,0 +1,1347 @@
+karyotype = data/scafs.circos.ideogram.track
+
+chromosomes_units           = 1000000
+chromosomes_display_default = yes
+
+<<include etc/ideogram.conf>>
+<<include etc/ticks.conf>>
+<<include etc/colors_fonts_patterns.conf>>
+<<include etc/housekeeping.conf>>
+
+<image>
+<<include etc/image.conf>>
+</image>
+
+
+
+<highlights>
+<highlight>
+z = 0
+fill_color = vvlgrey
+file = data/scafs.circos.highlights.track
+r1 = 1.0r
+r0 = 0.11r
+</highlight>
+</highlights>
+
+
+<plots>
+
+
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Ala.gff.circos.heatmap.track
+color	=	vdred
+#label_size	=	19p
+orientation = out
+r1	=	0.97r
+r0	=	0.97r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.97
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Arg.gff.circos.heatmap.track
+color	=	vdorange
+#label_size	=	19p
+orientation = out
+r1	=	0.93r
+r0	=	0.93r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.93
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Asn.gff.circos.heatmap.track
+color	=	vdyellow
+#label_size	=	19p
+orientation = out
+r1	=	0.89r
+r0	=	0.89r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.89
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Asp.gff.circos.heatmap.track
+color	=	vdgreen
+#label_size	=	19p
+orientation = out
+r1	=	0.85r
+r0	=	0.85r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.85
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Cys.gff.circos.heatmap.track
+color	=	vdblue
+#label_size	=	19p
+orientation = out
+r1	=	0.80r
+r0	=	0.80r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.80
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Gln.gff.circos.heatmap.track
+color	=	vdpurple
+#label_size	=	19p
+orientation = out
+r1	=	0.77r
+r0	=	0.77r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.77
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Glu.gff.circos.heatmap.track
+color	=	dred
+#label_size	=	19p
+orientation = out
+r1	=	0.73r
+r0	=	0.73r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.73
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Gly.gff.circos.heatmap.track
+color	=	dorange
+#label_size	=	19p
+orientation = out
+r1	=	0.69r
+r0	=	0.69r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.69
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/His.gff.circos.heatmap.track
+color	=	dyellow
+#label_size	=	19p
+orientation = out
+r1	=	0.65r
+r0	=	0.65r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.65
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Ile.gff.circos.heatmap.track
+color	=	dgreen
+#label_size	=	19p
+orientation = out
+r1	=	0.61r
+r0	=	0.61r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.61
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Leu.gff.circos.heatmap.track
+color	=	dblue
+#label_size	=	19p
+orientation = out
+r1	=	0.57r
+r0	=	0.57r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.57
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Lys.gff.circos.heatmap.track
+color	=	dpurple
+#label_size	=	19p
+orientation = out
+r1	=	0.53r
+r0	=	0.53r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.53
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Met.gff.circos.heatmap.track
+color	=	red
+#label_size	=	19p
+orientation = out
+r1	=	0.49r
+r0	=	0.49r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.49
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Phe.gff.circos.heatmap.track
+color	=	orange
+#label_size	=	19p
+orientation = out
+r1	=	0.45r
+r0	=	0.45r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.45
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Pro.gff.circos.heatmap.track
+color	=	yellow
+#label_size	=	19p
+orientation = out
+r1	=	0.41r
+r0	=	0.41r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.41
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/SeC.gff.circos.heatmap.track
+color	=	green
+#label_size	=	19p
+orientation = out
+r1	=	0.37r
+r0	=	0.37r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.37
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Ser.gff.circos.heatmap.track
+color	=	blue
+#label_size	=	19p
+orientation = out
+r1	=	0.33r
+r0	=	0.33r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.33
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Sup.gff.circos.heatmap.track
+color	=	purple
+#label_size	=	19p
+orientation = out
+r1	=	0.29r
+r0	=	0.29r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.29
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Thr.gff.circos.heatmap.track
+color	=	lred
+#label_size	=	19p
+orientation = out
+r1	=	0.25r
+r0	=	0.25r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.25
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Trp.gff.circos.heatmap.track
+color	=	lorange
+#label_size	=	19p
+orientation = out
+r1	=	0.21r
+r0	=	0.21r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.21
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Tyr.gff.circos.heatmap.track
+color	=	lyellow
+#label_size	=	19p
+orientation = out
+r1	=	0.17r
+r0	=	0.17r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.17
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+</plot>
+
+<plot>
+type	=	scatter
+#label_font	=	glyph
+glyph	=	square
+#glyph_size = 10p
+file	=	data/Val.gff.circos.heatmap.track
+color	=	lgreen
+#label_size	=	19p
+orientation = out
+r1	=	0.13r
+r0	=	0.13r
+
+<axes>
+<axis>
+thickness = 1
+spacing = 0.1
+color     = lgrey
+position = 0.13
+</axis>
+</axes>
+
+<rules>
+<rule>
+condition	=	var(value) < 0.00001
+glyph_size	=	6p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.00001 && var(value) <= 0.0001)
+glyph_size	=	12p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.0001 && var(value) <= 0.001)
+glyph_size	=	20p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.001 && var(value) <= 0.01)
+glyph_size	=	26p
+</rule>
+
+<rule>
+condition	=	(var(value) > 0.01 && var(value) <= 0.1)
+glyph_size	=	32p
+</rule>
+
+<rule>
+condition	=	var(value) > 0.1
+glyph_size	=	38p
+</rule>
+</rules>
+
+
+
+<backgrounds>
+<background>
+color = vvllgrey
+</background>
+</backgrounds>
+
+</plot>
+
+#<plot>
+#type	=	scatter
+##label_font	=	glyph
+#glyph	=	square
+#glyph_size	=	9p
+#file	=	data/Undet.gff.circos.heatmap.track
+#color	=	lblue
+##label_size	=	19p
+#orientation = out
+#r1	=	0.99r
+#r0	=	0.94r
+#</plot>
+
+
+</plots>
+
+
