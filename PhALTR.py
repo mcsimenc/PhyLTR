@@ -3638,7 +3638,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 		CLUSTERS = True
 	if clustering_method == 'WickerFam':
 		WICKERCLUST = True
-	elif plots == 'MCL':
+	elif clustering_method == 'MCL':
 		MCLCLUST = True
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning making Circos plots')
 	MakeDir('CircosTopDir', '{0}/Circos'.format(paths['output_top_dir']))
@@ -3710,6 +3710,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Converted GFFs to heatmap tracks for Circos')
 
 	elif CLUSTERS:
+		print(WICKERCLUST, MCLCLUST)
 		if WICKERCLUST:
 
 			WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
@@ -3828,13 +3829,17 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					#MakeDir('CircosClustDir{0}'.format(i), '{0}/cluster_{1}'.format(paths['CircosTopDir'], i))
 					#clustdir = paths['CircosClustDir{0}'.format(i)]
 					circosdir = '{0}/circos.{1}.cluster_{2}'.format(paths['CurrentTopDir'], classif, i)
-					copytree('{0}/circos'.format(paths['scriptsDir']), circosdir) # copy circos conf files and dir structure
+					if not os.path.exists(circosdir):
+						copytree('{0}/circos'.format(paths['scriptsDir']), circosdir) # copy circos conf files and dir structure
 					newtilefl = '{0}/data/{1}'.format(circosdir, tilefl.split('/')[-1])
-					copyfile(tilefl, newtilefl)
+					if not os.path.isfile(newtilefl):
+						copyfile(tilefl, newtilefl)
 					newlinksfl = '{0}/data/{1}'.format(circosdir, linksfl.split('/')[-1])
-					copyfile(linksfl, newlinksfl)
+					if not os.path.isfile(newlinksfl):
+						copyfile(linksfl, newlinksfl)
 					newseqfl = '{0}/data/{1}'.format(circosdir, seqfl.split('/')[-1])
-					copyfile(seqfl, newseqfl)
+					if not os.path.isfile(newseqfl):
+						copyfile(seqfl, newseqfl)
 					conffl = '{0}/etc/circos.conf'.format(circosdir)
 					circos_conf_str = '''<<include colors_fonts_patterns.conf>>
 
@@ -4544,8 +4549,8 @@ classifs = set(list(clusters_by_classif.keys()))
 #		# Input: LTR RT structures (GFF3) and Sequences (FASTA)
 #		# Output: List of elements with evidence of intra element LTR gene conversion (text table)
 #
-Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-sys.exit()
+#Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+#sys.exit()
 #
 #  II. Clustering, divergence, gene conversion, and phylogenetic analysis
 #
