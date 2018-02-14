@@ -3613,12 +3613,15 @@ def circosMultiprocessing(packet):
 	os.chdir(current_wd)
 	png = '{0}/circos.png'.format(circosdir)
 	svg = '{0}/circos.svg'.format(circosdir)
-	if os.path.isfile(png):
-		MakeDir('plotdir', '{0}/plots'.format(paths['CurrentTopDir']))
-		copyfile(png, '{0}/{1}.cluster_{2}.png'.format(paths['plotdir'], classif, i))
-	if os.path.isfile(svg):
-		MakeDir('plotdir', '{0}/plots'.format(paths['CurrentTopDir']))
-		copyfile(svg, '{0}/{1}.cluster_{2}.svg'.format(paths['plotdir'], classif, i))
+	MakeDir('plotdir', '{0}/plots'.format(paths['CurrentTopDir']))
+	newpng = '{0}/{1}.cluster_{2}.png'.format(paths['plotdir'], classif, i)
+	newsvg = '{0}/{1}.cluster_{2}.svg'.format(paths['plotdir'], classif, i)
+	if not os.path.isfile(newpng):
+		if os.path.isfile(png):
+			copyfile(png, newpng)
+	if not os.path.isfile(newsvg):
+		if os.path.isfile(svg):
+			copyfile(svg, newsvg)
 
 def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
 	'''
