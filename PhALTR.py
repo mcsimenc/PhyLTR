@@ -3590,8 +3590,10 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 	elif output == 'return':
 		if linksdct != None:
 			links = linksdct
+			links_untransposed = linksdct
 		else:
 			links = {}
+			links_untransposed = {}
 		with open(geneconvfile, 'r') as inFl:
 			
 			el1start, el1end, el2start, el2end, el1seq, el2seq = [None]*6
@@ -3649,6 +3651,7 @@ def circosMultiprocessing(packet):
 	circos_call = packet[1]
 	classif = packet[2]
 	i = packet[3]
+	outpath = packet[4]
 	current_wd = os.getcwd()
 	os.chdir(circosdir)
 	#makecall(circos_call)
@@ -3656,8 +3659,8 @@ def circosMultiprocessing(packet):
 	os.chdir(current_wd)
 	png = '{0}/circos.png'.format(circosdir)
 	svg = '{0}/circos.svg'.format(circosdir)
-	newpng = '{0}/{1}.cluster_{2}.png'.format(paths['plotdir'], classif, i)
-	newsvg = '{0}/{1}.cluster_{2}.svg'.format(paths['plotdir'], classif, i)
+	newpng = '{0}/{1}.cluster_{2}.png'.format(outpath, classif, i)
+	newsvg = '{0}/{1}.cluster_{2}.svg'.format(outpath, classif, i)
 	if not os.path.isfile(newpng):
 		if os.path.isfile(png):
 			copyfile(png, newpng)
@@ -3819,6 +3822,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					continue
 				clusterscafs = set()
 				outputlinks = []
+				#print(links_untransposed, file=sys.stderr)
 				outputlinks_untransposed = []
 				with open(paths['CurrentGFF']) as gffFl:
 					for line in gffFl:
@@ -3903,6 +3907,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					if not os.path.isfile(newseqfl):
 						copyfile(seqfl, newseqfl)
 					conffl = '{0}/etc/circos.conf'.format(circosdir)
+					confbasename = conffl.split('/')[-1]
 					circos_conf_str = '''<<include colors_fonts_patterns.conf>>
 
 <<include ideogram.conf>>
@@ -3977,8 +3982,8 @@ auto_alpha_steps  = 5'''.format(imagesize)
 					with open(conffl, 'w') as outFl:
 						outFl.write(circosimageconfstr)
 					#circos_call = [executables['circos'], '-silent', '-conf', confbasename]
-					circos_call = [executables['perl'], executables['circos'], '-conf', 'etc/{0}'.format(confbasename)]
-					circoscalls.append([circosdir, circos_call, classif, i])
+					circos_call = [executables['perl'], executables['circos']]
+					circoscalls.append([circosdir, circos_call, classif, i, '{0}/plots.scaffolds'.format(paths['CurrentTopDir'])])
 				
 
 			MakeDir('plotdir', '{0}/plots.scaffolds'.format(paths['CurrentTopDir']))
@@ -4034,9 +4039,9 @@ auto_alpha_steps  = 5'''.format(imagesize)
 					#if not os.path.isfile(newtilefl):
 					#	copyfile(tilefl, newtilefl)
 
-					newlinksfl = '{0}/data/{1}'.format(circosdir, links_untransposedfl.split('/')[-1])
+					newlinksuntransposedfl = '{0}/data/{1}'.format(circosdir, links_untransposedfl.split('/')[-1])
 					if not os.path.isfile(newlinksfl):
-						copyfile(links_untransposedfl, newlinksfl)
+						copyfile(links_untransposedfl, newlinksuntransposedfl)
 
 					# Don't use this ideogram track
 					#newseqfl = '{0}/data/{1}'.format(circosdir, seqfl.split('/')[-1])
@@ -4077,7 +4082,7 @@ file       = data/{1}
 </links>
 
 <<include etc/housekeeping.conf>>
-data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newlinksfl.split('/')[-1])
+data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newlinksuntransposedfl.split('/')[-1])
 					print(circos_conf_str)
 					with open(conffl, 'w') as outFl:
 						outFl.write(circos_conf_str)
@@ -4107,8 +4112,8 @@ auto_alpha_steps  = 5'''.format(imagesize)
 					with open(conffl, 'w') as outFl:
 						outFl.write(circosimageconfstr)
 					#circos_call = [executables['circos'], '-silent', '-conf', confbasename]
-					circos_call = [executables['perl'], executables['circos'], '-conf', 'etc/{0}'.format(confbasename)]
-					circoscalls.append([circosdir, circos_call, classif, i])
+					circos_call = [executables['perl'], executables['circos']]
+					circoscalls.append([circosdir, circos_call, classif, i, '{0}/plots.elements'.format(paths['CurrentTopDir'])])
 				
 			MakeDir('plotdir', '{0}/plots.elements'.format(paths['CurrentTopDir']))
 			chunk_size = ceil(len(circoscalls)/procs)
