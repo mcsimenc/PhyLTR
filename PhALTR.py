@@ -13,6 +13,7 @@ from math import ceil
 from Bio import SeqIO, AlignIO
 from multiprocessing import Pool, Manager
 from phaltrlib import *
+from copy import copy
 
 def mergeCoords(A,B):
 	'''
@@ -3567,15 +3568,15 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 							el1end  = int(rec[8]) + starts[el1] - 1
 							el2start  = int(rec[10]) + starts[el2] - 1
 							el2end  = int(rec[11]) + starts[el2] - 1
-							el1seq = el1
-							el2seq = el2
+							el1seq = copy(seqs[el1])
+							el2seq =copy(seqs[el2])
 						else:
 							el1start  = int(rec[7])
 							el1end  = int(rec[8])
 							el2start  = int(rec[10])
 							el2end  = int(rec[11])
-							el1seq = seqs[el1]
-							el2seq = seqs[el2]
+							el1seq = copy(el1)
+							el2seq = copy(el2)
 						if 'g0.summary' in geneconvfile:
 							#outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vdgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
@@ -3592,6 +3593,9 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 		else:
 			links = {}
 		with open(geneconvfile, 'r') as inFl:
+			
+			el1start, el1end, el2start, el2end, el1seq, el2seq = [None]*6
+
 			for line in inFl:
 				if line.startswith('GI'):
 					rec = line.strip().split('\t')
@@ -3601,29 +3605,41 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						el1end  = int(rec[8]) + starts[el1] - 1
 						el2start  = int(rec[10]) + starts[el2] - 1
 						el2end  = int(rec[11]) + starts[el2] - 1
-						el1seq = el1
-						el2seq = el2
+						el1seq = copy(seqs[el1])
+						el2seq = copy(seqs[el2])
+						# Different colored links for different gscale parameters. g values > 2 are possible but not implemented.
+						if 'g0.summary' in geneconvfile:
+							#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vdgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+						elif 'g1.summary' in geneconvfile:
+							#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=green\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=green_a2\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+						elif 'g2.summary' in geneconvfile:
+							#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vlgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlgreen_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+						if el1 in links:
+							links[el1].append(outline)
+						else:
+							links[el1] = [outline]
 					else:
 						el1start  = int(rec[7])
 						el1end  = int(rec[8])
 						el2start  = int(rec[10])
 						el2end  = int(rec[11])
-						el1seq = seqs[el1]
-						el2seq = seqs[el2]
-					# Different colored links for different gscale parameters. g values > 2 are possible but not implemented.
-					if 'g0.summary' in geneconvfile:
-						#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vdgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
-						outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
-					elif 'g1.summary' in geneconvfile:
-						#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=green\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
-						outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=green_a2\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
-					elif 'g2.summary' in geneconvfile:
-						#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vlgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
-						outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlgreen_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
-					if el1 in links:
-						links[el1].append(outline)
-					else:
-						links[el1] = [outline]
+						# Different colored links for different gscale parameters. g values > 2 are possible but not implemented.
+						if 'g0.summary' in geneconvfile:
+							#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vdgreen\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+						elif 'g1.summary' in geneconvfile:
+							#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=green\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=green_a2\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+						elif 'g2.summary' in geneconvfile:
+							#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vlgreen\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlgreen_a1\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+						if el1 in links:
+							links[el1].append(outline)
+						else:
+							links[el1] = [outline]
 		return links
 
 
@@ -3779,11 +3795,11 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 			if os.path.isfile(g1fl):
 				# Convert GENECONV output to Circos links track
 				links = geneconv2circoslinks(g1fl, paths['CurrentGFF'], outfile, append=True, output='return', linksdct=links)
-				links_untransposed = geneconv2circoslinks(g1fl, paths['CurrentGFF'], outfile, append=True, output='return', linksdct=links, transposeLinks=False)
+				links_untransposed = geneconv2circoslinks(g1fl, paths['CurrentGFF'], outfile, append=True, output='return', linksdct=links_untransposed, transposeLinks=False)
 			if os.path.isfile(g2fl):
 				# Convert GENECONV output to Circos links track
 				links = geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, append=True, output='return', linksdct=links)
-				links_untransposed = geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, append=True, output='return', linksdct=links, transposeLinks=False)
+				links_untransposed = geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, append=True, output='return', linksdct=links_untransposed, transposeLinks=False)
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Created links tracks for Circos from intra-cluster inter-element GENECONV output')
 			# Modify geneconv2circoslinks to include an option to return the links information instead of writing to file.
 			# Then use the returned infromation in the cluster loop to write a links track just for the cluster.
