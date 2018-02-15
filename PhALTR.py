@@ -3899,7 +3899,6 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					conffl = '{0}/etc/circos.conf'.format(circosdir)
 					confbasename = conffl.split('/')[-1]
 					circos_conf_str = '''<<include colors_fonts_patterns.conf>>
-
 <<include ideogram.conf>>
 <<include ticks.conf>>
 
@@ -3914,13 +3913,28 @@ chromosomes_units           = 1000000
 <plots>
 
 <plot>
-type	=	tile
-thickness	=	30
+type	=	scatter
+#label_font	=	glyph
+glyph	=	circle
+glyph_size = 40
 file	=	data/{1}
 color	=	vdred
-r1	=	0.99r
-r0	=	0.90r
+#label_size	=	19p
+orientation = out
+r1	=	0.94r
+r0	=	0.94r
+
+
 </plot>
+
+#<plot>
+#type	=	tile
+#thickness	=	30
+#file	=	data/{1}
+#color	=	vdred
+#r1	=	0.99r
+#r0	=	0.90r
+#</plot>
 
 </plots>
 
@@ -3945,6 +3959,52 @@ file       = data/{2}
 
 <<include etc/housekeeping.conf>>
 data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtilefl.split('/')[-1], newlinksfl.split('/')[-1])
+#					circos_conf_str = '''<<include colors_fonts_patterns.conf>>
+#<<include ideogram.conf>>
+#<<include ticks.conf>>
+#
+#<image>
+#<<include etc/image.conf>>
+#</image>
+#
+#karyotype   = data/{0}
+#
+#chromosomes_units           = 1000000
+#
+#<plots>
+#
+#<plot>
+#type	=	tile
+#thickness	=	30
+#file	=	data/{1}
+#color	=	vdred
+#r1	=	0.99r
+#r0	=	0.90r
+#</plot>
+#
+#</plots>
+#
+#<links>
+#
+#radius = 0.88r
+#crest  = 1
+#ribbon           = yes
+#flat             = yes
+#stroke_color     = vdgrey
+#stroke_thickness = 2
+#color            = grey_a3
+#
+#bezier_radius        = 0r
+#bezier_radius_purity = 0.5
+#
+#<link>
+#file       = data/{2}
+#</link>
+#
+#</links>
+#
+#<<include etc/housekeeping.conf>>
+#data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtilefl.split('/')[-1], newlinksfl.split('/')[-1])
 					print(circos_conf_str)
 					with open(conffl, 'w') as outFl:
 						outFl.write(circos_conf_str)
@@ -4759,8 +4819,8 @@ classifs = set(list(clusters_by_classif.keys()))
 #		# Input: LTR RT structures (GFF3) and Sequences (FASTA)
 #		# Output: List of elements with evidence of intra element LTR gene conversion (text table)
 #
-Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-sys.exit()
+#Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+#sys.exit()
 #
 #  II. Clustering, divergence, gene conversion, and phylogenetic analysis
 #
