@@ -3729,14 +3729,14 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 			paths['Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/GENECONV'.format(WickerDir)
 			WickerGCdirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
 			if not checkStatusFl(WickerGCdirkey):
-				sys.exit('geneconvClusters() not done yet.')
+				sys.exit('Circos() not possible: geneconvClusters() not done yet.')
 			geneconvOutputDir = WickerGCdirkey
 			MakeDir('CurrentTopDir', '{0}/WickerFam_{1}_pId_{2}_percAln_{3}_minLen'.format(paths['CircosTopDir'], WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen']))
 		elif MCLCLUST:
 			MCLdir = paths['MCL_I{0}'.format(I)]
 			paths['MCL_I{0}_GENECONVdir'.format(I)] = '{0}/GENECONV'.format(MCLdir)
 			if not checkStatusFl('MCL_I{0}_GENECONVdir'.format(I)):
-				sys.exit('geneconvClusters() not done yet.')
+				sys.exit('Circos() not possible: geneconvClusters() not done yet.')
 			geneconvOutputDir = 'MCL_I{0}_GENECONVdir'.format(I)
 			MakeDir('CurrentTopDir', '{0}/MCL_I{1}'.format(paths['CircosTopDir'], I))
 
@@ -3802,7 +3802,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 							with open(GFFoutPth, 'a') as GFFoutFl:
 								GFFoutFl.write(line)
 							gff2heatmapCallPacket = ([ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', GFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ], '{0}.heatmap.track'.format(GFFoutPth), None, None)
-							gff2tileCallPacket = ([ '{0}/gff2circos-tile.py'.format(paths['scriptsDir']), '-gff', GFFoutPth ], '{0}.tile.track'.format(GFFoutPth), None, None)
+							gff2tileCallPacket = ([ '{0}/gff2circos-tile.py'.format(paths['scriptsDir']), '-valueDef', 'LTR', '-gff', GFFoutPth ], '{0}.tile.track'.format(GFFoutPth), None, None)
 							tilecalls.append(gff2tileCallPacket)
 							append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-heatmap.py:\n{0}'.format(' '.join(gff2heatmapCallPacket[0])))
 							append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-tile.py:\n{0}'.format(' '.join(gff2tileCallPacket[0])))
@@ -3849,6 +3849,13 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					# Files exist. copy and run Circos.
 					#MakeDir('CircosClustDir{0}'.format(i), '{0}/cluster_{1}'.format(paths['CircosTopDir'], i))
 					#clustdir = paths['CircosClustDir{0}'.format(i)]
+					#
+					#
+					# Either run circos as is here OR convert tile file to seq track and do not transform links. Requires a modification to geneconv2circos
+					# will need to have no tile file, just seq and links. same rule for sequence length/plot radius
+					#
+					#
+					# Plot with saffolds
 					circosdir = '{0}/circos.{1}.cluster_{2}'.format(paths['CurrentTopDir'], classif, i)
 					if not os.path.exists(circosdir):
 						copytree('{0}/circos'.format(paths['scriptsDir']), circosdir) # copy circos conf files and dir structure
@@ -3914,7 +3921,10 @@ data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtilefl.split('/'
 						outFl.write(circos_conf_str)
 					
 					confbasename = conffl.split('/')[-1]
-					conffl = '{0}/etc/image.conf'.format(circosdir)
+					imagesize = totallengths[i]/10
+					if imagesize > 6000:
+						imagesize = 6000
+					conffl = '{0}/etc/image.generic.conf'.format(circosdir)
 					circosimageconfstr = '''dir   = . 
 file  = circos.png
 png   = yes
@@ -3929,7 +3939,122 @@ angle_offset      = -96
 #angle_orientation = counterclockwise
 
 auto_alpha_colors = yes
-auto_alpha_steps  = 5'''.format(totallengths[i]/10)
+auto_alpha_steps  = 5'''.format(imagesize)
+					with open(conffl, 'w') as outFl:
+						outFl.write(circosimageconfstr)
+					#circos_call = [executables['circos'], '-silent', '-conf', confbasename]
+					circos_call = [executables['perl'], executables['circos'], '-conf', 'etc/{0}'.format(confbasename)]
+					circoscalls.append([circosdir, circos_call, classif, i])
+				
+
+
+
+
+					#
+					#
+					#
+					#
+					#
+					# Plot without scaffolds
+					circosdir = '{0}/circos.{1}.cluster_{2}.justelements'.format(paths['CurrentTopDir'], classif, i)
+					if not os.path.exists(circosdir):
+						copytree('{0}/circos'.format(paths['scriptsDir']), circosdir) # copy circos conf files and dir structure
+
+
+					totallengthsLTRs = 0
+					newseqfl = '{0}/data/{1}'.format(circosdir, '{0}.seq.track'.format('.'.join(tilefl.split('/')[-1].split('.')[:-2])))
+					if os.path.isfile(newseqfl):
+						os.remove(newseqfl)
+					# Convert tile file to ideogram track
+					with open(tilefl, 'r') as inFl:
+						for line in inFl:
+							scaf, start, end, val = line.strip().split()
+							length = int(end) - int(start) + 1
+							totallengthLTRs += length
+							color = 'red'
+							outline = 'chr - {0} {1} 0 {2} {3}\n'.format(scaf, val, length, color)
+							with open(newseqfl, 'a') as outFl:
+								outFl.write(outline)
+							
+							#==> Copia.cluster_0.gff.tile.track <==
+							#Sacu_v1.1_s0016	1385103	1391765 123
+							#
+							#==> Copia.cluster_0.seq.track <==
+							#chr - Sacu_v1.1_s0001	1	0	4132625	greys-6-seq-4
+
+
+					#newtilefl = '{0}/data/{1}'.format(circosdir, tilefl.split('/')[-1])
+					#if not os.path.isfile(newtilefl):
+					#	copyfile(tilefl, newtilefl)
+
+					newlinksfl = '{0}/data/{1}'.format(circosdir, linksfl.split('/')[-1])
+					if not os.path.isfile(newlinksfl):
+						copyfile(linksfl, newlinksfl)
+
+					# Don't use this ideogram track
+					#newseqfl = '{0}/data/{1}'.format(circosdir, seqfl.split('/')[-1])
+					#if not os.path.isfile(newseqfl):
+					#	copyfile(seqfl, newseqfl)
+					conffl = '{0}/etc/circos.conf'.format(circosdir)
+					circos_conf_str = '''<<include colors_fonts_patterns.conf>>
+
+<<include ideogram.conf>>
+<<include ticks.conf>>
+
+<image>
+<<include etc/image.conf>>
+</image>
+
+karyotype   = data/{0}
+
+chromosomes_units           = 1000000
+
+
+<links>
+
+radius = 0.88r
+crest  = 1
+ribbon           = yes
+flat             = yes
+stroke_color     = vdgrey
+stroke_thickness = 2
+color            = grey_a3
+
+bezier_radius        = 0r
+bezier_radius_purity = 0.5
+
+<link>
+file       = data/{1}
+</link>
+
+</links>
+
+<<include etc/housekeeping.conf>>
+data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newlinksfl.split('/')[-1])
+					print(circos_conf_str)
+					with open(conffl, 'w') as outFl:
+						outFl.write(circos_conf_str)
+					
+					confbasename = conffl.split('/')[-1]
+					imagesize = totallengthLTRs/10
+					if imagesize > 8000:
+						imagesize = 8000
+					conffl = '{0}/etc/image.generic.conf'.format(circosdir)
+					circosimageconfstr = '''dir   = . 
+file  = circos.png
+png   = yes
+svg   = yes
+
+# radius of inscribed circle in image
+radius = {0}
+
+# by default angle=0 is at 3 o'clock position
+angle_offset      = -96
+
+#angle_orientation = counterclockwise
+
+auto_alpha_colors = yes
+auto_alpha_steps  = 5'''.format(imagesize)
 					with open(conffl, 'w') as outFl:
 						outFl.write(circosimageconfstr)
 					#circos_call = [executables['circos'], '-silent', '-conf', confbasename]
@@ -3942,6 +4067,7 @@ auto_alpha_steps  = 5'''.format(totallengths[i]/10)
 				p.map(circosMultiprocessing, circoscalls, chunksize=chunk_size)
 			p.join()
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Made Circos plots.')
+
 
 
 
