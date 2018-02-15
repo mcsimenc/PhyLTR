@@ -3567,16 +3567,16 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 							el1end  = int(rec[8]) + starts[el1] - 1
 							el2start  = int(rec[10]) + starts[el2] - 1
 							el2end  = int(rec[11]) + starts[el2] - 1
+							el1seq = el1
+							el2seq = el2
 						else:
 							el1start  = int(rec[7])
 							el1end  = int(rec[8])
 							el2start  = int(rec[10])
 							el2end  = int(rec[11])
-						el1seq = seqs[el1]
-						el2seq = seqs[el2]
-						print('READY TO DIVE!')
+							el1seq = seqs[el1]
+							el2seq = seqs[el2]
 						if 'g0.summary' in geneconvfile:
-							print('GO!')
 							#outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vdgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 						elif 'g1.summary' in geneconvfile:
@@ -3601,17 +3601,17 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						el1end  = int(rec[8]) + starts[el1] - 1
 						el2start  = int(rec[10]) + starts[el2] - 1
 						el2end  = int(rec[11]) + starts[el2] - 1
+						el1seq = el1
+						el2seq = el2
 					else:
 						el1start  = int(rec[7])
 						el1end  = int(rec[8])
 						el2start  = int(rec[10])
 						el2end  = int(rec[11])
-					el1seq = seqs[el1]
-					el2seq = seqs[el2]
+						el1seq = seqs[el1]
+						el2seq = seqs[el2]
 					# Different colored links for different gscale parameters. g values > 2 are possible but not implemented.
-					print('READY TO DIVE!')
 					if 'g0.summary' in geneconvfile:
-						print('GO!')
 						#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vdgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 						outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 					elif 'g1.summary' in geneconvfile:
@@ -3814,7 +3814,6 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 							# Add link to output links
 							if el in links:
 								outputlinks += links[el]
-							if el in links_untransposed:
 								outputlinks_untransposed += links_untransposed[el]
 							scaf = gffLine.seqid
 							if scaf not in clusterscafs:
@@ -4069,8 +4068,10 @@ data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newlinksfl.split('/
 					
 					confbasename = conffl.split('/')[-1]
 					imagesize = totallengthsLTRs/10
-					if imagesize > 8000:
-						imagesize = 8000
+					if imagesize > 10000:
+						imagesize = 10000
+					if imagesize < 1000:
+						imagesize = 1000
 					conffl = '{0}/etc/image.generic.conf'.format(circosdir)
 					circosimageconfstr = '''dir   = . 
 file  = circos.png
