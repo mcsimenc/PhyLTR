@@ -3578,13 +3578,10 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 							el1seq = copy(el1)
 							el2seq = copy(el2)
 						if 'g0.summary' in geneconvfile:
-							#outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vdgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 						elif 'g1.summary' in geneconvfile:
-							#outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=green\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=green_a2\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 						elif 'g2.summary' in geneconvfile:
-							#outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vlgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlgreen_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
                      
 	elif output == 'return':
@@ -3611,13 +3608,10 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						el2seq = copy(seqs[el2])
 						# Different colored links for different gscale parameters. g values > 2 are possible but not implemented.
 						if 'g0.summary' in geneconvfile:
-							#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vdgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 						elif 'g1.summary' in geneconvfile:
-							#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=green\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=green_a2\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 						elif 'g2.summary' in geneconvfile:
-							#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vlgreen\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlgreen_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 						if el1 in links:
 							links[el1].append(outline)
@@ -3630,13 +3624,10 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						el2end  = int(rec[11])
 						# Different colored links for different gscale parameters. g values > 2 are possible but not implemented.
 						if 'g0.summary' in geneconvfile:
-							#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vdgreen\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 						elif 'g1.summary' in geneconvfile:
-							#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=green\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=green_a2\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 						elif 'g2.summary' in geneconvfile:
-							#outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tcolor=vlgreen\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlgreen_a1\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 						if el1 in links:
 							links[el1].append(outline)
@@ -3654,7 +3645,6 @@ def circosMultiprocessing(packet):
 	outpath = packet[4]
 	current_wd = os.getcwd()
 	os.chdir(circosdir)
-	#makecall(circos_call)
 	subprocess.call(circos_call, stdout=open('out', 'w'), stderr=open('err','w'))
 	os.chdir(current_wd)
 	png = '{0}/circos.png'.format(circosdir)
@@ -4041,8 +4031,7 @@ auto_alpha_steps  = 5'''.format(imagesize)
 					#	copyfile(tilefl, newtilefl)
 
 					newlinksuntransposedfl = '{0}/data/{1}'.format(circosdir, links_untransposedfl.split('/')[-1])
-					if not os.path.isfile(newlinksfl):
-						copyfile(links_untransposedfl, newlinksuntransposedfl)
+					copyfile(links_untransposedfl, newlinksuntransposedfl)
 
 					# Don't use this ideogram track
 					#newseqfl = '{0}/data/{1}'.format(circosdir, seqfl.split('/')[-1])
