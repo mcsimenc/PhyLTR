@@ -3822,8 +3822,8 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					continue
 				clusterscafs = set()
 				outputlinks = []
-				#print(links_untransposed, file=sys.stderr)
 				outputlinks_untransposed = []
+				#print(links_untransposed, file=sys.stderr)
 				with open(paths['CurrentGFF']) as gffFl:
 					for line in gffFl:
 						if '\tLTR_retrotransposon\t' in line:
@@ -4008,7 +4008,8 @@ auto_alpha_steps  = 5'''.format(imagesize)
 					#clustdir = paths['CircosClustDir{0}'.format(i)]
 					#
 					# Plot without scaffolds
-					circosdir = '{0}/circos.{1}.cluster_{2}.justelements'.format(paths['CurrentTopDir'], classif, i)
+					#circosdir = '{0}/circos.{1}.cluster_{2}.justelements'.format(paths['CurrentTopDir'], classif, i)
+					circosdir = '{0}/circos.{1}.cluster_{2}'.format(paths['CurrentTopDir'], classif, i)
 					if not os.path.exists(circosdir):
 						copytree('{0}/circos'.format(paths['scriptsDir']), circosdir) # copy circos conf files and dir structure
 
