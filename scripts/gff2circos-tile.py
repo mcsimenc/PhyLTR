@@ -98,6 +98,7 @@ def gff2circosTileTrack(gffFl, valueDef=None):
 			if not line.startswith('#'):
 				if valueDef=='LTR':
 					gffLine = GFF3_line(line)
+					seq = gffLine.seqid
 					start = gffLine.start
 					end = gffLine.end
 					value = gffLine.attributes['ID'][19:]
