@@ -4036,7 +4036,7 @@ data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newlinksfl.split('/
 						outFl.write(circos_conf_str)
 					
 					confbasename = conffl.split('/')[-1]
-					imagesize = totallengthLTRs/10
+					imagesize = totallengthsLTRs/10
 					if imagesize > 8000:
 						imagesize = 8000
 					conffl = '{0}/etc/image.generic.conf'.format(circosdir)
