@@ -3970,7 +3970,7 @@ auto_alpha_steps  = 5'''.format(imagesize)
 						for line in inFl:
 							scaf, start, end, val = line.strip().split()
 							length = int(end) - int(start) + 1
-							totallengthLTRs += length
+							totallengthsLTRs += length
 							color = 'red'
 							outline = 'chr - {0} {1} 0 {2} {3}\n'.format(scaf, val, length, color)
 							with open(newseqfl, 'a') as outFl:
