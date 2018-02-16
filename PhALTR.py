@@ -3580,7 +3580,7 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						if 'g0.summary' in geneconvfile:
 							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 						elif 'g1.summary' in geneconvfile:
-							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=blue_a2\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
+							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=orange_a3\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 						elif 'g2.summary' in geneconvfile:
 							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
                      
@@ -3610,7 +3610,7 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						if 'g0.summary' in geneconvfile:
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 						elif 'g1.summary' in geneconvfile:
-							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=blue_a2\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=orange_a3\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 						elif 'g2.summary' in geneconvfile:
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 						if el1 in links:
@@ -3626,7 +3626,7 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						if 'g0.summary' in geneconvfile:
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 						elif 'g1.summary' in geneconvfile:
-							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=blue_a2\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=orange_a3\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 						elif 'g2.summary' in geneconvfile:
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 						if el1 in links:
@@ -3909,7 +3909,7 @@ type	=	tile
 thickness	=	30
 file	=	data/{0}
 color	=	vdred
-r1	=	0.82r
+r1	=	0.84r
 r0	=	0.78r
 </plot>
 '''.format(newtilefl.split('/')[-1])
@@ -3947,7 +3947,7 @@ type             = text
 color            = black
 file             = data/{1}
 
-r0 = 0.82r
+r0 = 0.84r
 r1 = 0.99r
 
 show_links     = no
@@ -3997,53 +3997,8 @@ file       = data/{3}
 
 <<include etc/housekeeping.conf>>
 data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtextfl.split('/')[-1],  plotblock, newlinksfl.split('/')[-1])
-#					circos_conf_str = '''<<include colors_fonts_patterns.conf>>
-#<<include ideogram.conf>>
-#<<include ticks.conf>>
-#
-#<image>
-#<<include etc/image.conf>>
-#</image>
-#
-#karyotype   = data/{0}
-#
-#chromosomes_units           = 1000000
-#
-#<plots>
-#
-#<plot>
-#type	=	tile
-#thickness	=	30
-#file	=	data/{1}
-#color	=	vdred
-#r1	=	0.99r
-#r0	=	0.90r
-#</plot>
-#
-#</plots>
-#
-#<links>
-#
-#radius = 0.88r
-#crest  = 1
-#ribbon           = yes
-#flat             = yes
-#stroke_color     = vdgrey
-#stroke_thickness = 2
-#color            = grey_a3
-#
-#bezier_radius        = 0r
-#bezier_radius_purity = 0.5
-#
-#<link>
-#file       = data/{2}
-#</link>
-#
-#</links>
-#
-#<<include etc/housekeeping.conf>>
-#data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtilefl.split('/')[-1], newlinksfl.split('/')[-1])
-					print(circos_conf_str)
+
+					#print(circos_conf_str)
 					with open(conffl, 'w') as outFl:
 						outFl.write(circos_conf_str)
 					
