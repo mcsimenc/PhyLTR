@@ -3834,7 +3834,9 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 								GFFoutFl.write(line)
 							gff2heatmapCallPacket = ([ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', GFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ], '{0}.heatmap.track'.format(GFFoutPth), None, None)
 							gff2tileCallPacket = ([ '{0}/gff2circos-tile.py'.format(paths['scriptsDir']), '-valueDef', 'LTR', '-gff', GFFoutPth ], '{0}.tile.track'.format(GFFoutPth), None, None)
+							gff2textLabelcallPacket = ([ '{0}/gff2circos-tile.py'.format(paths['scriptsDir']), '-valueDef', 'text', '-gff', GFFoutPth ], '{0}.tile.text.track'.format(GFFoutPth), None, None)
 							tilecalls.append(gff2tileCallPacket)
+							tilecalls.append(gff2textLabelcallPacket)
 							append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-heatmap.py:\n{0}'.format(' '.join(gff2heatmapCallPacket[0])))
 							append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-tile.py:\n{0}'.format(' '.join(gff2tileCallPacket[0])))
 							heatmapcalls.append(gff2heatmapCallPacket)
@@ -3876,9 +3878,10 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					continue
 				GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CurrentTopDir'], classif, i)
 				tilefl = '{0}.tile.track'.format(GFFoutPth)
+				textfl = '{0}.tile.text.track'.format(GFFoutPth)
 				linksfl = '{0}/{1}.cluster_{2}.geneconv.links.track'.format(paths['CurrentTopDir'], classif, i)
 				seqfl = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CurrentTopDir'], classif, i)
-				if os.path.isfile(tilefl) and os.path.isfile(linksfl) and os.path.isfile(seqfl):
+				if os.path.isfile(tilefl) and os.path.isfile(linksfl) and os.path.isfile(seqfl) and os.path.isfile(textfl):
 					# Files exist. copy and run Circos.
 					#MakeDir('CircosClustDir{0}'.format(i), '{0}/cluster_{1}'.format(paths['CircosTopDir'], i))
 					#clustdir = paths['CircosClustDir{0}'.format(i)]
@@ -3896,6 +3899,9 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					newseqfl = '{0}/data/{1}'.format(circosdir, seqfl.split('/')[-1])
 					if not os.path.isfile(newseqfl):
 						copyfile(seqfl, newseqfl)
+					newtextfl = '{0}/data/{1}'.format(circosdir, textfl.split('/')[-1])
+					if not os.path.isfile(newtextfl):
+						copyfile(textfl, newtextfl)
 					conffl = '{0}/etc/circos.conf'.format(circosdir)
 					confbasename = conffl.split('/')[-1]
 					circos_conf_str = '''<<include colors_fonts_patterns.conf>>
@@ -3913,16 +3919,38 @@ chromosomes_units           = 1000000
 <plots>
 
 <plot>
+type             = text
+color            = black
+file             = data/{1}
+
+r0 = 0.96r
+r1 = 0.96r
+
+show_links     = yes
+link_dims      = 4p,4p,8p,4p,4p
+link_thickness = 2p
+link_color     = red
+
+label_size   = 60p
+label_font   = condensed
+
+padding  = 0p
+rpadding = 0p
+
+</plot>
+
+<plot>
 type	=	scatter
 #label_font	=	glyph
 glyph	=	circle
-glyph_size = 40
-file	=	data/{1}
+glyph_size = 60
+file	=	data/{2}
 color	=	vdred
 #label_size	=	19p
 orientation = out
-r1	=	0.94r
-r0	=	0.94r
+r1	=	0.92r
+r0	=	0.92r
+
 
 
 </plot>
@@ -3940,7 +3968,7 @@ r0	=	0.94r
 
 <links>
 
-radius = 0.88r
+radius = 0.86r
 crest  = 1
 ribbon           = yes
 flat             = yes
@@ -3952,13 +3980,13 @@ bezier_radius        = 0r
 bezier_radius_purity = 0.5
 
 <link>
-file       = data/{2}
+file       = data/{3}
 </link>
 
 </links>
 
 <<include etc/housekeeping.conf>>
-data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtilefl.split('/')[-1], newlinksfl.split('/')[-1])
+data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtextfl.split('/')[-1],  newtilefl.split('/')[-1], newlinksfl.split('/')[-1])
 #					circos_conf_str = '''<<include colors_fonts_patterns.conf>>
 #<<include ideogram.conf>>
 #<<include ticks.conf>>
@@ -4054,9 +4082,6 @@ auto_alpha_steps  = 5'''.format(imagesize)
 				seqfl = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CurrentTopDir'], classif, i)
 				if os.path.isfile(tilefl) and os.path.isfile(links_untransposedfl) and os.path.isfile(seqfl):
 					# Files exist. copy and run Circos.
-					#MakeDir('CircosClustDir{0}'.format(i), '{0}/cluster_{1}'.format(paths['CircosTopDir'], i))
-					#clustdir = paths['CircosClustDir{0}'.format(i)]
-					#
 					# Plot without scaffolds
 					circosdir = '{0}/circos.{1}.cluster_{2}.justelements'.format(paths['CurrentTopDir'], classif, i)
 					#circosdir = '{0}/circos.{1}.cluster_{2}'.format(paths['CurrentTopDir'], classif, i)
@@ -4086,9 +4111,6 @@ auto_alpha_steps  = 5'''.format(imagesize)
 							#chr - Sacu_v1.1_s0001	1	0	4132625	greys-6-seq-4
 
 
-					#newtilefl = '{0}/data/{1}'.format(circosdir, tilefl.split('/')[-1])
-					#if not os.path.isfile(newtilefl):
-					#	copyfile(tilefl, newtilefl)
 
 					newlinksuntransposedfl = '{0}/data/{1}'.format(circosdir, links_untransposedfl.split('/')[-1])
 					copyfile(links_untransposedfl, newlinksuntransposedfl)

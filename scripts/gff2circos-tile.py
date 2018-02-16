@@ -85,6 +85,9 @@ def help():
 						LTR_retrotransposonN where N is some integer. N is used
 						as the value.
 
+					If valueDef =='text' then a text track is output with the number
+						of the element as the text
+
 		Output:
 		------------
 		scaf	start	stop	value
@@ -103,6 +106,12 @@ def gff2circosTileTrack(gffFl, valueDef=None):
 					end = gffLine.end
 					value = gffLine.attributes['ID'][19:]
 
+				elif valueDef == 'text':
+					fields = line.strip().split('\t')
+					seq = fields[0]
+					start = fields[3]
+					end = fields[4]
+					value = gffLine.attributes['ID'][19:]
 				else:
 					fields = line.strip().split('\t')
 					seq = fields[0]
@@ -110,7 +119,7 @@ def gff2circosTileTrack(gffFl, valueDef=None):
 					end = fields[4]
 					value = 0
 
-				if not valueDef == None and not valueDef == 'LTR':
+				if not valueDef == None and not valueDef == 'LTR' and not valueDef == 'text':
 					FOUND_DEF = False
 					MatchValue = 0
 					for definition in valueDef:
