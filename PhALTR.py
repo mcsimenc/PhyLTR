@@ -3580,9 +3580,9 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						if 'g0.summary' in geneconvfile:
 							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 						elif 'g1.summary' in geneconvfile:
-							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=green_a2\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
+							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=blue_a2\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 						elif 'g2.summary' in geneconvfile:
-							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlgreen_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
+							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
                      
 	elif output == 'return':
 		if linksdct != None:
@@ -3610,9 +3610,9 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						if 'g0.summary' in geneconvfile:
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 						elif 'g1.summary' in geneconvfile:
-							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=green_a2\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=blue_a2\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 						elif 'g2.summary' in geneconvfile:
-							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlgreen_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 						if el1 in links:
 							links[el1].append(outline)
 						else:
@@ -3626,9 +3626,9 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						if 'g0.summary' in geneconvfile:
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 						elif 'g1.summary' in geneconvfile:
-							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=green_a2\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=blue_a2\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 						elif 'g2.summary' in geneconvfile:
-							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlgreen_a1\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 						if el1 in links:
 							links[el1].append(outline)
 						else:
@@ -3884,9 +3884,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 				#if os.path.isfile(tilefl) and os.path.isfile(linksfl) and os.path.isfile(seqfl) and os.path.isfile(textfl):
 				if os.path.isfile(tilefl) and os.path.isfile(linksfl) and os.path.isfile(seqfl):
 					# Files exist. copy and run Circos.
-					#MakeDir('CircosClustDir{0}'.format(i), '{0}/cluster_{1}'.format(paths['CircosTopDir'], i))
-					#clustdir = paths['CircosClustDir{0}'.format(i)]
-					#
+
 					# Plot with scaffolds
 					circosdir = '{0}/circos.{1}.cluster_{2}'.format(paths['CurrentTopDir'], classif, i)
 					if not os.path.exists(circosdir):
@@ -3905,6 +3903,32 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 						copyfile(tilefl, newtextfl)
 					conffl = '{0}/etc/circos.conf'.format(circosdir)
 					confbasename = conffl.split('/')[-1]
+					tileblock = '''
+<plot>
+type	=	tile
+thickness	=	30
+file	=	data/{0}
+color	=	vdred
+r1	=	0.82r
+r0	=	0.78r
+</plot>
+'''.format(newtilefl.split('/')[-1])
+					glyphblock = '''
+<plot>
+type	=	scatter
+glyph	=	circle
+glyph_size = 60
+file	=	data/{0}
+color	=	vdred
+orientation = out
+r1	=	0.80r
+r0	=	0.80r
+</plot>
+'''.format(newtilefl.split('/')[-1])
+					if totallengths[i] > 5000000:
+						plotblock = glyphblock
+					else:
+						plotblock = tileblock
 					circos_conf_str = '''<<include colors_fonts_patterns.conf>>
 <<include ideogram.conf>>
 <<include ticks.conf>>
@@ -3926,7 +3950,7 @@ file             = data/{1}
 r0 = 0.82r
 r1 = 0.99r
 
-show_links     = yes
+show_links     = no
 link_dims      = 0p,10p,60p,10p,0p
 link_thickness = 10p
 link_color     = red
@@ -3947,36 +3971,14 @@ rpadding = 1p
 
 </plot>
 
-<plot>
-type	=	scatter
-#label_font	=	glyph
-glyph	=	circle
-glyph_size = 60
-file	=	data/{2}
-color	=	vdred
-#label_size	=	19p
-orientation = out
-r1	=	0.92r
-r0	=	0.92r
+{2}
 
-
-
-</plot>
-
-#<plot>
-#type	=	tile
-#thickness	=	30
-#file	=	data/{1}
-#color	=	vdred
-#r1	=	0.99r
-#r0	=	0.90r
-#</plot>
 
 </plots>
 
 <links>
 
-radius = 0.86r
+radius = 0.78r
 crest  = 1
 ribbon           = yes
 flat             = yes
@@ -3994,7 +3996,7 @@ file       = data/{3}
 </links>
 
 <<include etc/housekeeping.conf>>
-data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtextfl.split('/')[-1],  newtilefl.split('/')[-1], newlinksfl.split('/')[-1])
+data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtextfl.split('/')[-1],  plotblock, newlinksfl.split('/')[-1])
 #					circos_conf_str = '''<<include colors_fonts_patterns.conf>>
 #<<include ideogram.conf>>
 #<<include ticks.conf>>
@@ -4169,8 +4171,8 @@ data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newlinksuntranspose
 					
 					confbasename = conffl.split('/')[-1]
 					imagesize = totallengthsLTRs/10
-					if imagesize > 10000:
-						imagesize = 10000
+					if imagesize > 8000:
+						imagesize = 8000
 					if imagesize < 1000:
 						imagesize = 1000
 					conffl = '{0}/etc/image.generic.conf'.format(circosdir)
