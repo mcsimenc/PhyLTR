@@ -3834,9 +3834,9 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 								GFFoutFl.write(line)
 							gff2heatmapCallPacket = ([ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', GFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ], '{0}.heatmap.track'.format(GFFoutPth), None, None)
 							gff2tileCallPacket = ([ '{0}/gff2circos-tile.py'.format(paths['scriptsDir']), '-valueDef', 'LTR', '-gff', GFFoutPth ], '{0}.tile.track'.format(GFFoutPth), None, None)
-							gff2textLabelcallPacket = ([ '{0}/gff2circos-tile.py'.format(paths['scriptsDir']), '-valueDef', 'text', '-gff', GFFoutPth ], '{0}.tile.text.track'.format(GFFoutPth), None, None)
+							#gff2textLabelcallPacket = ([ '{0}/gff2circos-tile.py'.format(paths['scriptsDir']), '-valueDef', 'text', '-gff', GFFoutPth ], '{0}.tile.text.track'.format(GFFoutPth), None, None)
 							tilecalls.append(gff2tileCallPacket)
-							tilecalls.append(gff2textLabelcallPacket)
+							#tilecalls.append(gff2textLabelcallPacket)
 							append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-heatmap.py:\n{0}'.format(' '.join(gff2heatmapCallPacket[0])))
 							append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-tile.py:\n{0}'.format(' '.join(gff2tileCallPacket[0])))
 							heatmapcalls.append(gff2heatmapCallPacket)
@@ -3881,7 +3881,8 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 				textfl = '{0}.tile.text.track'.format(GFFoutPth)
 				linksfl = '{0}/{1}.cluster_{2}.geneconv.links.track'.format(paths['CurrentTopDir'], classif, i)
 				seqfl = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CurrentTopDir'], classif, i)
-				if os.path.isfile(tilefl) and os.path.isfile(linksfl) and os.path.isfile(seqfl) and os.path.isfile(textfl):
+				#if os.path.isfile(tilefl) and os.path.isfile(linksfl) and os.path.isfile(seqfl) and os.path.isfile(textfl):
+				if os.path.isfile(tilefl) and os.path.isfile(linksfl) and os.path.isfile(seqfl):
 					# Files exist. copy and run Circos.
 					#MakeDir('CircosClustDir{0}'.format(i), '{0}/cluster_{1}'.format(paths['CircosTopDir'], i))
 					#clustdir = paths['CircosClustDir{0}'.format(i)]
@@ -3901,7 +3902,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 						copyfile(seqfl, newseqfl)
 					newtextfl = '{0}/data/{1}'.format(circosdir, textfl.split('/')[-1])
 					if not os.path.isfile(newtextfl):
-						copyfile(textfl, newtextfl)
+						copyfile(tilefl, newtextfl)
 					conffl = '{0}/etc/circos.conf'.format(circosdir)
 					confbasename = conffl.split('/')[-1]
 					circos_conf_str = '''<<include colors_fonts_patterns.conf>>
@@ -3917,25 +3918,32 @@ karyotype   = data/{0}
 chromosomes_units           = 1000000
 
 <plots>
-
 <plot>
 type             = text
 color            = black
 file             = data/{1}
 
-r0 = 0.96r
-r1 = 0.96r
+r0 = 0.82r
+r1 = 0.99r
 
 show_links     = yes
-link_dims      = 4p,4p,8p,4p,4p
-link_thickness = 2p
+link_dims      = 0p,10p,60p,10p,0p
+link_thickness = 10p
 link_color     = red
 
-label_size   = 60p
+label_snuggle         = yes
+max_snuggle_distance  = 1r
+snuggle_tolerance     = 0.40r
+snuggle_sampling      = 2
+snuggle_link_overlap_test = yes
+snuggle_link_overlap_tolerance = 2p
+snuggle_refine        = yes
+label_rotate = yes
+label_size   = 100p
 label_font   = condensed
 
-padding  = 0p
-rpadding = 0p
+padding  = 1p
+rpadding = 1p
 
 </plot>
 

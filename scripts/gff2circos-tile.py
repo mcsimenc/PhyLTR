@@ -85,8 +85,8 @@ def help():
 						LTR_retrotransposonN where N is some integer. N is used
 						as the value.
 
-					If valueDef =='text' then a text track is output with the number
-						of the element as the text
+				#	If valueDef =='text' then a text track is output with the number
+				#		of the element as the text
 
 		Output:
 		------------
@@ -105,13 +105,12 @@ def gff2circosTileTrack(gffFl, valueDef=None):
 					start = gffLine.start
 					end = gffLine.end
 					value = gffLine.attributes['ID'][19:]
-
-				elif valueDef == 'text':
-					fields = line.strip().split('\t')
-					seq = fields[0]
-					start = fields[3]
-					end = fields[4]
-					value = gffLine.attributes['ID'][19:]
+				#elif valueDef == 'text':
+				#	fields = line.strip().split('\t')
+				#	seq = fields[0]
+				#	start = fields[3]
+				#	end = fields[4]
+				#	value = gffLine.attributes['ID'][19:]
 				else:
 					fields = line.strip().split('\t')
 					seq = fields[0]
@@ -119,7 +118,8 @@ def gff2circosTileTrack(gffFl, valueDef=None):
 					end = fields[4]
 					value = 0
 
-				if not valueDef == None and not valueDef == 'LTR' and not valueDef == 'text':
+				#if not valueDef == None and not valueDef == 'LTR' and not valueDef == 'text':
+				if not valueDef == None and not valueDef == 'LTR':
 					FOUND_DEF = False
 					MatchValue = 0
 					for definition in valueDef:
@@ -153,6 +153,8 @@ if '-valueDef' in args:
 	valueDefFl = args[args.index('-valueDef') +1]
 	if valueDefFl == 'LTR':
 		valueDef = 'LTR'
+	#if valueDefFl == 'text':
+	#	valueDef = 'text'
 	else:
 		valueDef = set([ (definition.split('\t')[0], float(definition.split('\t')[1])) for definition in open(valueDefFl).read().strip().split('\n') ])
 else:

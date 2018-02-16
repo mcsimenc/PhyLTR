@@ -1,0 +1,10 @@
+IV	LTRharvest	LTR_retrotransposon	12321408	12325651	.	?	.	ID=LTR_retrotransposon1090;Parent=repeat_region1090;ltr_similarity=97.75;seq_number=3;dfamClassification=None;repbaseClassification=None
+I	LTRharvest	LTR_retrotransposon	4280037	4281281	.	?	.	ID=LTR_retrotransposon114;Parent=repeat_region114;ltr_similarity=89.92;seq_number=0;dfamClassification=None;repbaseClassification=None
+V	LTRharvest	LTR_retrotransposon	6081825	6088739	.	+	.	ID=LTR_retrotransposon1415;Parent=repeat_region1415;ltr_similarity=97.53;seq_number=5;dfamClassification=None;repbaseClassification=None
+V	LTRharvest	LTR_retrotransposon	6092088	6094826	.	?	.	ID=LTR_retrotransposon1416;Parent=repeat_region1416;ltr_similarity=94.26;seq_number=5;dfamClassification=None;repbaseClassification=None
+X	LTRharvest	LTR_retrotransposon	5048727	5053134	.	+	.	ID=LTR_retrotransposon1820;Parent=repeat_region1820;ltr_similarity=97.17;seq_number=6;dfamClassification=None;repbaseClassification=None
+X	LTRharvest	LTR_retrotransposon	8746844	8748429	.	?	.	ID=LTR_retrotransposon1842;Parent=repeat_region1842;ltr_similarity=94.05;seq_number=6;dfamClassification=None;repbaseClassification=None
+X	LTRharvest	LTR_retrotransposon	9438172	9439796	.	?	.	ID=LTR_retrotransposon1848;Parent=repeat_region1848;ltr_similarity=90.60;seq_number=6;dfamClassification=None;repbaseClassification=None
+X	LTRharvest	LTR_retrotransposon	11888296	11889866	.	?	.	ID=LTR_retrotransposon1861;Parent=repeat_region1861;ltr_similarity=89.29;seq_number=6;dfamClassification=None;repbaseClassification=None
+X	LTRharvest	LTR_retrotransposon	11977450	11979932	.	?	.	ID=LTR_retrotransposon1862;Parent=repeat_region1862;ltr_similarity=96.01;seq_number=6;dfamClassification=None;repbaseClassification=None
+II	LTRharvest	LTR_retrotransposon	10336429	10338874	.	+	.	ID=LTR_retrotransposon503;Parent=repeat_region503;ltr_similarity=97.04;seq_number=1;dfamClassification=None;repbaseClassification=None
