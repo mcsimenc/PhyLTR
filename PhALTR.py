@@ -3578,7 +3578,7 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 							el1seq = copy(el1)
 							el2seq = copy(el2)
 						if 'g0.summary' in geneconvfile:
-							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
+							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdpurple_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 						elif 'g1.summary' in geneconvfile:
 							outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=orange_a3\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
 						elif 'g2.summary' in geneconvfile:
@@ -3608,7 +3608,7 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						el2seq = copy(seqs[el2])
 						# Different colored links for different gscale parameters. g values > 2 are possible but not implemented.
 						if 'g0.summary' in geneconvfile:
-							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdpurple_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 						elif 'g1.summary' in geneconvfile:
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=orange_a3\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 						elif 'g2.summary' in geneconvfile:
@@ -3624,7 +3624,7 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						el2end  = int(rec[11])
 						# Different colored links for different gscale parameters. g values > 2 are possible but not implemented.
 						if 'g0.summary' in geneconvfile:
-							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdgreen_a5\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=vdpurple_a5\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 						elif 'g1.summary' in geneconvfile:
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=orange_a3\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 						elif 'g2.summary' in geneconvfile:
