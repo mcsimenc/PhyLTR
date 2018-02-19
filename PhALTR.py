@@ -2184,9 +2184,10 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 						elif WICKERCLUST:
 							alnPth = paths['WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_{4}_NoGCfiltering.nohomoflank.noOutgroup'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, j)]
 						if os.path.isfile(alnPth):
-							append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run GENECONV on:\n{0}'.format(alnPth))
-							call = [ executables['geneconv'], alnPth, '/w124', g, '-include_monosites', '-nolog', '-Dumptab', '-Fancy' ]
-							geneconv_calls.append((call, '/dev/null', None, None))
+							if not os.stat(alnPth).st_size == 0: # if alignment file is non-empty
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run GENECONV on:\n{0}'.format(alnPth))
+								call = [ executables['geneconv'], alnPth, '/w124', g, '-include_monosites', '-nolog', '-Dumptab', '-Fancy' ]
+								geneconv_calls.append((call, '/dev/null', None, None))
 						else:
 							continue
 					else:
@@ -2206,9 +2207,10 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 							else:
 								continue
 						if os.path.isfile(alnPth):
-							append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run GENECONV on:\n{0}'.format(alnPth))
-							call = [ executables['geneconv'], alnPth, '/w124', g, '-include_monosites', '-nolog', '-Dumptab', '-Fancy' ]
-							geneconv_calls.append((call, '/dev/null', '{0}.geneconv.err'.format(alnPth), None))
+							if not os.stat(alnPth).st_size == 0: # if alignment file is non-empty
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run GENECONV on:\n{0}'.format(alnPth))
+								call = [ executables['geneconv'], alnPth, '/w124', g, '-include_monosites', '-nolog', '-Dumptab', '-Fancy' ]
+								geneconv_calls.append((call, '/dev/null', '{0}.geneconv.err'.format(alnPth), None))
 						else:
 							continue
 			if geneconv_calls == []:
