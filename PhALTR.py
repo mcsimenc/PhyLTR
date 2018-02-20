@@ -2265,12 +2265,6 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 						os.rename(geneconvOutputPth, '{0}/clust{1}_{2}'.format(paths['GENECONV_{0}_{1}_dir'.format(classif, g[1:])], j, fName))
 
 				trimalOutput = None
-				###################
-				# SMALL SMALL SMALL
-				###################
-				###################
-				# SMALL SMALL SMALL
-				###################
 				if combine_and_do_small_clusters:
 					if MCLCLUST:
 						if 'Aln_{0}_I{1}_clustersmall_NoGCfiltering'.format(classif, I) in paths:
@@ -2702,26 +2696,14 @@ def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='Wick
 	else:
 		sys.exit('modeltest() parameter clustering_method needs to be either WickerFam or MCL and it is: {0}'.format(clustering_method))
 
-	print('go')
-	#if checkStatusFl('{0}.GENECONVLTRs'.format(key_base)):
 	if checkStatusFl(SummaryKey):
 		append2logfile(paths['output_top_dir'], mainlogfile, 'ltr_divergence() already completed: {0}'.format(paths['{0}.GENECONVLTRs'.format(key_base)]))
 		return
 
-	print('fast')
 	if not checkStatusFl('{0}.GENECONVLTRs.{1}'.format(key_base, g[1:])):
 
-		print('now')
 		geneconv_calls = []
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Checking directory structure for GENECONV using {0}'.format(g) )
-
-		#MakeDir('GENECONV_top_dir', '{0}/GENECONV/'.format(paths['output_top_dir']))
-		#MakeDir('GENECONV_LTRs_dir', '{0}/LTRs'.format(paths['GENECONV_top_dir']))
-		#MakeDir('GENECONV_output_dir', '{0}/{1}'.format(paths['GENECONV_LTRs_dir'], g[1:]))
-
-		#MakeDir('{0}_GENECONV_top_dir', '{0}/GENECONV/'.format(paths['output_top_dir']))
-		#MakeDir('GENECONV_LTRs_dir', '{0}/LTRs'.format(paths['GENECONV_top_dir']))
-		#MakeDir('GENECONV_output_dir', '{0}/{1}'.format(paths['GENECONV_LTRs_dir'], g[1:]))
 
 		if TRIMAL:
 			files = [ f for f in os.listdir(paths[AlnKey]) if f.endswith('trimmed') ]
@@ -2739,7 +2721,6 @@ def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='Wick
 			elementName = '_'.join(f.split('_')[:2])
 			seqs = list(SeqIO.parse(flpth, 'fasta'))
 
-			print('here')
 			try:
 				alnLen = len(seqs[0].seq)
 			except IndexError:
@@ -2749,7 +2730,6 @@ def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='Wick
 			alnLens[elementName] = alnLen
 			show=False
 		# Make calls for each ltr pair
-		print('blork')
 		if not checkStatusFl('{0}.GENECONVLTRs.{1}'.format(key_base, g[1:])):
 			chunk_size = ceil(len(files)/procs)
 			with Pool(processes=procs) as p:
@@ -2765,7 +2745,6 @@ def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='Wick
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('{0}.GENECONVLTRs.{1}\t{2}\n'.format(key_base, g[1:], paths[GENECONVgDirKey])) 
 		
-		print('blinjmph')
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Parsing GENECONV output')
 		# Parse geneconv files
 		sig = [] # sig is short for "significant". To contain significant global inner fragments identified by GENECONV
@@ -2782,7 +2761,6 @@ def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='Wick
 		with open(paths['GENECONV_output'], 'w') as outputFl:
 			with open(paths['GENECONVsummary'], 'w') as summaryFl:
 				summaryFl.write('# ratio is the ratio of the alignment length to the alignment length minus the gene conversion tract\n')
-				print('banglor')
 				try:
 					summaryFl.write('# {0} elements out of {1}, or {2:.1f}% with possible evidence of gene conversion\n'.format(len(sig), num_elements, ((len(sig)/num_elements)*100)))
 				except ZeroDivisionError:
@@ -2791,7 +2769,6 @@ def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='Wick
 				summaryFl.write('#elementName\tsim_p-val\talnLen\tstart\tend\ttractLen\tratio\n')
 				for line in sig:
 					totDifs = int(line.strip().split()[9])
-					print('slarts')
 					if totDifs < 3:
 						continue
 					outputFl.write(line + '\n')
@@ -3002,15 +2979,6 @@ END;
 	gcDct = {}
 	if GENECONVLTRS:
 		GENECONVSummaryKey = '{0}.GENECONVLTRs.Summary'.format(key_base)
-		#'{0}/GENECONV_{1}.summary'.format(paths['GENECONV_LTRs_dir'], g[1:])
-		# Read GENEVONV output
-		#gcOutputFiles = []
-		#for g in ['g0', 'g1', 'g2']:
-		#	for p in paths:
-		#		if p.startswith('GENECONV_LTRs'):
-		#			if g in p:
-		#				gcOutputFiles.append(paths['GENECONV_LTRs_{0}_summary'.format(g)])
-		#for f in gcOutputFiles:
 		with open(paths[GENECONVSummaryKey], 'r') as gcFl:
 			for line in gcFl:
 				if not line.startswith('#'):
@@ -3112,6 +3080,7 @@ END;
 	if not SummaryKey in paths:
 		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 			statusFlAppend.write('{0}\t{1}\n'.format(SummaryKey, paths['DivergenceSummary']))
+
 
 def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomologouspair=True, part='entire', clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, auto_outgroup=False, bootstrap_reps=100, minClustSize=4, convert_to_ultrametric=False, bpflank=None, combine_and_do_small_clusters=True):
 	'''
@@ -3308,11 +3277,13 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
 			elif MCLCLUST:
 				bootstrap(alnPthsLst=alnPthKeys, reps=bootstrap_reps, OutPth=OutPth, convert_to_ultrametric=False, WickerParams=None, gc=gc, strHomoflank=strHomoflank, strOutgroup=strOutgroup, I=I)
 
+
 def SeqbootCall(Call):
 	baseDir = os.getcwd()
 	os.chdir(Call[1])
 	subprocess.call(Call[0], stdin=open('seqboot.conf', 'r'))
 	os.chdir(baseDir)
+
 
 def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, WickerParams=None, gc=None, strHomoflank=None, strOutgroup=None, I=None):
 
@@ -3471,8 +3442,6 @@ mrca: {1}, {2}, fixage=1;
 				pathd8flpth = '{0}/pathd8.in'.format(paths[runID])
 				with open(pathd8flpth, 'w') as outFl:
 					outFl.write(pathd8_file_str)
-				#MakeDir('PATHd8Dir_{0}'.format(runID), '{0}/PATHd8'.format(paths['Tree_{0}'.format(runID)]))
-				#paths['PATHd8_Tree_{0}'.format(runID)] = '{0}/'.format(paths['PATHd8Dir_{0}'.format(runID)])
 				paths['PATHd8_output_{0}'.format(runID)] = '{0}.pathd8_ultrametric'.format(bootstrapped)
 				pathd8_call = [ executables['pathd8'], pathd8flpth, paths['PATHd8_output_{0}'.format(runID)] ]
 				makecall(pathd8_call)
@@ -3497,10 +3466,8 @@ mrca: {1}, {2}, fixage=1;
 
 		bootstrappedLocation = '{0}/{1}_{2}.bootstrapped.newick'.format(paths['classifDir'], classif, clust)
 		copyfile(bootstrapped, bootstrappedLocation)
-		#if not 'Tree_{0}_{1}_I{2}'.format(classif, clust, I) in paths:
-		#	with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-		#		statusFlAppend.write('{0}\t{1}\n'.format('Tree_{0}_{1}_I{2}'.format(classif, clust, I), bootstrappedLocation))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Finished bootstrapping. Tree with bootstrap support values here:\n{0}'.format(bootstrappedLocation))
+
 
 def div2Rplots(I=6):
 
@@ -3511,7 +3478,6 @@ def div2Rplots(I=6):
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Making R plot\n{0}'.format(call_str))
 	with open('{0}/RscriptCalls.txt'.format(paths['output_top_dir']), 'a') as RcallFl:
 		RcallFl.write(call_str+'\n')
-	#makecall(call)
 	subprocess.call(call)
 
 
@@ -3684,7 +3650,6 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning making Circos plots')
 	MakeDir('CircosTopDir', '{0}/Circos'.format(paths['output_top_dir']))
 
-
 	# Get seq lengths
 	scafLengthsFlPth = '{0}/seqLengths.tab'.format(paths['CircosTopDir'])
 	scafLengths = {}
@@ -3751,8 +3716,8 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Converted GFFs to heatmap tracks for Circos')
 
 	elif CLUSTERS:
-		if WICKERCLUST:
 
+		if WICKERCLUST:
 			WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
 			paths['Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/GENECONV'.format(WickerDir)
 			WickerGCdirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
@@ -3798,15 +3763,12 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Created links tracks for Circos from intra-cluster inter-element GENECONV output')
 			# Modify geneconv2circoslinks to include an option to return the links information instead of writing to file.
 			# Then use the returned infromation in the cluster loop to write a links track just for the cluster.
-
-			# Heatmap style tracks for all clusters
 			if MCLCLUST:
 				clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
 			elif WICKERCLUST:
 				clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
 
 			clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
-
 
 			totallengths = {}
 			for i in range(len(clusters)):
@@ -3815,7 +3777,6 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 				clusterscafs = set()
 				outputlinks = []
 				outputlinks_untransposed = []
-				#print(links_untransposed, file=sys.stderr)
 				with open(paths['CurrentGFF']) as gffFl:
 					for line in gffFl:
 						if '\tLTR_retrotransposon\t' in line:
@@ -3830,7 +3791,6 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 							scaf = gffLine.seqid
 							if scaf not in clusterscafs:
 								clusterscafs.add(scaf)
-							#MakeDir('classifDir', '{0}/{1}'.format(paths['CircosTopDir'], classif))
 							GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CurrentTopDir'], classif, i)
 							with open(GFFoutPth, 'a') as GFFoutFl:
 								GFFoutFl.write(line)
@@ -3842,6 +3802,9 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 							append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-heatmap.py:\n{0}'.format(' '.join(gff2heatmapCallPacket[0])))
 							append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-tile.py:\n{0}'.format(' '.join(gff2tileCallPacket[0])))
 							heatmapcalls.append(gff2heatmapCallPacket)
+						elif '\tlong_terminal_repeat\t' in line:
+							# Append to current LTR highlight track
+							# Subtract the start and end of the LTR from the 
 				with open('{0}/{1}.cluster_{2}.geneconv.links.track'.format(paths['CurrentTopDir'], classif, i), 'w') as outFl:
 					outFl.write('\n'.join(outputlinks))
 				with open('{0}/{1}.cluster_{2}.geneconv.links_untransposed.track'.format(paths['CurrentTopDir'], classif, i), 'w') as outFl:
@@ -3875,6 +3838,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 			p.join()
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Converted GFFs to tile tracks for Circos.')
 			
+			# Circos plot 1: ideograms are scaffolds
 			for i in range(len(clusters)):
 				if len(clusters[i]) < 2:
 					continue
@@ -3921,7 +3885,7 @@ type	=	scatter
 glyph	=	circle
 glyph_size = 60
 file	=	data/{0}
-color	=	vdred
+color	=	vdorange
 orientation = out
 r1	=	0.80r
 r0	=	0.80r
@@ -4039,22 +4003,25 @@ auto_alpha_steps  = 5'''.format(imagesize)
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Made Circos plots.')
 
 
+
+
+
+			# Circos plot 2: ideograms are elements
 			for i in range(len(clusters)):
 				if len(clusters[i]) < 2:
 					continue
 				GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CurrentTopDir'], classif, i)
 				tilefl = '{0}.tile.track'.format(GFFoutPth)
-				#linksfl = '{0}/{1}.cluster_{2}.geneconv.links.track'.format(paths['CurrentTopDir'], classif, i)
 				links_untransposedfl = '{0}/{1}.cluster_{2}.geneconv.links_untransposed.track'.format(paths['CurrentTopDir'], classif, i)
 				seqfl = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CurrentTopDir'], classif, i)
+
+				highlights_ltrs_fl = '{0}/{1}.cluster_{2}.LTR_highlights.track'.format(paths['CurrentTopDir'], classif, i)
+
 				if os.path.isfile(tilefl) and os.path.isfile(links_untransposedfl) and os.path.isfile(seqfl):
 					# Files exist. copy and run Circos.
-					# Plot without scaffolds
 					circosdir = '{0}/circos.{1}.cluster_{2}.justelements'.format(paths['CurrentTopDir'], classif, i)
-					#circosdir = '{0}/circos.{1}.cluster_{2}'.format(paths['CurrentTopDir'], classif, i)
 					if not os.path.exists(circosdir):
 						copytree('{0}/circos'.format(paths['scriptsDir']), circosdir) # copy circos conf files and dir structure
-
 
 					totallengthsLTRs = 0
 					newseqfl = '{0}/data/{1}'.format(circosdir, '{0}.seq.track'.format('.'.join(tilefl.split('/')[-1].split('.')[:-2])))
@@ -4066,7 +4033,7 @@ auto_alpha_steps  = 5'''.format(imagesize)
 							scaf, start, end, val = line.strip().split()
 							length = int(end) - int(start) + 1
 							totallengthsLTRs += length
-							color = 'red'
+							color = 'vdorange'
 							outline = 'chr - {0} {1} 0 {2} {3}\n'.format('LTR_retrotransposon{0}'.format(val), val, length, color)
 							with open(newseqfl, 'a') as outFl:
 								outFl.write(outline)
