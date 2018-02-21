@@ -3894,6 +3894,8 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					textfl = '{0}.tile.text.track'.format(GFFoutPth)
 					linksfl = '{0}/{1}.cluster_{2}.geneconv_{3}.links.track'.format(paths['CurrentTopDir'], classif, i, '_'.join(G))
 					seqfl = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CurrentTopDir'], classif, i)
+					if os.stat(linksfl).st_size == 0 and not G == ['g0', 'g1', 'g2']: # If no links for this cluster, don't draw a Circos plot for the elements without scaffolds.unless this is the composite with all gscale values, to ensure at least one plot is drawn for each cluster.
+						continue
 					#if os.path.isfile(tilefl) and os.path.isfile(linksfl) and os.path.isfile(seqfl) and os.path.isfile(textfl):
 					if os.path.isfile(tilefl) and os.path.isfile(linksfl) and os.path.isfile(seqfl):
 						# Files exist. copy and run Circos.
@@ -4126,7 +4128,7 @@ radius = 0.999r
 crest  = 1
 ribbon           = yes
 flat             = yes
-stroke_color     = vdgrey
+#stroke_color     = vdgrey
 stroke_thickness = 2
 color            = grey_a3
 
@@ -4827,11 +4829,11 @@ classifs = set(list(clusters_by_classif.keys()))
 #		# Output: List of elements with evidence of intra element LTR gene conversion (text table)
 #
 #Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-if WICKER:
-	Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-if USEMCL:
-	Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
-sys.exit()
+#if WICKER:
+#	Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+#if USEMCL:
+#	Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
+#sys.exit()
 #
 #  II. Clustering, divergence, gene conversion, and phylogenetic analysis
 #
