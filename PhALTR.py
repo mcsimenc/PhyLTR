@@ -3584,10 +3584,13 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						elif 'g2.summary' in geneconvfile:
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
 							g = 'g2'
-						if el1 in links:
-							links[g][el1].append(outline)
+						if g in links:
+							if el1 in links[g]:
+								links[g][el1].append(outline)
+							else:
+								links[g][el1] = [outline]
 						else:
-							links[g][el1] = [outline]
+							links[g] = {el1:[outline]}
 					else:
 						el1start  = int(rec[7])
 						el1end  = int(rec[8])
@@ -3603,10 +3606,13 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 						elif 'g2.summary' in geneconvfile:
 							outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(el1, el1start, el1end, el2, el2start, el2end)
 							g = 'g2'
-						if el1 in links:
-							links[g][el1].append(outline)
+						if g in links:
+							if el1 in links[g]:
+								links[g][el1].append(outline)
+							else:
+								links[g][el1] = [outline]
 						else:
-							links[g][el1] = [outline]
+							links[g] = {el1:[outline]}
 		return links
 
 
@@ -3795,12 +3801,17 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 				totallengths = {}
 				element_coords = {}
 				for i in range(len(clusters)):
-					highlights_ltrs_fl = '{0}/{1}.cluster_{2}.LTR_highlights.track'.format(paths['CurrentTopDir'], classif, i)
 					if len(clusters[i]) < 2:
 						continue
 					clusterscafs = set()
 					outputlinks = []
 					outputlinks_untransposed = []
+					GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CurrentTopDir'], classif, i)
+					if os.path.isfile(GFFoutPth):
+						os.remove(GFFoutPth)
+					highlights_ltrs_fl = '{0}/{1}.cluster_{2}.LTR_highlights.track'.format(paths['CurrentTopDir'], classif, i)
+					if os.path.isfile(highlights_ltrs_fl):
+						os.remove(highlights_ltrs_fl)
 					with open(paths['CurrentGFF']) as gffFl:
 						for line in gffFl:
 							if '\tLTR_retrotransposon\t' in line:
@@ -3815,13 +3826,13 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 									continue
 								# Add link to output links
 								for g in G:
-									if el in links[g]:
-										outputlinks += links[g][el]
-										outputlinks_untransposed += links_untransposed[g][el]
+									if g in links:
+										if el in links[g]:
+											outputlinks += links[g][el]
+											outputlinks_untransposed += links_untransposed[g][el]
 								scaf = gffLine.seqid
 								if scaf not in clusterscafs:
 									clusterscafs.add(scaf)
-								GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CurrentTopDir'], classif, i)
 								with open(GFFoutPth, 'a') as GFFoutFl:
 									GFFoutFl.write(line)
 								gff2heatmapCallPacket = ([ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', GFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ], '{0}.heatmap.track'.format(GFFoutPth), None, None)
@@ -3841,7 +3852,6 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 								name = gffLine.attributes['Parent']
 								newstart = start - element_coords[name][0] + 1
 								newend = end - element_coords[name][0] + 1
-								'{0}.tile.track'.format(GFFoutPth)
 								with open(highlights_ltrs_fl, 'a') as outFl:
 									outFl.write('{0}\t{1}\t{2}\tfill_color=black\n'.format(name, newstart, newend))
 
@@ -3857,13 +3867,13 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					# Write ideogram file for just scafs for this cluster
 					totalseq = 0
 					with open(allscafs, 'r') as inFl:
-						for line in inFl:
-							scaf = line.split()[2]
-							if scaf in clusterscafs:
-								ideoOut  = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CurrentTopDir'], classif, i)
-								contents = line.split()
-								totalseq += int(contents[-2]) - int(contents[-3])
-								with open(ideoOut, 'a') as outFl:
+						ideoOut  = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CurrentTopDir'], classif, i)
+						with open(ideoOut, 'w') as outFl:
+							for line in inFl:
+								scaf = line.split()[2]
+								if scaf in clusterscafs:
+									contents = line.split()
+									totalseq += int(contents[-2]) - int(contents[-3])
 									outFl.write(line)
 					totallengths[i] = totalseq
 	#chr - Sacu_v1.1_s0011	11	0	2262239	greys-6-seq-4
@@ -3914,99 +3924,99 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 						conffl = '{0}/etc/circos.conf'.format(circosdir)
 						confbasename = conffl.split('/')[-1]
 						tileblock = '''
-	<plot>
-	type	=	tile
-	thickness	=	30
-	file	=	data/{0}
-	color	=	dorange
-	r1	=	0.84r
-	r0	=	0.78r
-	</plot>
-	'''.format(newtilefl.split('/')[-1])
+<plot>
+type	=	tile
+thickness	=	30
+file	=	data/{0}
+color	=	dorange
+r1	=	0.84r
+r0	=	0.78r
+</plot>
+'''.format(newtilefl.split('/')[-1])
 						glyphblock = '''
-	<plot>
-	type	=	scatter
-	glyph	=	circle
-	glyph_size = 60
-	file	=	data/{0}
-	color	=	vdorange
-	orientation = out
-	r1	=	0.80r
-	r0	=	0.80r
-	</plot>
-	'''.format(newtilefl.split('/')[-1])
+<plot>
+type	=	scatter
+glyph	=	circle
+glyph_size = 60
+file	=	data/{0}
+color	=	vdorange
+orientation = out
+r1	=	0.80r
+r0	=	0.80r
+</plot>
+'''.format(newtilefl.split('/')[-1])
 						if totallengths[i] > 5000000:
 							plotblock = glyphblock
 						else:
 							plotblock = tileblock
 						circos_conf_str = '''<<include colors_fonts_patterns.conf>>
-	<<include ideogram.conf>>
-	<<include ticks.conf>>
+<<include ideogram.conf>>
+<<include ticks.conf>>
 
-	<image>
-	<<include etc/image.conf>>
-	</image>
+<image>
+<<include etc/image.conf>>
+</image>
 
-	karyotype   = data/{0}
+karyotype   = data/{0}
 
-	chromosomes_units           = 1000000
+chromosomes_units           = 1000000
 
-	<plots>
-	<plot>
-	type             = text
-	color            = black
-	file             = data/{1}
+<plots>
+<plot>
+type             = text
+color            = black
+file             = data/{1}
 
-	r0 = 0.84r
-	r1 = 0.99r
+r0 = 0.84r
+r1 = 0.99r
 
-	show_links     = no
-	link_dims      = 0p,10p,60p,10p,0p
-	link_thickness = 10p
-	link_color     = red
+show_links     = no
+link_dims      = 0p,10p,60p,10p,0p
+link_thickness = 10p
+link_color     = red
 
-	label_snuggle         = yes
-	max_snuggle_distance  = 1r
-	snuggle_tolerance     = 0.40r
-	snuggle_sampling      = 2
-	snuggle_link_overlap_test = yes
-	snuggle_link_overlap_tolerance = 2p
-	snuggle_refine        = yes
-	label_rotate = yes
-	label_size   = 100p
-	label_font   = condensed
+label_snuggle         = yes
+max_snuggle_distance  = 1r
+snuggle_tolerance     = 0.40r
+snuggle_sampling      = 2
+snuggle_link_overlap_test = yes
+snuggle_link_overlap_tolerance = 2p
+snuggle_refine        = yes
+label_rotate = yes
+label_size   = 100p
+label_font   = condensed
 
-	padding  = 1p
-	rpadding = 1p
+padding  = 1p
+rpadding = 1p
 
-	</plot>
+</plot>
 
-	{2}
+{2}
 
 
-	</plots>
+</plots>
 
-	<links>
+<links>
 
-	radius = 0.78r
-	crest  = 1
-	ribbon           = yes
-	flat             = yes
-	stroke_color     = vdgrey
-	stroke_thickness = 2
-	color            = grey_a3
+radius = 0.78r
+crest  = 1
+ribbon           = yes
+flat             = yes
+stroke_color     = vdgrey
+stroke_thickness = 2
+color            = grey_a3
 
-	bezier_radius        = 0r
-	bezier_radius_purity = 0.5
+bezier_radius        = 0r
+bezier_radius_purity = 0.5
 
-	<link>
-	file       = data/{3}
-	</link>
+<link>
+file       = data/{3}
+</link>
 
-	</links>
+</links>
 
-	<<include etc/housekeeping.conf>>
-	data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtextfl.split('/')[-1],  plotblock, newlinksfl.split('/')[-1])
+<<include etc/housekeeping.conf>>
+data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtextfl.split('/')[-1],  plotblock, newlinksfl.split('/')[-1])
 
 						#print(circos_conf_str)
 						with open(conffl, 'w') as outFl:
@@ -4018,20 +4028,20 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 							imagesize = 6000
 						conffl = '{0}/etc/image.generic.conf'.format(circosdir)
 						circosimageconfstr = '''dir   = . 
-	file  = circos.png
-	png   = yes
-	svg   = yes
+file  = circos.png
+png   = yes
+svg   = yes
 
-	# radius of inscribed circle in image
-	radius = {0}
+# radius of inscribed circle in image
+radius = {0}
 
-	# by default angle=0 is at 3 o'clock position
-	angle_offset      = -96
+# by default angle=0 is at 3 o'clock position
+angle_offset      = -96
 
-	#angle_orientation = counterclockwise
+#angle_orientation = counterclockwise
 
-	auto_alpha_colors = yes
-	auto_alpha_steps  = 5'''.format(imagesize)
+auto_alpha_colors = yes
+auto_alpha_steps  = 5'''.format(imagesize)
 						with open(conffl, 'w') as outFl:
 							outFl.write(circosimageconfstr)
 						#circos_call = [executables['circos'], '-silent', '-conf', confbasename]
@@ -4073,22 +4083,20 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 							os.remove(newseqfl)
 						# Convert tile file to ideogram track
 						with open(tilefl, 'r') as inFl:
-							for line in inFl:
-								scaf, start, end, val = line.strip().split()
-								length = int(end) - int(start) + 1
-								totallengthsLTRs += length
-								color = 'dorange'
-								outline = 'chr - {0} {1} 0 {2} {3}\n'.format('LTR_retrotransposon{0}'.format(val), val, length, color)
-								with open(newseqfl, 'a') as outFl:
+							with open(newseqfl, 'w') as outFl:
+								for line in inFl:
+									scaf, start, end, val = line.strip().split()
+									length = int(end) - int(start) + 1
+									totallengthsLTRs += length
+									color = 'dorange'
+									outline = 'chr - {0} {1} 0 {2} {3}\n'.format('LTR_retrotransposon{0}'.format(val), val, length, color)
 									outFl.write(outline)
 								
 								#==> Copia.cluster_0.gff.tile.track <==
 								#Sacu_v1.1_s0016	1385103	1391765 123
 								#
-								#==> Copia.cluster_0.seq.track <==
+								#888> Copia.cluster_0.seq.track <==
 								#chr - Sacu_v1.1_s0001	1	0	4132625	greys-6-seq-4
-
-
 
 						newlinksuntransposedfl = '{0}/data/{1}'.format(circosdir, links_untransposedfl.split('/')[-1])
 						copyfile(links_untransposedfl, newlinksuntransposedfl)
@@ -4100,47 +4108,47 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 						conffl = '{0}/etc/circos.conf'.format(circosdir)
 						circos_conf_str = '''<<include colors_fonts_patterns.conf>>
 
-	<<include ideogram.conf>>
-	<<include ticks.conf>>
+<<include ideogram.conf>>
+<<include ticks.conf>>
 
-	<image>
-	<<include etc/image.conf>>
-	</image>
+<image>
+<<include etc/image.conf>>
+</image>
 
-	karyotype   = data/{0}
+karyotype   = data/{0}
 
-	chromosomes_units           = 1000000
+chromosomes_units           = 1000000
 
-	<highlights>
-	 <highlight>
-	 file       = data/{1}
-	 ideogram   = yes
-	 color = black
-	 </highlight>
-	</highlights>
+<highlights>
+ <highlight>
+ file       = data/{1}
+ ideogram   = yes
+ color = black
+ </highlight>
+</highlights>
 
 
-	<links>
-	radius = 0.999r
-	#radius = 1r
-	crest  = 1
-	ribbon           = yes
-	flat             = yes
-	stroke_color     = vdgrey
-	stroke_thickness = 2
-	color            = grey_a3
+<links>
+radius = 0.999r
+#radius = 1r
+crest  = 1
+ribbon           = yes
+flat             = yes
+stroke_color     = vdgrey
+stroke_thickness = 2
+color            = grey_a3
 
-	bezier_radius        = 0r
-	bezier_radius_purity = 0.5
+bezier_radius        = 0r
+bezier_radius_purity = 0.5
 
-	<link>
-	file       = data/{2}
-	</link>
+<link>
+file       = data/{2}
+</link>
 
-	</links>
+</links>
 
-	<<include etc/housekeeping.conf>>
-	data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newhlfl.split('/')[-1], newlinksuntransposedfl.split('/')[-1])
+<<include etc/housekeeping.conf>>
+data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newhlfl.split('/')[-1], newlinksuntransposedfl.split('/')[-1])
 						print(circos_conf_str)
 						with open(conffl, 'w') as outFl:
 							outFl.write(circos_conf_str)
@@ -4153,20 +4161,20 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 							imagesize = 1000
 						conffl = '{0}/etc/image.generic.conf'.format(circosdir)
 						circosimageconfstr = '''dir   = . 
-	file  = circos.png
-	png   = yes
-	svg   = yes
+file  = circos.png
+png   = yes
+svg   = yes
 
-	# radius of inscribed circle in image
-	radius = {0}
+# radius of inscribed circle in image
+radius = {0}
 
-	# by default angle=0 is at 3 o'clock position
-	angle_offset      = -96
+# by default angle=0 is at 3 o'clock position
+angle_offset      = -96
 
-	#angle_orientation = counterclockwise
+#angle_orientation = counterclockwise
 
-	auto_alpha_colors = yes
-	auto_alpha_steps  = 5'''.format(imagesize)
+auto_alpha_colors = yes
+auto_alpha_steps  = 5'''.format(imagesize)
 						with open(conffl, 'w') as outFl:
 							outFl.write(circosimageconfstr)
 						#circos_call = [executables['circos'], '-silent', '-conf', confbasename]
