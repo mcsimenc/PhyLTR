@@ -3771,7 +3771,9 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 			clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
 
 			totallengths = {}
+			element_coords = {}
 			for i in range(len(clusters)):
+				highlights_ltrs_fl = '{0}/{1}.cluster_{2}.LTR_highlights.track'.format(paths['CurrentTopDir'], classif, i)
 				if len(clusters[i]) < 2:
 					continue
 				clusterscafs = set()
@@ -3781,6 +3783,10 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					for line in gffFl:
 						if '\tLTR_retrotransposon\t' in line:
 							gffLine = GFF3_line(line)
+							start = int(gffLine.start)
+							end = int(gffLine.end)
+							name = gffLine.attributes['ID']
+							element_coords[name] = (start, end)
 							el = gffLine.attributes['ID']
 							if el not in clusters[i]:
 								continue
@@ -3802,7 +3808,21 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 							append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-heatmap.py:\n{0}'.format(' '.join(gff2heatmapCallPacket[0])))
 							append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-tile.py:\n{0}'.format(' '.join(gff2tileCallPacket[0])))
 							heatmapcalls.append(gff2heatmapCallPacket)
+						# Write highlights track
 						elif '\tlong_terminal_repeat\t' in line:
+							GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CurrentTopDir'], classif, i)
+							gffLine = GFF3_line(line)
+							start = int(gffLine.start)
+							end = int(gffLine.end)
+							name = gffLine.attributes['Parent']
+							newstart = start - element_coords[name][0] + 1
+							newend = end - element_coords[name][0] + 1
+							'{0}.tile.track'.format(GFFoutPth)
+							with open(highlights_ltrs_fl, 'a') as outFl:
+								outFl.write('{0}\t{1}\t{2}\tfill_color=black\n'.format(name, newstart, newend))
+
+
+
 							# Append to current LTR highlight track
 							# Subtract the start and end of the LTR from the 
 				with open('{0}/{1}.cluster_{2}.geneconv.links.track'.format(paths['CurrentTopDir'], classif, i), 'w') as outFl:
@@ -3874,7 +3894,7 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 type	=	tile
 thickness	=	30
 file	=	data/{0}
-color	=	vdred
+color	=	dorange
 r1	=	0.84r
 r0	=	0.78r
 </plot>
@@ -4003,9 +4023,6 @@ auto_alpha_steps  = 5'''.format(imagesize)
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Made Circos plots.')
 
 
-
-
-
 			# Circos plot 2: ideograms are elements
 			for i in range(len(clusters)):
 				if len(clusters[i]) < 2:
@@ -4017,7 +4034,7 @@ auto_alpha_steps  = 5'''.format(imagesize)
 
 				highlights_ltrs_fl = '{0}/{1}.cluster_{2}.LTR_highlights.track'.format(paths['CurrentTopDir'], classif, i)
 
-				if os.path.isfile(tilefl) and os.path.isfile(links_untransposedfl) and os.path.isfile(seqfl):
+				if os.path.isfile(highlights_ltrs_fl) and os.path.isfile(tilefl) and os.path.isfile(links_untransposedfl) and os.path.isfile(seqfl):
 					# Files exist. copy and run Circos.
 					circosdir = '{0}/circos.{1}.cluster_{2}.justelements'.format(paths['CurrentTopDir'], classif, i)
 					if not os.path.exists(circosdir):
@@ -4025,6 +4042,9 @@ auto_alpha_steps  = 5'''.format(imagesize)
 
 					totallengthsLTRs = 0
 					newseqfl = '{0}/data/{1}'.format(circosdir, '{0}.seq.track'.format('.'.join(tilefl.split('/')[-1].split('.')[:-2])))
+					newhlfl = '{0}/data/{1}'.format(circosdir, '{0}.LTR_highlights.track'.format('.'.join(highlights_ltrs_fl.split('/')[-1].split('.')[:-2])))
+					# Copy hl fl to circos dir
+					copyfile(highlights_ltrs_fl, newhlfl)
 					if os.path.isfile(newseqfl):
 						os.remove(newseqfl)
 					# Convert tile file to ideogram track
@@ -4033,7 +4053,7 @@ auto_alpha_steps  = 5'''.format(imagesize)
 							scaf, start, end, val = line.strip().split()
 							length = int(end) - int(start) + 1
 							totallengthsLTRs += length
-							color = 'vdorange'
+							color = 'dorange'
 							outline = 'chr - {0} {1} 0 {2} {3}\n'.format('LTR_retrotransposon{0}'.format(val), val, length, color)
 							with open(newseqfl, 'a') as outFl:
 								outFl.write(outline)
@@ -4067,10 +4087,18 @@ karyotype   = data/{0}
 
 chromosomes_units           = 1000000
 
+<highlights>
+ <highlight>
+ file       = data/{1}
+ ideogram   = yes
+ color = black
+ </highlight>
+</highlights>
+
 
 <links>
-
-radius = 0.88r
+radius = 0.99r
+#radius = 1r
 crest  = 1
 ribbon           = yes
 flat             = yes
@@ -4082,13 +4110,13 @@ bezier_radius        = 0r
 bezier_radius_purity = 0.5
 
 <link>
-file       = data/{1}
+file       = data/{2}
 </link>
 
 </links>
 
 <<include etc/housekeeping.conf>>
-data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newlinksuntransposedfl.split('/')[-1])
+data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newhlfl.split('/')[-1], newlinksuntransposedfl.split('/')[-1])
 					print(circos_conf_str)
 					with open(conffl, 'w') as outFl:
 						outFl.write(circos_conf_str)
@@ -4776,7 +4804,11 @@ classifs = set(list(clusters_by_classif.keys()))
 #		# Output: List of elements with evidence of intra element LTR gene conversion (text table)
 #
 #Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-#sys.exit()
+if WICKER:
+	Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+if USEMCL:
+	Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
+sys.exit()
 #
 #  II. Clustering, divergence, gene conversion, and phylogenetic analysis
 #
