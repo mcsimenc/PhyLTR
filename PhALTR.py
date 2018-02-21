@@ -713,7 +713,6 @@ def addORFs(maingff, orfgff, newgff):
 	with open(orfgff, 'r') as inFl:
 		for line in inFl:
 			if not line.startswith('#'):
-				#print(line)
 				gffLine = GFF3_line(line)
 				parent = gffLine.attributes['Parent']
 				if parent in orfs:
@@ -746,7 +745,6 @@ def addORFs(maingff, orfgff, newgff):
 		elif gl.type == 'long_terminal_repeat':
 			if firstLTRend != None:
 				if el in orfs:
-					#print(internalparts)
 					orf_ct = 0
 					for orf in orfs[el]:
 						orf.start = firstLTRend + int(orf.start)
@@ -1076,9 +1074,7 @@ def checkStatusFl(key):
 	to help the program resume at points it has completed.
 	'''
 	with open('{0}/status'.format(paths['output_top_dir']), 'r') as statusFl:
-		#print(paths['output_top_dir'])
 		for line in statusFl:
-			#print(line, end='')
 			if line.strip().split('\t')[0] == key:
 				return True
 		return False
@@ -2582,10 +2578,7 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 		chunk_size = ceil(num_pairs/procs)
 		# Write to log file here about chunk size and processors used
 		append2logfile(paths['output_top_dir'], mainlogfile, 'For align_ltrs(): procs={0} chunk_size={1}'.format(procs,chunk_size))
-		print(GFFKey)
 		if not checkStatusFl(GFFKey):
-			print(2)
-			print(GFFKey)
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Writing GFF3s for each LTR pair:\n{0}'.format(paths[GFFKey]) )
 			with Pool(processes=procs) as p: # Write GFF3s for each LTR pair
 				p.map(write_ltrs_gff3, ltrs.values(), chunksize=chunk_size)
@@ -4018,7 +4011,6 @@ file       = data/{3}
 <<include etc/housekeeping.conf>>
 data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newtextfl.split('/')[-1],  plotblock, newlinksfl.split('/')[-1])
 
-						#print(circos_conf_str)
 						with open(conffl, 'w') as outFl:
 							outFl.write(circos_conf_str)
 						
@@ -4149,7 +4141,6 @@ file       = data/{2}
 
 <<include etc/housekeeping.conf>>
 data_out_of_range* = trim'''.format(newseqfl.split('/')[-1], newhlfl.split('/')[-1], newlinksuntransposedfl.split('/')[-1])
-						print(circos_conf_str)
 						with open(conffl, 'w') as outFl:
 							outFl.write(circos_conf_str)
 						
