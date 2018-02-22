@@ -3649,6 +3649,9 @@ def circosMultiprocessing(packet):
 	if not os.path.isfile(newsvg):
 		if os.path.isfile(svg):
 			copyfile(svg, newsvg)
+	# Clean up
+	if not KEEP_UNUSED_FILES:
+		rmtree(circosdir)
 
 
 def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, g='g0,g1,g2'):
@@ -3930,6 +3933,8 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 						newtextfl = '{0}/data/{1}'.format(circosdir, textfl.split('/')[-1])
 						if not os.path.isfile(newtextfl):
 							copyfile(tilefl, newtextfl)
+
+
 						conffl = '{0}/etc/circos.conf'.format(circosdir)
 						confbasename = conffl.split('/')[-1]
 						tileblock = '''
@@ -4065,6 +4070,7 @@ auto_alpha_steps  = 5'''.format(imagesize)
 				append2logfile(paths['output_top_dir'], mainlogfile, 'Made Circos plots.')
 
 
+
 				# Circos plot 2: ideograms are elements
 				for i in range(len(clusters)):
 					if len(clusters[i]) < 2:
@@ -4087,6 +4093,7 @@ auto_alpha_steps  = 5'''.format(imagesize)
 						newhlfl = '{0}/data/{1}'.format(circosdir, '{0}.LTR_highlights.track'.format('.'.join(highlights_ltrs_fl.split('/')[-1].split('.')[:-2])))
 						# Copy hl fl to circos dir
 						copyfile(highlights_ltrs_fl, newhlfl)
+
 						if os.path.isfile(newseqfl):
 							os.remove(newseqfl)
 						# Convert tile file to ideogram track
@@ -4187,6 +4194,17 @@ auto_alpha_steps  = 5'''.format(imagesize)
 						#circos_call = [executables['circos'], '-silent', '-conf', confbasename]
 						circos_call = [executables['perl'], executables['circos']]
 						circoscalls.append([circosdir, circos_call, classif, i, '{0}/plots.elements'.format(paths['CurrentTopDir']), G])
+
+						# Clean up
+						if not KEEP_UNUSED_FILES:
+							os.remove(tilefl)
+							os.remove(linksfl)
+							os.remove(seqfl)
+							os.remove(textfl)
+							os.remove(highlights_ltrs_fl)
+							os.remove(links_untransposedfl)
+							os.remove(GFFoutFl)
+
 					
 				MakeDir('plotdir', '{0}/plots.elements'.format(paths['CurrentTopDir']))
 				chunk_size = ceil(len(circoscalls)/procs)
