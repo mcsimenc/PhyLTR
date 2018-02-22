@@ -7,7 +7,7 @@ import time
 import os.path
 import subprocess
 import random
-from shutil import copyfile, copytree
+from shutil import copyfile, copytree, rmtree
 from datetime import datetime
 from math import ceil
 from Bio import SeqIO, AlignIO
@@ -485,6 +485,10 @@ def ltrdigest():
 				statusFlAppend.write('LTRdigestGFF\t{0}\n'.format(paths['LTRdigestGFF']))
 			paths['CurrentGFF'] = paths['LTRdigestGFF']
 
+			# Remove suffixerator-generated files
+			if not KEEP_UNUSED_FILES:
+				rmtree(paths['suffixerator_dir'])
+				
 def Overlaps(j, k):
 	'''
 	Inputs, j and k, are tuples/lists with a start and a end coordinate as in: (start, end)
@@ -833,9 +837,12 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			getfasta_ltrretrotransposons_call_string = 'bedtools getfasta -fi {0} -s -bed {1} > {2} 2> {3}'.format(paths['inputFasta'], paths['LTRharvest_LTR_retrotransposons_GFF'], paths['LTRharvest_LTR_retrotransposons_fasta'], '{0}/bedtools_getfasta.stderr'.format(paths['FastaOutputDir']))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting LTR_retrotransposon sequences from LTRharvest GFF:\n{0}'.format(getfasta_ltrretrotransposons_call_string))
 			makecall(getfasta_ltrretrotransposons_call, paths['LTRharvest_LTR_retrotransposons_fasta'], '{0}/bedtools_getfasta.stderr'.format(paths['FastaOutputDir']))
+
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting LTR_retrotransposon sequences from LTRharvest GFF')
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Changing FASTA headers from bedtools getfasta-style to LTR_retrotransposon ID')
+
 			ChangeFastaHeaders(paths['LTRharvest_LTR_retrotransposons_fasta'], paths['LTRharvest_LTR_retrotransposons_GFF'])
+
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Done changing FASTA headers from bedtools getfasta-style to LTR_retrotransposon ID')
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('LTRharvest_LTR_retrotransposons_fasta\t{0}\n'.format(paths['LTRharvest_LTR_retrotransposons_fasta']))
@@ -855,9 +862,11 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			# run hmmsearch of LTR_retrotransposon features from LTRdigest or LTRharvest on Dfam
 			paths['nhmmer_DfamHits_table'] = '{0}/{1}.nhmmer_DfamHits.table'.format(paths['DfamClassificationDir'], filenames['inputFasta'])
 			nhmmer_dfam_call = [ '{0}/nhmmer'.format(executables['hmmer']), '--tblout', paths['nhmmer_DfamHits_table'], '--incE', str(nhmmer_inclusion_evalue), '-E', str(nhmmer_reporting_evalue), '--cpu', str(procs), paths['DfamDB'], paths['LTRharvest_LTR_retrotransposons_fasta'] ]
-			nhmmer_dfam_call_string = '{0} {1}'.format(' '.join(nhmmer_dfam_call), '1>{0}.nhmmer_DfamHits.stdout 2>{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
+			nhmmer_dfam_call_string = '{0} {1}'.format(' '.join(nhmmer_dfam_call), '1>/dev/null 2>{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
+			#nhmmer_dfam_call_string = '{0} {1}'.format(' '.join(nhmmer_dfam_call), '1>{0}.nhmmer_DfamHits.stdout 2>{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began nhmmer of Dfam:\n{0}'.format(nhmmer_dfam_call_string))
-			makecall(nhmmer_dfam_call, '{0}.nhmmer_DfamHits.stdout'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])), '{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
+			#makecall(nhmmer_dfam_call, '{0}.nhmmer_DfamHits.stdout'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])), '{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
+			makecall(nhmmer_dfam_call, '/dev/null', '{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished nhmmer of Dfam')
 
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
@@ -962,6 +971,11 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('LTRdigestClassifiedNoFP\t{0}\n'.format(paths['LTRdigestClassifiedNoFP']))
 			paths['CurrentGFF'] = paths['LTRdigestClassifiedNoFP']
+
+			# Remove large tblastx output and Dfam output. best hits are kept
+			if not KEEP_UNUSED_FILES:
+				rmtree(paths['RepbaseTable'])
+				rmtree(paths['DfamTable'])
 
 
 def shortClassif(ElNames=False):
