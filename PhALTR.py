@@ -4221,7 +4221,7 @@ def shortHelp():
 	print('''
 	  Usage:
 	  ------------
-	  phaltr -f|--fasta <path> [--logfile <path>] [-p|--procs <int>] [-c|--clean]
+	  phaltr -f|--fasta <path> [--logfile <path>] [-p|--procs <int>] [--keep_files]
 	  [-o|--output_dir <path>] [-lh|--ltrharvest] [--minlenltr <int>] [--maxlenltr <int>]
 	  [--mindistltr <int>] [--maxdistltr <int>] [--similar <int|float>] [--vic <int>]
 	  [--mintsd <int>] [--maxtsd <int>] [--xdrop <int>] [--mat <int>] [--mis <int>]
@@ -4245,7 +4245,7 @@ def help2():
 	----------------------------------------------------------------
 	--fasta				    <path>		NONE
 	--procs				    <int>		1
-	--clean				    BINARY		OFF
+	--keep_files			    BINARY		OFF
 	--output_dir			    <path>		LTRan_output
 	--ltrharvest			    BINARY		OFF
 	--minlenltr			    <int>		100
@@ -4332,7 +4332,8 @@ def help():
 	  ------------------------------
 	  -f | --fasta			<path>	Sequences to analyze. Mandatory.
 	  -p | --procs			<int>	Number of processors (default 1)
-	  -c | --clean				Remove all temporary files (NOT IMPLEMENTED YET)
+	  --keep_files				Default=no. Removes some large intermediate files, including raw
+	  					nhmmer and tlbastx output, Circos files, input FASTA suffix array.
 	  -o | --output_dir		<path>	Output directory. Default is "LTRan_output
 	  --logfile			<path>  Path to where log file is written (default <output_dir>/log.txt)
 	  -h					Defaults
@@ -4512,6 +4513,10 @@ else:
 
 filenames['inputFasta'] = paths['inputFasta'].split('/')[-1]
 
+if '--keep_files' in args:
+	KEEP_UNUSED_FILES = True
+else:
+	KEEP_UNUSED_FILES = False
 if '--nosmalls' in args:
 	SMALLS = False
 else:
