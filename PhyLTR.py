@@ -12,7 +12,7 @@ from datetime import datetime
 from math import ceil
 from Bio import SeqIO, AlignIO
 from multiprocessing import Pool, Manager
-from phaltrlib import *
+from phyltrlib import *
 from copy import copy
 
 def mergeCoords(A,B):
@@ -326,7 +326,7 @@ def writeLTRretrotransposonInternalRegions(inputGFFpth, outputGFFpth, elementSet
 							assert currentNewElement.attributes['Parent'] == gffLine.attributes['Parent'], 'GFF long_terminal_repeats may be out of order. Check near {0} or {1} in {2}'.format(currentNewElement.attributes['Parent'], gffLine.attributes['Parent'], inputGFFpth)
 
 							currentNewElement.seqid = gffLine.seqid
-							currentNewElement.source = 'PhALTR'
+							currentNewElement.source = 'PhyLTR'
 							currentNewElement.type = 'LTR_retrotransposon_InternalRegion'
 							currentNewElement.score = '.'
 							currentNewElement.strand = gffLine.strand
@@ -406,7 +406,7 @@ def writeLTRsGFF(inputGFFpth, outputGFFpth, elementSet=None):
 def ltrharvest():
 	'''
 	Runs LTRharvest. LTRharvest options can be specified on the command line.
-	See phaltr -h for defaults and phaltr -help for explanation.
+	See phyltr -h for defaults and phyltr -help for explanation.
 	'''
 	global paths
 	global filenames
@@ -4221,7 +4221,7 @@ def shortHelp():
 	print('''
 	  Usage:
 	  ------------
-	  phaltr -f|--fasta <path> [--logfile <path>] [-p|--procs <int>] [--keep_files]
+	  phyltr -f|--fasta <path> [--logfile <path>] [-p|--procs <int>] [--keep_files]
 	  [-o|--output_dir <path>] [-lh|--ltrharvest] [--minlenltr <int>] [--maxlenltr <int>]
 	  [--mindistltr <int>] [--maxdistltr <int>] [--similar <int|float>] [--vic <int>]
 	  [--mintsd <int>] [--maxtsd <int>] [--xdrop <int>] [--mat <int>] [--mis <int>]
@@ -4309,15 +4309,15 @@ def help():
 
 	  Usage:
 	  ------------
-	  phaltr [options] -fasta <input.fasta>
+	  phyltr [options] -fasta <input.fasta> [options]
 	  
 	  Description:
 	  ------------
 	  The main options would be:
-	  phaltr --fasta fasta.fa \\
+	  phyltr --fasta fasta.fa \\
 	  	 --procs 40 \\
 		 --ltrharvest \\
-		 --ltrdigest \\				Use: phaltr -h
+		 --ltrdigest \\				Use: phyltr -h
 		 --classify \\				   to see the defaults
 		 --mcl \\
 		 --wicker \\
@@ -4326,7 +4326,6 @@ def help():
 		 --ltrdivergence \\
 		 --DTT
 
-	  
 	  ------------------------------
 	  Global Options:
 	  ------------------------------
@@ -4339,7 +4338,6 @@ def help():
 	  -h					Defaults
 	  -help					Long help
 	  
-
 	  -------------------------
 	  Program-specific Options:
 	  -------------------------
@@ -4361,17 +4359,15 @@ def help():
   	  --ins		<int>		insertionscore for extension-alignment (default -3)
   	  --del		<int>		deletionscore for extension-alignment (default -3)
 
-
-
+	  ORF annotation
+	  --------------
 	  --min_orf_len			<int>	(default 300)
-
 
 	  LTRdigest
 	  ---------
 	  -ld | --ltrdigest			Run LTRdigest on file given by --fasta and --ltrharvest results (GFF) (default ON)
 	  --ltrdigest_hmms		<path>	Path to a file with one or more protein profile HMMs for LTRdigest (HMMER)
 	  					(default {0})
-
 
 	  Classification of LTR RTs to superfamily using homology to annotated sequences in Repbase and/or Dfam
 	  -----------------------------------------------------------------------------------------------------
@@ -4386,7 +4382,6 @@ def help():
 	  --repbase_tblastx_evalue	<int|float>	Max allowed E-value for tblastx hits (default 1e-5)
 	  --nhmmer_reporting_evalue	<int|float> 	(default 10)
 	  --nhmmer_inclusion_evalue	<int|float>	(default 1e-2)
-
 
 	  Clustering
 	  -----------
@@ -4420,7 +4415,6 @@ def help():
 	  --geneconvltrs
 	  --geneconvclusters
 
-
 	  LTR divergence estimation
 	  -------------------------
 	  --ltrdivergence			Find statistially best supported (BIC) substitution model for each cluster (default ON)
@@ -4435,7 +4429,6 @@ def help():
 	  					MULTIPLE CHOICES NOT YET IMPLEMENTED
 	  --remove_GC_from_modeltest_aln	Remove elements with suspected gene conversion tracts.
 
-
 	  Finding pairs of elements within clusters that have homologous flanking regions
 	  -------------------------------------------------------------------------------
 	  --rmhomoflank				Remove one of each pair of elements within each alignment (and therefore, each tree).
@@ -4445,8 +4438,6 @@ def help():
 	  --flank_pId		<int|float>	Minimum percent identity in blastn alignment to consider hit as evidence of homology. (default 70)
 	  --flank_plencutoff	<int|float>	Minimum percentage of flanking region required to participate in alignment to consider
 	  					blastn hit as evidence of homology. (default 70)
-
-
 	  Phylogenetic analysis
 	  ---------------------
 	  --phylo				##### not implemented yet
@@ -4459,8 +4450,7 @@ def help():
 						  The outgroup shall be a random element from cluster k where cluster k is the largest of the clusters
 						  that is not j if j is the first cluster then the next smallest cluster is k if there is no other
 						  cluster, no outgroup is used.
-
-		'''.format('{0}/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
+'''.format('{0}/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
 args=sys.argv
 
 # get executable paths from CONFIG file, which should be in the same directory as this script
