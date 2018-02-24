@@ -4957,9 +4957,9 @@ if USEMCL:
 	ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None)
 	phylo(removegeneconv=False, BOOTSTRAP=True, I=MCL_I, align='cluster', removehomologouspair=RMHOMOFLANK, part='entire', clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP,  bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 #
+div2Rplots(I=MCL_I)
 print('Fin!')
 sys.exit()
-div2Rplots(I=MCL_I)
 #
 #print('Done with estimate_divergence()')
 #sys.exit()
