@@ -4197,13 +4197,20 @@ auto_alpha_steps  = 5'''.format(imagesize)
 
 						# Clean up
 						if not KEEP_UNUSED_FILES:
-							os.remove(tilefl)
-							os.remove(linksfl)
-							os.remove(seqfl)
-							os.remove(textfl)
-							os.remove(highlights_ltrs_fl)
-							os.remove(links_untransposedfl)
-							os.remove(GFFoutFl)
+							if os.path.isfile(tilefl):
+								os.remove(tilefl)
+							if os.path.isfile(linksfl):
+								os.remove(linksfl)
+							if os.path.isfile(seqfl):
+								os.remove(seqfl)
+							if os.path.isfile(textfl):
+								os.remove(textfl)
+							if os.path.isfile(highlights_ltrs_fl):
+								os.remove(highlights_ltrs_fl)
+							if os.path.isfile(links_untransposedfl):
+								os.remove(links_untransposedfl)
+							if os.path.isfile(GFFoutFl):
+								os.remove(GFFoutFl)
 
 					
 				MakeDir('plotdir', '{0}/plots.elements'.format(paths['CurrentTopDir']))
