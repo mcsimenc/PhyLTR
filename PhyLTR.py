@@ -3485,7 +3485,7 @@ def div2Rplots(I=6):
 	subprocess.call(call)
 
 
-def clusterSummary(I):
+def clusterSummary():
 	#WickerFamDir_80_pId_80_percAln_80_minLen_Copia	LTRan_output/WickerFamDir/80_pId_80_percAln_80_minLen/Clusters/Copia/wicker_groups_Copia
 	#WickerFamDir_80_pId_80_percAln_80_minLen_ERV	LTRan_output/WickerFamDir/80_pId_80_percAln_80_minLen/Clusters/ERV/wicker_groups_ERV
 	#WickerFamDir_80_pId_80_percAln_80_minLen_Other	LTRan_output/WickerFamDir/80_pId_80_percAln_80_minLen/Clusters/Other/wicker_groups_Other
@@ -3499,32 +3499,46 @@ def clusterSummary(I):
 
 	clustPaths = [ line for line in open('{0}/status'.format(paths['output_top_dir']), 'r').read().strip().split('\n') if not 'divergence' in line and not line.endswith('minLen') and (line.startswith('WickerFamDir_') or re.match('MCL_.+_I\d', line)) ]
 
-	MCLclustdir = paths['MCL_I{0}_ClustersDir'.format(I)]
-	Wickerclustdir = paths['WickerFam_Cluster_dir']
-
 	# To avoid double-appending, remove cluster files if they exist before adding the new stuff
-	for p in clusterPath:
+	for p in clustPaths:
 		p = p.strip().split('\t')
 		if p[0].startswith('MCL'):
+			I = p[0].split('_')[-1][1:]
+			MCLclustdir = '/'.join(p[1].split('/')[:-2])
 			if os.path.exists('{0}/MCL_I{1}_summary'.format(MCLclustdir, I)):
 				os.remove('{0}/MCL_I{1}_summary'.format(MCLclustdir, I))
-		elif p[0].startwswith('Wicker'):
-			if os.path.exists('{0}/Wicker_summary'.format(Wickerclustdir)):
-				os.remove('{0}/Wicker_summary'.format(Wickerclustdir))
+		elif p[0].startswith('Wicker'):
+			Wickerclustdir = '/'.join(p[1].split('/')[:-2])
+			params = '_'.join(p[0].split('_')[1:-2])
+			if os.path.exists('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params)):
+				os.remove('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params))
 
-	for p in clusterPath:
+
+	headers = set() # Holds whether the header was written already for a particular file
+	for p in clustPaths:
 		p = p.strip().split('\t')
 		if p[0].startswith('MCL'):
+			MCLclustdir = '/'.join(p[1].split('/')[:-2])
 			superfamily = p[0].split('_')[1]
+			I = p[0].split('_')[-1][1:]
 			with open('{0}/MCL_I{1}_summary'.format(MCLclustdir, I), 'a') as outfl:
+				if '{0}/MCL_I{1}_summary'.format(MCLclustdir, I) not in headers:
+					outfl.write('superfamily\tcluster\tsize\n')
+					headers.add('{0}/MCL_I{1}_summary'.format(MCLclustdir, I))
 				with open(p[1], 'r') as clustFl:
 					clust = 0
 					for line in clustFl:
 						outfl.write('{0}\t{1}\t{2}\n'.format(superfamily, clust, len(line.split('\t'))))
 						clust += 1
-		elif p[0].startwswith('Wicker'):
+
+		elif p[0].startswith('Wicker'):
 			superfamily = p[0].split('_')[-1]
-			with open('{0}/Wicker_summary'.format(Wickerclustdir), 'a') as outfl:
+			Wickerclustdir = '/'.join(p[1].split('/')[:-2])
+			params = '_'.join(p[0].split('_')[1:-2])
+			with open('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params), 'a') as outfl:
+				if '{0}/Wicker_{1}_summary'.format(Wickerclustdir, params) not in headers:
+					outfl.write('superfamily\tcluster\tsize\n')
+					headers.add('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params))
 				with open(p[1], 'r') as clustFl:
 					clust = 0
 					for line in clustFl:
@@ -3589,7 +3603,7 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
 							el2start  = int(rec[10]) + starts[el2] - 1
 							el2end  = int(rec[11]) + starts[el2] - 1
 							el1seq = copy(seqs[el1])
-							el2seq =copy(seqs[el2])
+							el2seq = copy(seqs[el2])
 						else:
 							el1start  = int(rec[7])
 							el1end  = int(rec[8])
@@ -4869,7 +4883,7 @@ elif 'LTRharvestGFF' in paths:
 # They'll also be skipped if the are not supposed to run for the requested procedure
 # If they run they will append to the log
 
-clusterSummary(I)
+clusterSummary()
 sys.exit()
 
 sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
