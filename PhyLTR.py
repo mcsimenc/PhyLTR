@@ -850,8 +850,8 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 	if CLASSIFYDFAM: # Find evidence of homology to repeats in Dfam using HMMER. NEED TO CHANGE THIS SO REVERSE COMPLEMENT IS ALSO SEARCHED (nhmmsearch I think)
 		
 		paths['DfamDB'] = '{0}/RepeatDatabases/Dfam/Dfam.LTRs.hmm'.format(paths['selfDir'])
-		paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam.annotations.LTR.names.cleaned.txt'.format(paths['selfDir'])
-		paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam.annotations.LTR.names.cleaned.map'.format(paths['selfDir'])
+		paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam.annotations.LTR.names.txt'.format(paths['selfDir'])
+		paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam.annotations.LTR.names.map'.format(paths['selfDir'])
 		
 		if not 'DfamTable' in paths: # If this is in paths this step has been completed. Skip
 			# make Dfam classification output dir
@@ -901,8 +901,8 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 	if CLASSIFYREPBASE: # Find evidence of homology to repeats in Repbase using tblastx
 
 		paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase22.04_LTRs.fasta'.format(paths['selfDir'])
-		paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase.annotations.LTR.names.cleaned.txt'.format(paths['selfDir'])
-		paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase.annotations.LTR.names.cleaned.map'.format(paths['selfDir'])
+		paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase.annotations.LTR.names.txt'.format(paths['selfDir'])
+		paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase.annotations.LTR.names.map'.format(paths['selfDir'])
 		os.environ['BLASTDB'] = '{0}/RepeatDatabases/Repbase/:{0}/{1}'.format(paths['selfDir'],paths['FastaOutputDir'])
 
 		if not 'RepbaseTable' in paths: # If this is in paths this step has been completed. Skip
@@ -2852,7 +2852,7 @@ def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'p
 					clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
 				clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
 
-				LTRalnPths = { '_'.join(f.split('_')[:2]):'{0}/{1}'.format(paths[TrimalKey], f) for f in os.listdir(paths[TrimalKey]) if f.endswith('trimmed') } # LTR_retrotransposon148_LTRs.fasta.aln.trimmed 
+				PhyLTRalnPths = { '_'.join(f.split('_')[:2]):'{0}/{1}'.format(paths[TrimalKey], f) for f in os.listdir(paths[TrimalKey]) if f.endswith('trimmed') } # LTR_retrotransposon148_LTRs.fasta.aln.trimmed 
 				if ModeltestSummaryKey in paths:
 					with open(paths[ModeltestSummaryKey]) as testOutputFl:
 						paupLines = ''
@@ -2876,7 +2876,7 @@ def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'p
 					for j in range(len(clusters)):
 						for el in clusters[j]:
 							paupBlock = ''
-							seqRec = list(SeqIO.parse(LTRalnPths[el], 'fasta'))
+							seqRec = list(SeqIO.parse(PhyLTRalnPths[el], 'fasta'))
 							paupBlock = '''#NEXUS
 begin DATA;
 DIMENSIONS ntax=2 nchar={0};
@@ -2933,7 +2933,7 @@ END;
 					for j in range(len(clusters)):
 						for el in clusters[j]:
 							paupBlock = ''
-							seqRec = list(SeqIO.parse(LTRalnPths[el], 'fasta'))
+							seqRec = list(SeqIO.parse(PhyLTRalnPths[el], 'fasta'))
 							paupBlock = '''#NEXUS
 begin DATA;
 DIMENSIONS ntax=2 nchar={0};
@@ -3331,7 +3331,6 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 		if clustMethod.startswith('Wicker'):
 			clustMethod = 'WickerFam'
 		if clustMethod == 'MCL':
-			#LTRan_output/MCL/I8/Alignments/WholeElements/NoFiltering/Copia/cluster_0/elements.fasta.aln.trimal
 			settings  = paths[AlnFasta].split('/')[2]
 			classif = paths[AlnFasta].split('/')[-3]
 			if classif == 'whole_classif':
@@ -3340,7 +3339,6 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 			if clust.endswith('.fasta.aln.trimal'):
 				clust = 'wholeClassif'
 		elif clustMethod == 'WickerFam':
-			#['LTRan_output', 'WickerFamDir', '80_pId_80_percAln_80_minLen', 'Alignments', 'WholeElements', 'NoFiltering', 'Other', 'cluster_small', 'elements.fasta.aln.trimal']
 			classif = paths[AlnFasta].split('/')[-3]
 			clust = paths[AlnFasta].split('/')[-2]
 			settings = paths[AlnFasta].split('/')[2]
@@ -3352,7 +3350,6 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 				OutgroupSummaryKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.{6}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc, strHomoflank, strOutgroup)
 			elif clustMethod == 'MCL':
 				OutgroupSummaryKey = 'MCLOutgroups_{0}_I{1}_{2}.{3}.{4}'.format(classif, I, gc, strHomoflank, strOutgroup)
-		#LTRan_output/Alignments/WholeElements/GeneconversionDisallowed/whole_classif/NoHomologousFlank/All/elements.fasta.aln.trimal
 		seqbootOutputPhylip = '{0}/outfile'.format(pth)
 		# Split seqboot multi-phylip output
 		MakeDir('classifDir', '{0}/{1}'.format(OutPth, classif))
@@ -3486,6 +3483,54 @@ def div2Rplots(I=6):
 	with open('{0}/RscriptCalls.txt'.format(paths['output_top_dir']), 'a') as RcallFl:
 		RcallFl.write(call_str+'\n')
 	subprocess.call(call)
+
+
+def clusterSummary(I):
+	#WickerFamDir_80_pId_80_percAln_80_minLen_Copia	LTRan_output/WickerFamDir/80_pId_80_percAln_80_minLen/Clusters/Copia/wicker_groups_Copia
+	#WickerFamDir_80_pId_80_percAln_80_minLen_ERV	LTRan_output/WickerFamDir/80_pId_80_percAln_80_minLen/Clusters/ERV/wicker_groups_ERV
+	#WickerFamDir_80_pId_80_percAln_80_minLen_Other	LTRan_output/WickerFamDir/80_pId_80_percAln_80_minLen/Clusters/Other/wicker_groups_Other
+	#WickerFamDir_80_pId_80_percAln_80_minLen_Gypsy	LTRan_output/WickerFamDir/80_pId_80_percAln_80_minLen/Clusters/Gypsy/wicker_groups_Gypsy
+	#MCL_ERV_I8	LTRan_output/MCL/I8/Clusters/ERV/ERV_MCL_clusters.I8
+	#MCL_ERV_I8	LTRan_output/MCL/I8/Clusters/ERV/out.LTR_retrotransposon_ERV.mci.I80
+	#MCL_Other_I8	LTRan_output/MCL/I8/Clusters/Other/out.LTR_retrotransposon_Other.mci.I80
+	#MCL_Gypsy_I8	LTRan_output/MCL/I8/Clusters/Gypsy/out.LTR_retrotransposon_Gypsy.mci.I80
+	#MCL_Copia_I8	LTRan_output/MCL/I8/Clusters/Copia/out.LTR_retrotransposon_Copia.mci.I80
+	#MCL_Gypsy_I4	LTRan_output/MCL/I4/Clusters/Gypsy/out.LTR_retrotransposon_Gypsy.mci.I40
+
+	clustPaths = [ line for line in open('{0}/status'.format(paths['output_top_dir']), 'r').read().strip().split('\n') if not 'divergence' in line and not line.endswith('minLen') and (line.startswith('WickerFamDir_') or re.match('MCL_.+_I\d', line)) ]
+
+	MCLclustdir = paths['MCL_I{0}_ClustersDir'.format(I)]
+	Wickerclustdir = paths['WickerFam_Cluster_dir']
+
+	# To avoid double-appending, remove cluster files if they exist before adding the new stuff
+	for p in clusterPath:
+		p = p.strip().split('\t')
+		if p[0].startswith('MCL'):
+			if os.path.exists('{0}/MCL_I{1}_summary'.format(MCLclustdir, I)):
+				os.remove('{0}/MCL_I{1}_summary'.format(MCLclustdir, I))
+		elif p[0].startwswith('Wicker'):
+			if os.path.exists('{0}/Wicker_summary'.format(Wickerclustdir)):
+				os.remove('{0}/Wicker_summary'.format(Wickerclustdir))
+
+	for p in clusterPath:
+		p = p.strip().split('\t')
+		if p[0].startswith('MCL'):
+			superfamily = p[0].split('_')[1]
+			with open('{0}/MCL_I{1}_summary'.format(MCLclustdir, I), 'a') as outfl:
+				with open(p[1], 'r') as clustFl:
+					clust = 0
+					for line in clustFl:
+						outfl.write('{0}\t{1}\t{2}\n'.format(superfamily, clust, len(line.split('\t'))))
+						clust += 1
+		elif p[0].startwswith('Wicker'):
+			superfamily = p[0].split('_')[-1]
+			with open('{0}/Wicker_summary'.format(Wickerclustdir), 'a') as outfl:
+				with open(p[1], 'r') as clustFl:
+					clust = 0
+					for line in clustFl:
+						outfl.write('{0}\t{1}\t{2}\n'.format(superfamily, clust, len(line.split('\t'))))
+						clust += 1
+
 
 
 def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, output='file', linksdct=None, transposeLinks=True):
@@ -4253,7 +4298,7 @@ def help2():
 	--fasta				    <path>		NONE
 	--procs				    <int>		1
 	--keep_files			    BINARY		OFF
-	--output_dir			    <path>		LTRan_output
+	--output_dir			    <path>		PhyLTR.output
 	--ltrharvest			    BINARY		OFF
 	--minlenltr			    <int>		100
 	--maxlenltr			    <int>		1000
@@ -4340,7 +4385,7 @@ def help():
 	  -p | --procs			<int>	Number of processors (default 1)
 	  --keep_files				Default=no. Removes some large intermediate files, including raw
 	  					nhmmer and tlbastx output, Circos files, input FASTA suffix array.
-	  -o | --output_dir		<path>	Output directory. Default is "LTRan_output
+	  -o | --output_dir		<path>	Output directory. Default is "PhyLTR.output
 	  --logfile			<path>  Path to where log file is written (default <output_dir>/log.txt)
 	  -h					Defaults
 	  -help					Long help
@@ -4451,10 +4496,10 @@ def help():
 	  --nosmalls				Do not combine and perform phylogentic analyses on clusters smaller than --min_clust_size.
 	  --DTT					Turns on --rmhomoflank, --convert_to_ultrametric, and --auto_outgroup. Generates and attempts to run
 	  					Rscript that generates a DTT (LTT) plot for each cluster for which rooting is possible.
-	  --bootstrap_reps		<int>	Number of replicates to perform when bootstrapping (default 100)
+	  --bootstrap_reps		<int>	Number of replicates to generate for bootstrapping (default 100)
 	  --convert_to_ultrametric		Convert trees to ultrametric using PATHd8. (default OFF; ON when using --DTT)
 	  --auto_outgroup			Pick an outgroup automatically:
-						  The outgroup shall be a random element from cluster k where cluster k is the largest of the clusters
+						 -The outgroup shall be a random element from cluster k where cluster k is the largest of the clusters
 						  that is not j if j is the first cluster then the next smallest cluster is k if there is no other
 						  cluster, no outgroup is used.
 '''.format('{0}/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
@@ -4585,7 +4630,7 @@ if '--output_dir' in args:
 if '-o' in args:
 	MakeDir('output_top_dir', args[args.index('-o') + 1])
 else:
-	MakeDir('output_top_dir', 'LTRan_output')
+	MakeDir('output_top_dir', 'PhyLTR.output')
 
 if '--ltrharvest' in args or '-lh' in args: # Turn on LTRharvest for file given by --fasta
 	LTRHARVEST = True
@@ -4781,12 +4826,11 @@ if '--wicker_no_internals' in args:
 else:
 	wicker_use_internal = True
 	
-paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase.annotations.LTR.names.cleaned.map'.format(paths['selfDir'])
-paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam.annotations.LTR.names.cleaned.map'.format(paths['selfDir'])
+paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase.annotations.LTR.names.map'.format(paths['selfDir'])
+paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam.annotations.LTR.names.map'.format(paths['selfDir'])
 MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
 MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
 paths['CurrentGFF'] = None # This path will have the path to the best GFF3 to use.
-			    # Div > GC > TP > Ld > Lh
 try:
 	statusFlRead = open('{0}/status'.format(paths['output_top_dir']), 'r')
 except:
@@ -4825,6 +4869,8 @@ elif 'LTRharvestGFF' in paths:
 # They'll also be skipped if the are not supposed to run for the requested procedure
 # If they run they will append to the log
 
+clusterSummary(I)
+sys.exit()
 
 sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
 
