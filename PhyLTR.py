@@ -1421,10 +1421,11 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
 						statusFlAppend.write("{0}\t{1}\n".format('WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(pId, percAln, minLen, classif), paths['Wicker_{0}'.format(classif)]))
 
 
-def MCL(I=6, minClustSize=30):
+def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
 	'''
-	If there are less than minClustSize elements for a given classification or for all
-	classifications combined, they are put into one cluster and MCL is not used.
+	CombineIfTooFew:
+	  If there are less than minClustSize elements for a given classification or for all
+	  classifications combined, they are put into one cluster and MCL is not used.
 	'''
 	global paths
 	global filenames
@@ -1466,22 +1467,23 @@ def MCL(I=6, minClustSize=30):
 
 		MakeDir('MCLdir', '{0}/MCL'.format(paths['output_top_dir'], I))
 		# If all elements combined are less than the min clust size specified by the user, then all elements are put into one cluster.
-		if sum([len(clusters_by_classif[c]) for c in clusters_by_classif]) < minClustSize:
-			classif = 'All'
-			allClassifs = '{0}/out.allClust'.format(paths['MCLdir'])
-			c = []
-			for cls in classifs:
-				c += clusters_by_classif[cls]
+		if CombineIfTooFew:
+			if sum([len(clusters_by_classif[c]) for c in clusters_by_classif]) < minClustSize:
+				classif = 'All'
+				allClassifs = '{0}/out.allClust'.format(paths['MCLdir'])
+				c = []
+				for cls in classifs:
+					c += clusters_by_classif[cls]
+					
+				with open(allClassifs, 'w') as outFl:
+					outFl.write('{0}\n'.format('\t'.join(c)))
 				
-			with open(allClassifs, 'w') as outFl:
-				outFl.write('{0}\n'.format('\t'.join(c)))
-			
-			newRecord = 'MCL_{0}_I{1}'.format(classif, I)
-			if not checkStatusFl(newRecord):
-				paths['MCL_{0}_I{1}'.format(classif, I)] = '{0}/out.allClust'.format(paths['MCLdir'])
-				with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-					statusFlAppend.write('{0}\t{1}\n'.format('MCL_{0}_I{1}'.format(classif, I), paths['MCL_{0}_I{1}'.format(classif, I)])) 
-					return
+				newRecord = 'MCL_{0}_I{1}'.format(classif, I)
+				if not checkStatusFl(newRecord):
+					paths['MCL_{0}_I{1}'.format(classif, I)] = '{0}/out.allClust'.format(paths['MCLdir'])
+					with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+						statusFlAppend.write('{0}\t{1}\n'.format('MCL_{0}_I{1}'.format(classif, I), paths['MCL_{0}_I{1}'.format(classif, I)])) 
+						return
 
 		MakeDir('MCL_I{0}'.format(I), '{0}/I{1}'.format(paths['MCLdir'], I))
 		if not checkStatusFl('MCL_I{0}'.format(I)):
@@ -4952,7 +4954,7 @@ if WICKER:
 
 if USEMCL:
 	# 1. Perform clustering
-	MCL(I=MCL_I, minClustSize=MinClustSize)	# Run MCL. I is the inflation paramater that controls granularity. Default is 6. MCL docs recommend 1.4, 2, 4, and 6, and between 1.1 and 10 for most cases.
+	MCL(I=MCL_I, minClustSize=MinClustSize, CombineIfTooFew=False)	# Run MCL. I is the inflation paramater that controls granularity. Default is 6. MCL docs recommend 1.4, 2, 4, and 6, and between 1.1 and 10 for most cases.
 
 	if GENECONVCLUSTERS or LTRDIVERGENCE:
 		# 2. MSA for each cluster
