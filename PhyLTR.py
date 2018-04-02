@@ -2764,8 +2764,8 @@ def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='Wick
 
 		sig = sorted(sig, key=lambda x:x[1]) # Sort by element name, which at sig[i][1] are as: LTR_retrotransposon1;LTR_retrotransposon1
 		
-		paths['GENECONVsummary'] = '{0}/GENECONV_{1}.summary'.format(paths[GENECONVDirKey], g[1:])
-		paths['GENECONV_output'] = '{0}/GENECONVoutput_{1}.tab'.format(paths[GENECONVDirKey], g[1:])
+		paths['GENECONVsummary'] = '{0}/GENECONV_summary'.format(paths[GENECONVDirKey])
+		paths['GENECONV_output'] = '{0}/GENECONVoutput_tab'.format(paths[GENECONVDirKey])
 		IAGCpositive = set()
 		with open(paths['GENECONV_output'], 'w') as outputFl:
 			with open(paths['GENECONVsummary'], 'w') as summaryFl:
@@ -2775,7 +2775,7 @@ def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='Wick
 				except ZeroDivisionError:
 					summaryFl.write('# {0} elements out of {1}, or 0% with possible evidence of gene conversion\n'.format(len(sig), num_elements))
 				summaryFl.write('# 5% are expected by chance\n')
-				summaryFl.write('#elementName\tsim_p-val\talnLen\tstart\tend\ttractLen\tratio\n')
+				summaryFl.write('#elementName\tsim_p-val\talnLen\tstart\tend\ttractLen\tratio_alnLen2alnLen-tractLen\tgScale\n')
 				for line in sig:
 					totDifs = int(line.strip().split()[9])
 					if totDifs < 3:
@@ -2791,7 +2791,7 @@ def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='Wick
 					tractLen = int(contents[6])
 					alnLen = alnLens[element]
 					ratio = alnLen / (alnLen-tractLen)
-					summaryFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(element, sim_p, alnLen, start, end, tractLen, ratio))
+					summaryFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\n'.format(element, sim_p, alnLen, start, end, tractLen, ratio, g[1:]))
 
 		append2logfile(paths['output_top_dir'], mainlogfile, 'GENECONV output and a summary written to:\n{0}\n{1}'.format(paths['GENECONV_output'], paths['GENECONVsummary'] ))
 		paths[SummaryKey] = paths['GENECONVsummary']
@@ -2991,16 +2991,16 @@ END;
 		with open(paths[GENECONVSummaryKey], 'r') as gcFl:
 			for line in gcFl:
 				if not line.startswith('#'):
-					el, p, alnLen, start, end, tractLen, ratio = line.strip().split()
+					el, p, alnLen, start, end, tractLen, ratio, gscale = line.strip().split()
 					ratio = float(ratio)
 					alnLen = int(alnLen)
 					start = int(start)
 					end = int(end)
 
 					if not el in gcDct:
-						gcDct[el] = [(start, end, alnLen)]
+						gcDct[el] = [(start, end, alnLen, gscale)]
 					else:
-						gcDct[el].append((start, end, alnLen))
+						gcDct[el].append((start, end, alnLen, gscale))
 
 		# Average ratio for those elements with multiple predicted GC tracts.
 		for el in gcDct:
@@ -3008,7 +3008,7 @@ END;
 				tractLen = gcDct[el][0][1] - gcDct[el][0][0]
 				alnLen = gcDct[el][0][2]
 				gcDct[el] = alnLen / (alnLen - tractLen)
-				assert gcDct[el] != float(1), "GENECONV ratio of alnLen/(alnLen-tractLen) > 1. Shouldn't be the case since GENECONV found evidence of gene conversion. see ltr_divergece()"
+				#assert gcDct[el] != float(1), "GENECONV ratio of alnLen/(alnLen-tractLen) > 1. Shouldn't be the case since GENECONV found evidence of gene conversion. see ltr_divergece()"
 			else:
 				alnLen = gcDct[el][0][2]
 				coords = []
@@ -3029,7 +3029,7 @@ END;
 				for t in tracts:
 					tractLen += t[1] - t[0] + 1
 				gcDct[el] = alnLen / (alnLen - tractLen)
-				assert gcDct[el] != float(1), "GENECONV ratio of alnLen/(alnLen-tractLen) > 1. Shouldn't be the case since GENECONV found evidence of gene conversion. see ltr_divergece()"
+				#assert gcDct[el] != float(1), "GENECONV ratio of alnLen/(alnLen-tractLen) > 1. Shouldn't be the case since GENECONV found evidence of gene conversion. see ltr_divergece()"
 	# Read PAUP output
 	clustLenDcts = {}
 	clustDct = {}
@@ -4482,6 +4482,7 @@ def help():
 	  					(default g0,g1,g2)
 	  --geneconvltrs
 	  --geneconvclusters
+	  --circos				Make Circos plots for each cluster showing GENECONV results.
 
 	  LTR divergence estimation
 	  -------------------------
@@ -4751,6 +4752,11 @@ else:
 	GENECONV_G1 = True
 	GENECONV_G2 = True
 
+if '--circos' in args:
+	CIRCOS = True
+else:
+	CIRCOS = False
+
 if '--estimate_divergence' in args:
 	DIVERGENCE = True
 else:
@@ -4885,8 +4891,8 @@ elif 'LTRharvestGFF' in paths:
 # They'll also be skipped if the are not supposed to run for the requested procedure
 # If they run they will append to the log
 
-clusterSummary()
-sys.exit()
+#clusterSummary()
+#sys.exit()
 
 sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
 
@@ -4968,6 +4974,7 @@ if USEMCL:
 		if GENECONV_G2:
 			geneconvClusters(trimal=True, g='/g2', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
 
+
 		# 4. Modeltesting  for each cluster
 		modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part='entire', clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 #
@@ -4981,10 +4988,11 @@ if USEMCL:
 #
 #
 #  
-if WICKER:
-	Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-if USEMCL:
-	Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
+if CIRCOS:
+	if WICKER:
+		Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+	if USEMCL:
+		Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
 #
 #
 if WICKER:
