@@ -982,9 +982,8 @@ def shortClassif(ElNames=False):
 	'''
 	- Opens Dfam and Repbase short, class level names for elements, whose paths are hardcoded
 	  in this code to positions relative to this file.
-	- Opens GFF3 and assigns classification based on attributes. Conflicting attributes leads
-	  to the assignment being 'Other'
-	#- Returns a dictionary with element name as keys and assignment as values.
+	- Opens GFF3 and assigns classification based on attributes. Conflicting attributes (e.g. Dfam=Gypsy, Repbase=Copia)
+	  are resolved by using the Dfam classification.
 	- Returns a dictionary with assignments as keys and a list of elements as values.
 	- ElNames=True means this function will return a dict with LTR RT names as keys.
 	- ElNames=False means this function will return a dict with classifs as keys and sets of LTR RT names as values.
@@ -1011,50 +1010,27 @@ def shortClassif(ElNames=False):
 							if gffLine.attributes[attr] in DfamNames:
 								shortName = DfamNames[gffLine.attributes[attr]]
 								if shortName != 'None':
-									if el in ElementNames:
-										currentName = ElementNames[el]
-										if currentName == shortName:
-											continue
-										else:
-											if currentName == 'Other':
-												ElementNames[el] = shortName
-											else:
-												if el != 'Other':
-													ElementNames[el] = 'Other' # If classifications disagree, other is assigned as the short classification
-												else:
-													continue # If competing classifs are 'Other' and something else, 'Other' is not given priority
-									else:
-										ElementNames[el] = shortName
+									ElementNames[el] = shortName
 									
 							else:
-								if el in ElementNames:
+								if el in ElementNames: # Use repbase classification
 									continue
 								else:
-									ElementNames[el] = 'Other'
+									ElementNames[el] = 'Unknown'
 
 						elif 'repbase' in attr:
 							if gffLine.attributes[attr] in RepbaseNames:
 								shortName = RepbaseNames[gffLine.attributes[attr]]
 								if shortName != 'None':
-									if el in ElementNames:
-										currentName = ElementNames[el]
-										if currentName == shortName:
-											continue
-										else:
-											if currentName == 'Other':
-												ElementNames[el] = shortName
-											else:
-												if el != 'Other':
-													ElementNames[el] = 'Other' # If classifications disagree, other is assigned as the short classification
-												else:
-													continue # If competing classifs are 'Other' and something else, 'Other' is not given priority
+									if el in ElementNames: # Use Dfam classification
+										continue
 									else:
 										ElementNames[el] = shortName
 							else:
-								if el in ElementNames:
+								if el in ElementNames: # Use Dfam classification
 									continue
 								else:
-									ElementNames[el] = 'Other'
+									ElementNames[el] = 'Unknown'
 	# return 1
 	if ElNames:
 		return ElementNames
