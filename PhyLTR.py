@@ -849,9 +849,7 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 
 	if CLASSIFYDFAM: # Find evidence of homology to repeats in Dfam using HMMER. NEED TO CHANGE THIS SO REVERSE COMPLEMENT IS ALSO SEARCHED (nhmmsearch I think)
 		
-		paths['DfamDB'] = '{0}/RepeatDatabases/Dfam/Dfam.LTRs.hmm'.format(paths['selfDir'])
-		paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam.annotations.LTR.names.txt'.format(paths['selfDir'])
-		paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam.annotations.LTR.names.map'.format(paths['selfDir'])
+		#paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam.annotations.LTR.names.map'.format(paths['selfDir'])
 		
 		if not 'DfamTable' in paths: # If this is in paths this step has been completed. Skip
 			# make Dfam classification output dir
@@ -900,9 +898,6 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 
 	if CLASSIFYREPBASE: # Find evidence of homology to repeats in Repbase using tblastx
 
-		paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase22.04_LTRs.fasta'.format(paths['selfDir'])
-		paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase.annotations.LTR.names.txt'.format(paths['selfDir'])
-		paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase.annotations.LTR.names.map'.format(paths['selfDir'])
 		os.environ['BLASTDB'] = '{0}/RepeatDatabases/Repbase/:{0}/{1}'.format(paths['selfDir'],paths['FastaOutputDir'])
 
 		if not 'RepbaseTable' in paths: # If this is in paths this step has been completed. Skip
@@ -4824,8 +4819,16 @@ if '--wicker_no_internals' in args:
 else:
 	wicker_use_internal = True
 	
-paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase.annotations.LTR.names.map'.format(paths['selfDir'])
-paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam.annotations.LTR.names.map'.format(paths['selfDir'])
+paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta'.format(paths['selfDir'])
+paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(paths['selfDir'])
+paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF'.format(paths['selfDir'])
+paths['RepbaseSuperfamilies'] = '{0}/RepeatDatabases/Repbase/Repbase.unique_SFs'.format(paths['selfDir'])
+
+paths['DfamDB'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm'.format(paths['selfDir'])
+paths['DfamTruePosLTRlist'] = '{0}/Dfam_ERV_LTR.list'.format(paths['selfDir'])
+paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF'.format(paths['selfDir'])
+paths['DfamSuperfamilies'] = '{0}/RepeatDatabases/Dfam/Dfam.unique_SFs'.format(paths['selfDir'])
+
 MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
 MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
 paths['CurrentGFF'] = None # This path will have the path to the best GFF3 to use.
