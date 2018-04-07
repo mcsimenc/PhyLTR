@@ -1826,7 +1826,7 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
 					statusFlAppend.write('{0}\t{1}\n'.format(statusFlAlnKey, paths['ClusterTrimmedAln']))
 
 
-def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, auto_outgroup=False, bpflank=None, flank_pId=None, flank_evalue=None, flank_plencutoff=None, combine_and_do_small_clusters=True):
+def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, auto_outgroup=False, bpflank=None, flank_pId=None, flank_evalue=None, flank_plencutoff=None, combine_and_do_small_clusters=True, LTRSONLY=False):
 	'''
 	AutoAlign handles aligning whole or internal regions of LTRharvest GFF3 LTR RTs that had been clustered
 	using MCL() or WickerFam().
@@ -1953,6 +1953,14 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
 			print('modeltest(removegeneconv=True) used but {0} not found'.format(paths[gcSummaryPth]), file=sys.stderr)
 
 	for classif in classifs:
+		if LTRSONLY: # Align only clusters from superfamilies with identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+			YESLTRS = False
+			for SF in LTR_SFs:
+				if classif.startswith(SF):
+					YESLTRS = True
+					break
+			if not YESLTRS:
+				continue
 		if clustering_method == 'WickerFam':
 			clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
 		elif clustering_method == 'MCL':
@@ -1960,6 +1968,7 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
 		smallClusters = []
 		MakeDir('AlnDir_{0}'.format(classif), '{0}/{1}'.format(paths['AlnDir'], classif))
 		clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
+
 		if ALIGNCLASSIFS:
 			if WICKERCLUST:
 				statusFlKey = 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_all.{4}.{5}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, strHomoflank)
@@ -2338,10 +2347,10 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 				with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 					statusFlAppend.write('{0}\t{1}\n'.format(WickerMTdirkey, paths[WickerMTdirkey]))
 			if REMOVEGENECONV:
-				AutoAlign(I=None, part='entire', rmgeneconv=True, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'], 'percAln':WickerParams['percAln'], 'minLen':WickerParams['minLen']}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
+				AutoAlign(I=None, part='entire', rmgeneconv=True, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'], 'percAln':WickerParams['percAln'], 'minLen':WickerParams['minLen']}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
 				MakeDir('ModelTestDir_{0}'.format(keySuffix), '{0}/GeneconversionDisallowed'.format(paths['ModelTestDir']))
 			else:
-				AutoAlign(I=None, part='entire', rmgeneconv=False, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'], 'percAln':WickerParams['percAln'], 'minLen':WickerParams['minLen']}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
+				AutoAlign(I=None, part='entire', rmgeneconv=False, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'], 'percAln':WickerParams['percAln'], 'minLen':WickerParams['minLen']}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
 				MakeDir('ModelTestDir_{0}'.format(keySuffix), '{0}/NoGCFiltering'.format(paths['ModelTestDir']))
 
 			alignmentsForModeltesting = [ pth for pth in paths if pth.startswith('WickerAln_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])) and pth.endswith('{0}.nohomoflank.noOutgroup'.format(gc)) ] # model testing not done for small clusters
@@ -2355,10 +2364,10 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 				with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 					statusFlAppend.write('{0}\t{1}\n'.format(MCL_MT_dirkey, paths[MCL_MT_dirkey]))
 			if REMOVEGENECONV:
-				AutoAlign(I=I, part='entire', rmgeneconv=True, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
+				AutoAlign(I=I, part='entire', rmgeneconv=True, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
 				MakeDir('ModelTestDir_{0}'.format(keySuffix), '{0}/GeneconversionDisallowed'.format(paths['ModelTestDir']))
 			else:
-				AutoAlign(I=I, part='entire', rmgeneconv=False, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
+				AutoAlign(I=I, part='entire', rmgeneconv=False, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
 				MakeDir('ModelTestDir_{0}'.format(keySuffix), '{0}/NoGCFiltering'.format(paths['ModelTestDir']))
 			alignmentsForModeltesting = [ pth for pth in paths if pth.startswith('Aln_') and pth.endswith('{0}.nohomoflank.noOutgroup'.format(gc)) and 'I{0}'.format(I) in pth ]
 
@@ -2474,6 +2483,9 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 	Change sequence headers
 	Create a mafft call for every LTR pair FASTA
 	Execute calls using multiprocessing
+
+	Elements with Superfamily classifications besides the ones in LTR_SFs are ignored because they might be DIRS or
+	another kind of SF with non-identical LTRs (thus the LTR divergence process would not be accurate)
 	'''
 	global paths
 	global filenames
@@ -2540,27 +2552,35 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 					gffLine = GFF3_line(line)
 					elementName = gffLine.attributes['Parent']
 
-					if elementName in ltrs:
-						ltrs[elementName].append(line)
-						if len(ltrs[elementName]) == 2:
-							LTRsGFFfilepath = '{0}/{1}_LTRs.gff'.format(paths[GFFKey], elementName)
-							LTRsFASTAfilepath = '{0}/{1}_LTRs.fasta'.format(paths[FASTAKey], elementName)
-							LTRsAlignmentFilepath = '{0}/{1}_LTRs.fasta.aln'.format(paths[AlnKey], elementName)
-							LTRsTrimmedAlnFilepath = '{0}.trimmed'.format(LTRsAlignmentFilepath)
-							ltrs[elementName].append(LTRsGFFfilepath) # For writing GFF3
-							getfasta_LTRs_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', LTRsGFFfilepath ]  
-							ltrs_getfasta_calls[elementName] = (getfasta_LTRs_call, LTRsFASTAfilepath, None, None)
-							ltrs_changefastaheaders_calls[elementName] = (LTRsFASTAfilepath, LTRsGFFfilepath, 'Parent')
-							mafft_LTRs_call = [ executables['mafft'], '--quiet', '--globalpair', '--maxiterate', '1000', LTRsFASTAfilepath ]
-							ltrs_mafft_calls[elementName] = (mafft_LTRs_call, LTRsAlignmentFilepath, None, None)
+					# Skip element kinds with potentially non-identical LTRs upon insertion
+					YESLTR = False
+					for SF in LTR_SFs:
+						if classifs_by_element[elementName].startswith(SF):
+							YESLTR = True
+							break
 
-							if TRIMAL:
-								trimal_LTRs_call = [ executables['trimal'], '-in', LTRsAlignmentFilepath, '-out', LTRsTrimmedAlnFilepath, '-automated1' ]
-								ltrs_trimal_calls[elementName] = (trimal_LTRs_call, LTRsTrimmedAlnFilepath, None, None)
+					if YESLTR:
+						if elementName in ltrs:
+							ltrs[elementName].append(line)
+							if len(ltrs[elementName]) == 2:
+								LTRsGFFfilepath = '{0}/{1}_LTRs.gff'.format(paths[GFFKey], elementName)
+								LTRsFASTAfilepath = '{0}/{1}_LTRs.fasta'.format(paths[FASTAKey], elementName)
+								LTRsAlignmentFilepath = '{0}/{1}_LTRs.fasta.aln'.format(paths[AlnKey], elementName)
+								LTRsTrimmedAlnFilepath = '{0}.trimmed'.format(LTRsAlignmentFilepath)
+								ltrs[elementName].append(LTRsGFFfilepath) # For writing GFF3
+								getfasta_LTRs_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', LTRsGFFfilepath ]  
+								ltrs_getfasta_calls[elementName] = (getfasta_LTRs_call, LTRsFASTAfilepath, None, None)
+								ltrs_changefastaheaders_calls[elementName] = (LTRsFASTAfilepath, LTRsGFFfilepath, 'Parent')
+								mafft_LTRs_call = [ executables['mafft'], '--quiet', '--globalpair', '--maxiterate', '1000', LTRsFASTAfilepath ]
+								ltrs_mafft_calls[elementName] = (mafft_LTRs_call, LTRsAlignmentFilepath, None, None)
 
-							num_pairs += 1
-					else:
-						ltrs[elementName] = [line]
+								if TRIMAL:
+									trimal_LTRs_call = [ executables['trimal'], '-in', LTRsAlignmentFilepath, '-out', LTRsTrimmedAlnFilepath, '-automated1' ]
+									ltrs_trimal_calls[elementName] = (trimal_LTRs_call, LTRsTrimmedAlnFilepath, None, None)
+
+								num_pairs += 1
+						else:
+							ltrs[elementName] = [line]
 
 		chunk_size = ceil(num_pairs/procs)
 		# Write to log file here about chunk size and processors used
@@ -3152,10 +3172,10 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
 			MakeDir('HomoFlankDir', '{0}/AllElements'.format(paths['Superfamilies']))
 		OutPth = paths['HomoFlankDir']
 		if WICKERCLUST:
-			AutoAlign(I=None, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='classif', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'],'percAln':WickerParams['percAln'],'minLen':['minLen']}, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
+			AutoAlign(I=None, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='classif', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'],'percAln':WickerParams['percAln'],'minLen':['minLen']}, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
 			alnPthKeys.append('WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_all.{4}.{5}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, strHomoflank))
 		elif MCLCLUST:
-			AutoAlign(I=I, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='classif', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
+			AutoAlign(I=I, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='classif', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
 			alnPthKeys.append('Aln_{0}_I{1}_cluster_all.{2}.{3}'.format(classif, I, strHomoflank))
 	elif align == 'cluster':
 		if REMOVEGENECONV:
@@ -3177,10 +3197,10 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
 		OutPth= paths['OutgroupDir']
 
 		if WICKERCLUST:
-			AutoAlign(I=None, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='clusters', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'],'percAln':WickerParams['percAln'],'minLen':WickerParams['minLen']}, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
+			AutoAlign(I=None, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='clusters', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'],'percAln':WickerParams['percAln'],'minLen':WickerParams['minLen']}, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
 
 		elif MCLCLUST:
-			AutoAlign(I=I, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='clusters', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
+			AutoAlign(I=I, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='clusters', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
 
 	for classif in classifs:
 		# Read clusters
@@ -4822,12 +4842,14 @@ else:
 paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta'.format(paths['selfDir'])
 paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(paths['selfDir'])
 paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF'.format(paths['selfDir'])
-paths['RepbaseSuperfamilies'] = '{0}/RepeatDatabases/Repbase/Repbase.unique_SFs'.format(paths['selfDir'])
+#paths['RepbaseSuperfamilies'] = '{0}/RepeatDatabases/Repbase/Repbase.unique_SFs'.format(paths['selfDir'])
 
 paths['DfamDB'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm'.format(paths['selfDir'])
 paths['DfamTruePosLTRlist'] = '{0}/Dfam_ERV_LTR.list'.format(paths['selfDir'])
 paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF'.format(paths['selfDir'])
-paths['DfamSuperfamilies'] = '{0}/RepeatDatabases/Dfam/Dfam.unique_SFs'.format(paths['selfDir'])
+#paths['DfamSuperfamilies'] = '{0}/RepeatDatabases/Dfam/Dfam.unique_SFs'.format(paths['selfDir'])
+
+LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL']
 
 MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
 MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
@@ -4943,7 +4965,10 @@ if USEMCL:
 
 	if GENECONVCLUSTERS or LTRDIVERGENCE:
 		# 2. MSA for each cluster
-		AutoAlign(I=MCL_I, part='entire', rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
+		if not LTRDIVERGENCE:
+			AutoAlign(I=MCL_I, part='entire', rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
+		else:
+			AutoAlign(I=MCL_I, part='entire', rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
 
 		# 3. GENECONV for each MSA
 		if GENECONV_G0:
