@@ -2226,6 +2226,14 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 
 			hasEvidenceOfGC = set()
 			for classif in classifs:
+				if LTRSONLY: # Align only clusters from superfamilies with identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+					YESLTRS = False
+					for SF in LTR_SFs:
+						if classif.startswith(SF):
+							YESLTRS = True
+							break
+				if not YESLTRS:
+					continue
 				if MCLCLUST:
 					clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
 				elif WICKERCLUST:
