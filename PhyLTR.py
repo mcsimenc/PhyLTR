@@ -969,8 +969,10 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 
 			# Remove large tblastx output and Dfam output. best hits are kept
 			if not KEEP_UNUSED_FILES:
-				rmtree(paths['RepbaseTable'])
-				rmtree(paths['DfamTable'])
+				#rmtree(paths['RepbaseTable'])
+				os.remove(paths['RepbaseTable'])
+				#rmtree(paths['DfamTable'])
+				os.remove(paths['DfamTable'])
 
 
 def shortClassif(ElNames=False):
@@ -2108,7 +2110,7 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
 						aligner(smallClusters, OutDir=outDir, statusFlAlnKey=statusFlKey, part=part)
 
 
-def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClustSize=4, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, combine_and_do_small_clusters=True):
+def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClustSize=4, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, combine_and_do_small_clusters=True, LTRSONLY=True):
 	'''
 	g can be one of /g0, /g1, or /g2
 	g is proportional to the tolerance for mismatches in fragments by geneconv
@@ -2159,6 +2161,15 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Checking directory structure for GENECONV using {0}'.format(g) )
 
 			for classif in classifs:
+				if LTRSONLY: # Align only clusters from superfamilies with identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+					YESLTRS = False
+					for SF in LTR_SFs:
+						if classif.startswith(SF):
+							YESLTRS = True
+							break
+				if not YESLTRS:
+					continue
+
 				MakeDir('GENECONV_{0}_dir'.format(classif), '{0}/{1}'.format(paths[geneconvOutputDir], classif))
 				MakeDir('GENECONV_{0}_{1}_dir'.format(classif, g[1:]), '{0}/{1}'.format(paths['GENECONV_{0}_dir'.format(classif)], g[1:]))
 
@@ -2227,7 +2238,7 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 							trimalOutput = paths['Aln_{0}_I{1}_cluster{2}_NoGCfiltering.nohomoflank.noOutgroup'.format(classif, I, j)].split('.')
 						elif WICKERCLUST:
 							trimalOutput = paths['WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_{4}_NoGCfiltering.nohomoflank.noOutgroup'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, j)].split('.')
-						trimalOutput[-1] = 'tab'
+						trimalOutput[-1] = 'trimal'
 						geneconvOutputPth = '.'.join(trimalOutput)
 
 						with open(geneconvOutputPth, 'r') as gcFl:
@@ -2832,6 +2843,14 @@ def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'p
 		modeltestResults = {}
 		if not checkStatusFl(statusFlKey):
 			for classif in classifs:
+				# Align only clusters from superfamilies with identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+				YESLTRS = False
+				for SF in LTR_SFs:
+					if classif.startswith(SF):
+						YESLTRS = True
+						break
+				if not YESLTRS:
+					continue
 				# parse model test results for paup block and summary for best model
 				if MCLCLUST:
 					ModeltestSummaryKey = 'MCLModelTestSummary_{0}_iters_I{1}_{2}'.format(iters,I, classif)
@@ -3025,6 +3044,14 @@ END;
 	clustLenDcts = {}
 	clustDct = {}
 	for classif in classifs:
+		# Align only clusters from superfamilies with identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+		YESLTRS = False
+		for SF in LTR_SFs:
+			if classif.startswith(SF):
+				YESLTRS = True
+				break
+		if not YESLTRS:
+			continue
 		clustDct[classif] = {}
 		if MCLCLUST:
 			clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
@@ -4845,7 +4872,7 @@ paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF'.fo
 #paths['RepbaseSuperfamilies'] = '{0}/RepeatDatabases/Repbase/Repbase.unique_SFs'.format(paths['selfDir'])
 
 paths['DfamDB'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm'.format(paths['selfDir'])
-paths['DfamTruePosLTRlist'] = '{0}/Dfam_ERV_LTR.list'.format(paths['selfDir'])
+paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.list'.format(paths['selfDir'])
 paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF'.format(paths['selfDir'])
 #paths['DfamSuperfamilies'] = '{0}/RepeatDatabases/Dfam/Dfam.unique_SFs'.format(paths['selfDir'])
 
@@ -5028,16 +5055,12 @@ if USEMCL:
 	ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None)
 	phylo(removegeneconv=False, BOOTSTRAP=True, I=MCL_I, align='cluster', removehomologouspair=RMHOMOFLANK, part='entire', clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP,  bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 #
-div2Rplots(I=MCL_I)
+#div2Rplots(I=MCL_I)
 print('Fin!')
 sys.exit()
 #
 #print('Done with estimate_divergence()')
 #sys.exit()
-#
-#ts_tv() # Calculate transition/transversion for elements
-#
-#phylo(removegeneconv=False, BOOTSTRAP=True, I=MCL_I, align='clusters', removehomologouspair=True, part='entire') # Run FastTree for selections of elements/clusters
 #
 #xgmml() # for Cytoscape import
 #
