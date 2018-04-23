@@ -229,22 +229,22 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl, annotAttr2DbDict, outputFlName,
 				FOUNDNONLTR = False
 				if gffLine.type in LTR_retrotransposon_GFF_lines:
 					sys.exit('Line\n{0}\nout of order'.format(line.strip()))
-				LTR_retrotransposon_GFF_lines[gffLine.attributes['ID']] = [ line.strip() ]
+				LTR_retrotransposon_GFF_lines[gffLine.attributes['ID']] = [ line.strip() ] # add repeat_region line to output ('true positive') set
 				continue
 			elif gffLine.type == 'LTR_retrotransposon':
 				## Check if LTR
 				NoClassification = []
 				LTRmatching = {}
-				for attr in annotAttr2DbDict:
+				for attr in annotAttr2DbDict: # Check database true positives list
 					db = annotAttr2DbDict[attr].split('/')[-1]
 					annot = gffLine.attributes[attr]
 					if not annot == 'None':
 						if annot in Db_LTR_retrotransposon_features[db]:
-							LTRmatching[attr] = True
+							LTRmatching[attr] = True # is homologous to LTR retrotransposon in given db
 						else:
-							LTRmatching[attr] = False
+							LTRmatching[attr] = False # homologous to a non-LTR retrotransposon in given db. Flag for removal as 'false positive'
 					else:
-						NoClassification.append('None')
+						NoClassification.append('None') # not homologous to a known LTR RT in given db.
 
 				LTRmatching_values = list(LTRmatching.values())
 				if True in LTRmatching_values and False in LTRmatching_values:
@@ -259,27 +259,31 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl, annotAttr2DbDict, outputFlName,
 						del(LTR_retrotransposon_GFF_lines[gffLine.attributes['Parent']])
 						continue
 
-				elif 'None' in NoClassification and LTRmatching_values == []:
+				elif 'None' in NoClassification and LTRmatching_values == []: # no demonstrated homology to LTR RT in any db
 						if KEEPNOCLASSIFICATION:
 							LTR_retrotransposon_GFF_lines[gffLine.attributes['Parent']].append(line.strip())
 							continue
 
-						FOUNDNONLTR = True
 						del(LTR_retrotransposon_GFF_lines[gffLine.attributes['Parent']])
+						FOUNDNONLTR = True
 						continue
 
-				elif NoClassification == [] and LTRmatching_values == []:
+				elif NoClassification == [] and LTRmatching_values == []: # no demonstratd homology to LTR RT in any db
 					logfile.write('{0}\thas no classification\n'.format(gffLine.attributes['Parent']))
 					FOUNDNONLTR = True
 					del(LTR_retrotransposon_GFF_lines[gffLine.attributes['Parent']])
 					continue
-				elif False in LTRmatching_values:
-					FOUNDNONLTR = True
+
+				elif False in LTRmatching_values: # homology to non-LTR retrotransposon in a db
+
 					del(LTR_retrotransposon_GFF_lines[gffLine.attributes['Parent']])
+					FOUNDNONLTR = True
 					continue
+
 				else:
 					LTR_retrotransposon_GFF_lines[gffLine.attributes['Parent']].append(line.strip())
 					continue
+
 			else:
 				if FOUNDNONLTR:
 					continue
@@ -4536,11 +4540,12 @@ def help():
 	  --wicker_no_ltrs			(default OFF)
 
 
-	  MAFFT (for cluster, not LTR alignment)
+	  MAFFT (for cluster, not LTR alignment): Default for very large clusters (clust_size > 200)
 	  -----------------------------
-	  --maxiterate_small_clusters		<int>	Max number of iterations for MAFFT algorithm. 1 is fastest; greater numbers will improve the
-	  						alignment (default 30)
-	  --maxiterate_large_clusters		<int>	Number of iterations for MAFFT algorithm for large clusters (default 3)
+	  --mafft_retree		    	<int>	Default 2. Options: 2 or 1. 1 is faster and less accurate.
+	  --maxiterate_small_clusters		<int>	Max number of iterations for MAFFT algorithm for clusters with < --min_clustsize_for_faster_aln  elements.
+	  						1 is fastest; greater numbers will improve the alignment (default 30).
+	  --maxiterate_large_clusters		<int>	Number of iterations for MAFFT algorithm for large clusters (--min_clustsize_for_faster_aln  < clust_size) (default 3)
 	  --min_clustsize_for_faster_aln	<int>	Clusters smaller than this will be aligned using the settings from --maxiterate_small_clusters,
 	  						while those larger will get aligned using the settings from --maxiterate_large_clusters (default 40)
 	  --retree				<int>	Guide tree is built <int> times in the progressive stage. Valid with 6mer distance. (default 2)
@@ -4753,11 +4758,11 @@ if '--classify_repbase' in args or '--classify' in args:
 else:
 	CLASSIFYREPBASE = False
 	os.environ['BLASTDB'] = paths['FastaOutputDir']
-if '--keep_conflicting_classifications':
+if '--keep_conflicting_classifications' in args:
 	KEEPCONFLICTS=True
 else:
 	KEEPCONFLICTS=False
-if '--keep_no_classification':
+if '--keep_no_classification' in args:
 	KEEPNOCLASSIFICATION=True,
 else:
 	KEEPNOCLASSIFICATION=False,
@@ -4973,6 +4978,8 @@ elif 'LTRharvestGFF' in paths:
 
 #clusterSummary()
 #sys.exit()
+print(type(KEEPNOCLASSIFICATION))
+sys.exit()
 
 sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
 
