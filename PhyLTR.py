@@ -4763,9 +4763,9 @@ if '--keep_conflicting_classifications' in args:
 else:
 	KEEPCONFLICTS=False
 if '--keep_no_classification' in args:
-	KEEPNOCLASSIFICATION=True,
+	KEEPNOCLASSIFICATION=True
 else:
-	KEEPNOCLASSIFICATION=False,
+	KEEPNOCLASSIFICATION=False
 if '--nhmmer_reporting_evalue' in args:
 	nhmmer_reporting_evalue = float(args[args.index('--nhmmer_reporting_evalue')+1])
 else:
@@ -4978,8 +4978,6 @@ elif 'LTRharvestGFF' in paths:
 
 #clusterSummary()
 #sys.exit()
-print(type(KEEPNOCLASSIFICATION))
-sys.exit()
 
 sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
 
