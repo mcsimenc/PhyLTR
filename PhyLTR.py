@@ -1809,13 +1809,14 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
 		if len(elementList) < mafft_large_minclustsize:
 			#mafft_call = [ executables['mafft'], '--quiet', '--retree', str(mafft_retree), '--thread', str(procs), '--maxiterate', str(mafft_small_maxiterate), paths['AlnFasta'] ]
 			mafft_call = [ executables['mafft'], '--quiet', '--retree', '2', '--thread', str(procs), '--maxiterate', str(mafft_small_maxiterate), paths['AlnFasta'] ]
-			mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
+			#mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
 		elif len(elementList) >= mafft_large_minclustsize and len(elementList) < 500:
 			#mafft_call = [ executables['mafft'], '--quiet', '--retree', str(mafft_retree),'--thread', str(procs), '--maxiterate', str(mafft_large_maxiterate), paths['AlnFasta'] ]
 			mafft_call = [ executables['mafft'], '--quiet', '--retree', '1','--thread', str(procs), '--maxiterate', str(mafft_large_maxiterate), paths['AlnFasta'] ]
-			mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
+			#mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
 		elif len(elementList) >= 500:
 			mafft_call = [ executables['mafft'], '--memsave', '--memsavetree', '--quiet', '--retree', '1', '--thread', str(procs), '--maxiterate', str(mafft_large_maxiterate), paths['AlnFasta'] ]
+		mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
 
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Aligning\n{0}'.format(mafft_call_string))
 		makecall(mafft_call, paths['AlnPth'], '{0}.stderr'.format(paths['AlnPth']))
