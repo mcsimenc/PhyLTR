@@ -1807,11 +1807,15 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
 
 		# Align regions from selected elements
 		if len(elementList) < mafft_large_minclustsize:
-			mafft_call = [ executables['mafft'], '--quiet', '--retree', str(mafft_retree), '--thread', str(procs), '--maxiterate', str(mafft_small_maxiterate), paths['AlnFasta'] ]
+			#mafft_call = [ executables['mafft'], '--quiet', '--retree', str(mafft_retree), '--thread', str(procs), '--maxiterate', str(mafft_small_maxiterate), paths['AlnFasta'] ]
+			mafft_call = [ executables['mafft'], '--quiet', '--retree', '2', '--thread', str(procs), '--maxiterate', str(mafft_small_maxiterate), paths['AlnFasta'] ]
 			mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
-		elif len(elementList) >= mafft_large_minclustsize:
-			mafft_call = [ executables['mafft'], '--quiet', '--retree', str(mafft_retree),'--thread', str(procs), '--maxiterate', str(mafft_large_maxiterate), paths['AlnFasta'] ]
+		elif len(elementList) >= mafft_large_minclustsize and len(elementList) < 500:
+			#mafft_call = [ executables['mafft'], '--quiet', '--retree', str(mafft_retree),'--thread', str(procs), '--maxiterate', str(mafft_large_maxiterate), paths['AlnFasta'] ]
+			mafft_call = [ executables['mafft'], '--quiet', '--retree', '1','--thread', str(procs), '--maxiterate', str(mafft_large_maxiterate), paths['AlnFasta'] ]
 			mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
+		elif len(elementList) >= 500:
+			mafft_call = [ executables['mafft'], '--memsave', '--memsavetree', '--quiet', '--retree', '1', '--thread', str(procs), '--maxiterate', str(mafft_large_maxiterate), paths['AlnFasta'] ]
 
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Aligning\n{0}'.format(mafft_call_string))
 		makecall(mafft_call, paths['AlnPth'], '{0}.stderr'.format(paths['AlnPth']))
@@ -2446,7 +2450,7 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 					paths['Tree'] = '{0}/{1}_I{2}_{3}.tree'.format(paths['ModelTestIterationDir'], classif, I, j)
 					filenames['Tree'] = '{0}_I{1}_{2}.tree'.format(classif, I, j)
 					fasttree_call = [ executables['fasttree'], '-nt', '-gtr' ]
-					fasttree_call_string =  '{0} -nt -gtr <{1} >{2} 2>{2}.stderr'.format(executables['fasttree'], paths[aln],paths['Tree'])
+					fasttree_call_string = '{0} -nt -gtr <{1} >{2} 2>{2}.stderr'.format(executables['fasttree'], paths[aln],paths['Tree'])
 					append2logfile(paths['output_top_dir'], mainlogfile, 'Began inferring phylogeny using FastTree:\n{0}'.format(fasttree_call_string))
 					makecall(fasttree_call, stdout=paths['Tree'], stderr='{0}.stderr'.format(paths['Tree']), stdin=paths[aln])
 					append2logfile(paths['output_top_dir'], mainlogfile, 'Finished inferring phylogeny using FastTree')
@@ -3028,8 +3032,9 @@ END;
 						gcDct[el].append((start, end, alnLen, gscale))
 
 		# Average ratio for those elements with multiple predicted GC tracts.
+		# Currently all LTR divergence estimates are scaled as if all GC tracts were g0 (no mismatches)
 		for el in gcDct:
-			if len(gcDct[el]) == 1:
+			if len(gcDct[el]) == 1: # If True there is only one GC tract for this element.
 				tractLen = gcDct[el][0][1] - gcDct[el][0][0]
 				alnLen = gcDct[el][0][2]
 				gcDct[el] = alnLen / (alnLen - tractLen)
@@ -4375,7 +4380,7 @@ def shortHelp():
 	  [--wicker_no_ltrs] [--wicker_no_internals] [--mcl] [-I <int|float>] [--nosmalls]
 	  [--geneconvltrs] [--geneconv_g <[g0[,g1[,g2]]]>] [--ltrdivergence] [--remove_GC_from_modeltest_aln]
 	  [--modeltest_criterion <str>] [--gc_ltr_div_scaling <int>] [--maxiterate_small_clusters <int>]
-	  [--maxiterate_large_clusters <int>] [--min_clustsize_for_faster_aln <int>] [--mafft_retree <int>]
+	  [--maxiterate_large_clusters <int>] [--min_clustsize_for_faster_aln <int>] #[--mafft_retree <int>]
 	  [--geneconvclusters] [--DTT] [--phylo] [--bootstrap_reps] [--bpflank <int>]
 	  [--flank_evalue <int|float>] [--flank_pId <int|float>][--flank_plencutoff <int|float>]
 	  [--min_orf_len <int>]
@@ -4432,7 +4437,7 @@ def help2():
 	--maxiterate_small_clusters	    <int>		30
 	--maxiterate_large_clusters	    <int>		3
 	--min_clustsize_for_faster_aln	    <int>		40
-	--mafft_retree			    <int>		2
+	#--mafft_retree			    <int>		2 < minclustsize/1
 	--geneconvclusters		    BINARY		OFF
 	--DTT				    BINARY		OFF
 	--phylo				    BINARY		OFF
@@ -4542,7 +4547,9 @@ def help():
 
 	  MAFFT (for cluster, not LTR alignment): Default for very large clusters (clust_size > 200)
 	  -----------------------------
-	  --mafft_retree		    	<int>	Default 2. Options: 2 or 1. 1 is faster and less accurate.
+	  #--mafft_retree		    	<int>	Default 2. Options: 2 or 1. 1 is faster and less accurate.
+	  --mafft_retree		    	<int>	Set to 2 clusts < --min_clustsize_for_faster_aln and 1 for clusts >. For clusts > 500, --memsave and --memsavetree are included
+	  						because very large clusters 64G of RAM was not enough to perform alignments
 	  --maxiterate_small_clusters		<int>	Max number of iterations for MAFFT algorithm for clusters with < --min_clustsize_for_faster_aln  elements.
 	  						1 is fastest; greater numbers will improve the alignment (default 30).
 	  --maxiterate_large_clusters		<int>	Number of iterations for MAFFT algorithm for large clusters (--min_clustsize_for_faster_aln  < clust_size) (default 3)
@@ -4977,8 +4984,6 @@ elif 'LTRharvestGFF' in paths:
 # If they run they will append to the log
 
 #clusterSummary()
-#sys.exit()
-
 sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
 
 #  I. Identification and classification of elements
@@ -5011,6 +5016,10 @@ classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLA
 clusters_by_classif = shortClassif()
 classifs_by_element = shortClassif(ElNames=True)
 classifs = set(list(clusters_by_classif.keys()))
+
+#summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
+#sys.exit()
+
 #
 #		# Input: LTR RT structures (GFF3) and Sequences (FASTA)
 #		# Output: List of elements with evidence of intra element LTR gene conversion (text table)
@@ -5067,6 +5076,11 @@ if USEMCL:
 		modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part='entire', clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 #
 #
+if WICKER:
+	summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
+if USEMCL:
+	summarizeClusters(I=6, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
+#
 #
 #	GENECONV stringency settings
 #
@@ -5112,10 +5126,6 @@ if USEMCL:
 	ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None)
 	phylo(removegeneconv=False, BOOTSTRAP=True, I=MCL_I, align='cluster', removehomologouspair=RMHOMOFLANK, part='entire', clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP,  bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 #
-if WICKER:
-	summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
-if USEMCL:
-	summarizeClusters(I=6, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
 #div2Rplots(I=MCL_I)
 print('Fin!')
 sys.exit()
