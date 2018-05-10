@@ -1,5 +1,5 @@
-## Phylogenetic analysis of long terminal repeat retrotransposons
-# PhALTR
+## Phylogenetic analysis of Long Terminal Repeat retrotransposons
+# PhyLTR
   
 ### Dependencies
 Program			Version tested with PhALTR	Process using program  
@@ -15,7 +15,7 @@ HMMER3				3.1b2			classifying to superfamily. must have >=3.1
 BLAST+				2.2.31+			many  
 MCL				14-137			Clustering using MCL  
 GENECONV			1.81a			finding gene conversion  
-PAUP*				4a159			LTR divergence estimation  
+PAUP\*				4a159			LTR divergence estimation  
 PHYLIP				3.697			bootstrapping (seqboot)  
 Rscript				3.3.3			running R scripts  
 Perl				5.24.1			running bootstrapping scripts  
@@ -29,3 +29,12 @@ For divergence plots					ggplot2
 For LTT plots						ape  
 							phangorn  
 							phytools  
+
+####Downoading Repbase
+1. Get an account with GIRI
+2. Go to http://www.girinst.org/repbase/update/browse.php
+3. Select LTR Retrotransposon from the Repeat class dropdown list.
+4. Select FASTA from the Output format drop down list.
+5. Click the Download button, sign in, and download the text page that opens.
+6. Repeat steps 3-5 but select Endogenous Retrovirus from the Repeat class dropdown list.
+
