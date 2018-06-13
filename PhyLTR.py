@@ -1806,16 +1806,22 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
 			paths['AlnPth'] = '{0}.aln'.format(paths['EntireelementsFasta'])
 
 		# Align regions from selected elements
-		if len(elementList) < mafft_large_minclustsize:
-			#mafft_call = [ executables['mafft'], '--quiet', '--retree', str(mafft_retree), '--thread', str(procs), '--maxiterate', str(mafft_small_maxiterate), paths['AlnFasta'] ]
+		if len(elementList) <= mafft_small_maxclustsize:
 			mafft_call = [ executables['mafft'], '--quiet', '--retree', '2', '--thread', str(procs), '--maxiterate', str(mafft_small_maxiterate), paths['AlnFasta'] ]
-			#mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
-		elif len(elementList) >= mafft_large_minclustsize and len(elementList) < 500:
-			#mafft_call = [ executables['mafft'], '--quiet', '--retree', str(mafft_retree),'--thread', str(procs), '--maxiterate', str(mafft_large_maxiterate), paths['AlnFasta'] ]
-			mafft_call = [ executables['mafft'], '--quiet', '--retree', '1','--thread', str(procs), '--maxiterate', str(mafft_large_maxiterate), paths['AlnFasta'] ]
-			#mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
-		elif len(elementList) >= 500:
-			mafft_call = [ executables['mafft'], '--memsave', '--memsavetree', '--quiet', '--retree', '1', '--thread', str(procs), '--maxiterate', str(mafft_large_maxiterate), paths['AlnFasta'] ]
+		elif len(elementList) > mafft_small_maxclustsize and len(elementList) <= mafft_medium_maxclustsize:
+			mafft_call = [ executables['mafft'], '--quiet', '--retree', '2','--thread', str(procs), '--maxiterate', str(mafft_medium_maxiterate), paths['AlnFasta'] ]
+		elif len(elementList) > mafft_medium_maxclustsize and len(elementList) <= mafft_large_maxclustsize:
+			#mafft_call = [ executables['mafft'], '--memsave', '--memsavetree', '--quiet', '--retree', '1', '--thread', str(procs), paths['AlnFasta'] ]
+			mafft_call = [ executables['mafft'], '--quiet', '--retree', '1', '--thread', str(procs), paths['AlnFasta'] ]
+		elif len(elementList) > mafft_large_maxclustsize:
+			# Write would-be alignment path to status file
+			paths['ClusterTrimmedAln'] = '{0}.trimal'.format(paths['AlnPth'])
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				paths[statusFlAlnKey] = paths['ClusterTrimmedAln']
+				if os.path.isfile(paths[statusFlAlnKey]):
+					statusFlAppend.write('{0}\t{1}\n'.format(statusFlAlnKey, paths['ClusterTrimmedAln']))
+			return # break out of function
+
 		mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
 
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Aligning\n{0}'.format(mafft_call_string))
@@ -2025,9 +2031,9 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
 			if AUTO_OUTGROUP:
 				# Write header for record of outgroups file, overwriting an old file if it exisits.
 				if clustering_method == 'WickerFam':
-					OutgroupSummaryKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.{6}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc, strHomoflank, strOutgroup)
+					OutgroupSummaryKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.OutgroupSummary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc, strHomoflank)
 				elif clustering_method == 'MCL':
-					OutgroupSummaryKey = 'MCLOutgroups_{0}_I{1}_{2}.{3}.{4}'.format(classif, I, gc, strHomoflank, strOutgroup)
+					OutgroupSummaryKey = 'MCLOutgroups_{0}_I{1}_{2}.{3}.OutgroupSummary'.format(classif, I, gc, strHomoflank)
 				outgroupFile = '{0}/Outgroups'.format(paths['AlnDir_{0}'.format(classif)])
 				paths[OutgroupSummaryKey] = outgroupFile
 
@@ -3237,10 +3243,8 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
 			strHomoflank = 'nohomoflank'
 			MakeDir('HomoFlankDir', '{0}/AllElements'.format(paths['GCDir']))
 		if AUTO_OUTGROUP:
-			strOutgroup = 'withOutgroup'
 			MakeDir('OutgroupDir', '{0}/WithOutgroup'.format(paths['HomoFlankDir']))
 		else:
-			strOutgroup = 'noOutgroup'
 			MakeDir('OutgroupDir', '{0}/NoOutgroup'.format(paths['HomoFlankDir']))
 		OutPth= paths['OutgroupDir']
 
@@ -3388,9 +3392,11 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 
 		if ULTRAMETRIC:
 			if clustMethod == 'WickerFam':
-				OutgroupSummaryKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.{6}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc, strHomoflank, strOutgroup)
+				OutgroupSummaryKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.OutgroupSummary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc, strHomoflank)
+				#OutgroupSummaryKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.{6}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc, strHomoflank, strOutgroup)
 			elif clustMethod == 'MCL':
-				OutgroupSummaryKey = 'MCLOutgroups_{0}_I{1}_{2}.{3}.{4}'.format(classif, I, gc, strHomoflank, strOutgroup)
+				OutgroupSummaryKey = 'MCLOutgroups_{0}_I{1}_{2}.{3}.OutgroupSummary'.format(classif, I, gc, strHomoflank)
+				#OutgroupSummaryKey = 'MCLOutgroups_{0}_I{1}_{2}.{3}.{4}'.format(classif, I, gc, strHomoflank, strOutgroup)
 		seqbootOutputPhylip = '{0}/outfile'.format(pth)
 		# Split seqboot multi-phylip output
 		MakeDir('classifDir', '{0}/{1}'.format(OutPth, classif))
@@ -4378,10 +4384,11 @@ def shortHelp():
 	  [--nhmmer_inclusion_evalue <int|float>] [--repbase_tblastx_evalue <int|float>] 
 	  [--keep_conflicting_classificaitons] [--keep_no_classifications] [--min_clust_size <int>]
 	  [--wicker] [--wicker_pId <int|float>] [--wicker_minLen <int>] [--wicker_pAln <int|float>]
-	  [--wicker_no_ltrs] [--wicker_no_internals] [--mcl] [-I <int|float>] [--nosmalls]
+	  [--wicker_no_ltrs] [--wicker_no_internals] [--mcl] [--I <int|float>] [--nosmalls]
 	  [--geneconvltrs] [--geneconv_g <[g0[,g1[,g2]]]>] [--ltrdivergence] [--remove_GC_from_modeltest_aln]
-	  [--modeltest_criterion <str>] [--gc_ltr_div_scaling <int>] [--maxiterate_small_clusters <int>]
-	  [--maxiterate_large_clusters <int>] [--min_clustsize_for_faster_aln <int>] #[--mafft_retree <int>]
+	  [--gc_ltr_div_scaling <int>] [ --maxiterate_small_clusters <int> ]
+	  [ --maxiterate_medium_clusters <int> ] [ --mafft_smallAln_maxclustsize <int> ]
+	  [ --mafft_mediumAln_maxclustsize <int> ] [ --mafft_largeAln_maxclustsize <int> ]
 	  [--geneconvclusters] [--DTT] [--phylo] [--bootstrap_reps] [--bpflank <int>]
 	  [--flank_evalue <int|float>] [--flank_pId <int|float>][--flank_plencutoff <int|float>]
 	  [--min_orf_len <int>]
@@ -4427,7 +4434,7 @@ def help2():
 	--wicker_no_internals		    BINARY		OFF
 	--wicker_no_ltrs		    BINARY		OFF
 	--mcl				    BINARY		MCL
-	-I				    <int|float>		6
+	--I				    <int|float>		6
 	--nosmalls			    BINARY		OFF
 	--geneconvltrs			    BINARY		OFF
 	--geneconv_g			    <str>		g0,g1,g2
@@ -4435,10 +4442,11 @@ def help2():
 	--remove_GC_from_modeltest_aln	    BINARY		OFF
 	--modeltest_criterion		    <str>		BIC
 	--gc_ltr_div_scaling		    <int>		1
-	--maxiterate_small_clusters	    <int>		30
-	--maxiterate_large_clusters	    <int>		3
-	--min_clustsize_for_faster_aln	    <int>		40
-	#--mafft_retree			    <int>		2 < minclustsize/1
+	--maxiterate_small_clusters	    <int>		20
+	--maxiterate_medium_clusters	    <int>		5
+	--mafft_smallAln_maxclustsize	    <int>	 	50
+	--mafft_mediumAln_maxclustsize	    <int>		500
+	--mafft_largeAln_maxclustsize  	    <int>		1000
 	--geneconvclusters		    BINARY		OFF
 	--DTT				    BINARY		OFF
 	--phylo				    BINARY		OFF
@@ -4536,7 +4544,7 @@ def help():
 	  --min_clust_size			Minimum allowed cluster size. Clusters with < minclustsize elements get assembled together
 	  					but no model testing, gene conversion, or outgroup/DTT analysis is done.
   	  --mcl					Cluster using MCL
-	  -I					Inflation/granularity parameter for MCL (default 6)
+	  --I					Inflation/granularity parameter for MCL (default 6)
   	  --wicker				Cluster using '80-80-80' rule, or custom values specified below.
   	  --wicker_pId				Minimum % ID in pairwise alignment between any two elements (default 80)
   	  --wicker_minLen			Minimum alignment length to considered. (default 80)
@@ -4548,15 +4556,20 @@ def help():
 
 	  MAFFT (for cluster, not LTR alignment): Default for very large clusters (clust_size > 200)
 	  -----------------------------
-	  #--mafft_retree		    	<int>	Default 2. Options: 2 or 1. 1 is faster and less accurate.
-	  --mafft_retree		    	<int>	Set to 2 clusts < --min_clustsize_for_faster_aln and 1 for clusts >. For clusts > 500, --memsave and --memsavetree are included
-	  						because very large clusters 64G of RAM was not enough to perform alignments
+
+	  NOTE: MAFFT uses a lot of RAM for large clusters. It repeatedly failed on tests of ~2.7k seqs of length >5kb using 256Gb RAM. The MAFFT algorthim FFT-NS-2 is used
+	  	for small and medium clusters with the user-specified --maxiterate option (see below) and FFT_NS-1 for large clusters, which is very inaccurate.
+
 	  --maxiterate_small_clusters		<int>	Max number of iterations for MAFFT algorithm for clusters with < --min_clustsize_for_faster_aln  elements.
 	  						1 is fastest; greater numbers will improve the alignment (default 30).
-	  --maxiterate_large_clusters		<int>	Number of iterations for MAFFT algorithm for large clusters (--min_clustsize_for_faster_aln  < clust_size) (default 3)
-	  --min_clustsize_for_faster_aln	<int>	Clusters smaller than this will be aligned using the settings from --maxiterate_small_clusters,
-	  						while those larger will get aligned using the settings from --maxiterate_large_clusters (default 40)
-	  --retree				<int>	Guide tree is built <int> times in the progressive stage. Valid with 6mer distance. (default 2)
+	  --maxiterate_medium_clusters		<int>	Number of iterations for MAFFT algorithm for large clusters (--min_clustsize_for_faster_aln  < clust_size) (default 3)
+	  --mafft_smallAln_maxclustsize		<int>	Clusters this size and smaller will be aligned using the settings from --maxiterate_small_clusters. (default 50)
+	  --mafft_mediumAln_maxclustsize	<int>	Clusters this size and smaller but larger than --mafft_smallAln_maxclustsize will be aligned using the settings from
+	  						--maxiterate_medium_clusters. (default 500)
+	  --mafft_largeAln_maxclustsize		<int>	Clusters this size and smaller but larger than --mafft_mediumAln_maxclustsize will be aligned using the MAFFT algorithm
+	  						FFT-NS-1 (--retree 1). Clusters larger than this size will not be aligned and the downstream analyses that require
+							an alignment will not be performed. Those analyses are (LTR divergence, gene conversion, and phylogenetic analyses).
+							(default 1000)
 	  --nosmalls					Do not combine and assemble clusters smaller than --min_clust_size (see clustering options)
 
 	  GENECONV
@@ -4789,8 +4802,8 @@ else:
 
 if '--mcl' in args:
 	USEMCL = True
-	if '-I' in args:
-		MCL_I = args[args.index('-I')+1]
+	if '--I' in args:
+		MCL_I = args[args.index('--I')+1]
 	else:
 		MCL_I = '6'
 
@@ -4893,19 +4906,27 @@ else:
 if '--maxiterate_small_clusters' in args:
 	mafft_small_maxiterate = int(args[args.index('--maxiterate_small_clusters')+1])
 else:
-	mafft_small_maxiterate = 30
-if '--maxiterate_large_clusters' in args:
-	mafft_large_maxiterate = int(args[args.index('--maxiterate_large_clusters')+1])
+	mafft_small_maxiterate = 20
+if '--maxiterate_medium_clusters' in args:
+	mafft_medium_maxiterate = int(args[args.index('--maxiterate_medium_clusters')+1])
 else:
-	mafft_large_maxiterate = 3
-if '--min_clustsize_for_faster_aln' in args:
-	mafft_large_minclustsize = int(args[args.index('--min_clustsize_for_faster_aln')+1])
+	mafft_medium_maxiterate = 5
+if '--mafft_smallAln_maxclustsize' in args:
+	mafft_smallAln_maxclustsize = int(args[args.index('--mafft_smallAln_maxclustsize')+1])
 else:
-	mafft_large_minclustsize = 40
-if '--retree' in args:
-	mafft_retree = int(args[args.index('--retree')+1])
+	mafft_smallAln_maxclustsize = 50
+if '--mafft_mediumAln_maxclustsize' in args:
+	mafft_mediumAln_maxclustsize = int(args[args.index('--mafft_mediumAln_maxclustsize')+1])
 else:
-	mafft_retree = 2
+	mafft_mediumAln_maxclustsize = 500
+if '--mafft_largeAln_maxclustsize' in args:
+	mafft_largeAln_maxclustsize = int(args[args.index('--mafft_largeAln_maxclustsize')+1])
+else:
+	mafft_largeAln_maxclustsize = 1000
+#if '--retree' in args:
+#	mafft_retree = int(args[args.index('--retree')+1])
+#else:
+#	mafft_retree = 2
 if '--bpflank' in args:
 	bpflank = int(args[args.index('--bpflank')+1])
 else:
@@ -5037,6 +5058,7 @@ classifs = set(list(clusters_by_classif.keys()))
 if WICKER:
 	# 1. Perform clustering
 	WickerFam(pId=wicker_pId, percAln=wicker_pAln, minLen=wicker_minLen, use_ltrs=wicker_use_ltrs, use_internal=wicker_use_internal)
+	summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
 
 	if GENECONVCLUSTERS or LTRDIVERGENCE:
 		# 2. MSA for each cluster
@@ -5056,6 +5078,7 @@ if WICKER:
 if USEMCL:
 	# 1. Perform clustering
 	MCL(I=MCL_I, minClustSize=MinClustSize, CombineIfTooFew=False)	# Run MCL. I is the inflation paramater that controls granularity. Default is 6. MCL docs recommend 1.4, 2, 4, and 6, and between 1.1 and 10 for most cases.
+	summarizeClusters(I=6, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
 
 	if GENECONVCLUSTERS or LTRDIVERGENCE:
 		# 2. MSA for each cluster
@@ -5075,12 +5098,6 @@ if USEMCL:
 
 		# 4. Modeltesting  for each cluster
 		modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part='entire', clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-#
-#
-if WICKER:
-	summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
-if USEMCL:
-	summarizeClusters(I=6, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
 #
 #
 #	GENECONV stringency settings
@@ -5128,20 +5145,7 @@ if USEMCL:
 	phylo(removegeneconv=False, BOOTSTRAP=True, I=MCL_I, align='cluster', removehomologouspair=RMHOMOFLANK, part='entire', clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP,  bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 #
 #div2Rplots(I=MCL_I)
+#
+#
 print('Fin!')
 sys.exit()
-#
-#print('Done with estimate_divergence()')
-#sys.exit()
-#
-#xgmml() # for Cytoscape import
-#
-#hive()
-#
-#jbrowse() # track for jBrowse
-#
-#Rdensity() # ggplot2 density plot or histogram
-#
-#printPhylo() # ETE tree
-#
-print('made it')
