@@ -2353,10 +2353,13 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 							trimalOutput = paths['Aln_{0}_I{1}_cluster{2}_NoGCfiltering.nohomoflank.noOutgroup'.format(classif, I, j)].split('.')
 						elif WICKERCLUST:
 							trimalOutput = paths['WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_{4}_NoGCfiltering.nohomoflank.noOutgroup'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, j)].split('.')
+						# GENECONV runs and creates the file were the alignment is
 						gcOutput = copy(trimalOutput)
 						gcOutput[-1] = 'tab'
 						geneconvOutputPth = '.'.join(gcOutput)
 
+						if not os.path.isfile(geneconvOutputPth):
+							continue
 						with open(geneconvOutputPth, 'r') as gcFl:
 							for line in gcFl:
 								if line.startswith('GI'):
@@ -2396,10 +2399,13 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 
 				if not trimalOutput == None:
 
+					# GENECONV runs and creates the file were the alignment is
 					gcOutput = copy(trimalOutput)
 					gcOutput[-1] = 'tab'
 					geneconvOutputPth = '.'.join(gcOutput)
 
+					if not os.path.isfile(geneconvOutputPth):
+						continue
 					with open(geneconvOutputPth, 'r') as gcFl:
 						for line in gcFl:
 							if line.startswith('GI'):
