@@ -2177,6 +2177,9 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
 								k = j+1
 							except KeyError:
 								OUTGROUP_POSSIBLE = False
+								print('statusFlKey: {0}\nj: {1}\nclusters: {2}\nclusters_len: {3}\n'.format(statusFlKey, j, clusters, len(clusters)))
+								print('KeyError, line 2178')
+								sys.exit()
 						elif j > 0:
 							k = 0
 
@@ -3483,7 +3486,7 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 	# Store calls for SEQBOOT
 	for AlnFasta in alnPthsLst:
 		if os.path.isfile(paths[AlnFasta]):
-			if os.stat(alnPth).st_size == 0: # if alignment file is empty
+			if os.stat(paths[AlnFasta]).st_size == 0: # if alignment file is empty
 				continue
 				
 		else:
@@ -3508,7 +3511,7 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 	fasttreeCalls = []
 	for AlnFasta in alnPthsLst:
 		if os.path.isfile(paths[AlnFasta]):
-			if os.stat(alnPth).st_size == 0: # if alignment file is empty
+			if os.stat(paths[AlnFasta]).st_size == 0: # if alignment file is empty
 				continue
 				
 		else:
