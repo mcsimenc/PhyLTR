@@ -5098,13 +5098,13 @@ else:
 
 # MAFFT parameters
 if '--maxiterate_small_clusters' in args:
-	mafft_small_maxiterate = int(args[args.index('--maxiterate_small_clusters')+1])
+	mafft_smallAln_maxiterate = int(args[args.index('--maxiterate_small_clusters')+1])
 else:
-	mafft_small_maxiterate = 20
+	mafft_smallAln_maxiterate = 20
 if '--maxiterate_medium_clusters' in args:
-	mafft_medium_maxiterate = int(args[args.index('--maxiterate_medium_clusters')+1])
+	mafft_mediumAln_maxiterate = int(args[args.index('--maxiterate_medium_clusters')+1])
 else:
-	mafft_medium_maxiterate = 5
+	mafft_mediumAln_maxiterate = 5
 if '--mafft_smallAln_maxclustsize' in args:
 	mafft_smallAln_maxclustsize = int(args[args.index('--mafft_smallAln_maxclustsize')+1])
 else:
