@@ -14,6 +14,7 @@ from Bio import SeqIO, AlignIO
 from multiprocessing import Pool, Manager
 from phyltrlib import *
 from copy import copy
+from inspect import currentframe, getframeinfo
 
 def mergeCoords(A,B):
 	'''
@@ -55,7 +56,9 @@ def write2summary(text):
 	'''
 	Write text to a hardcoded summary file at output_dir/summary
 	'''
-	append2logfile(paths['output_top_dir'], mainlogfile, 'Writing to summary file at {0}'.format('{0}/summary'.format(paths['output_top_dir'])))
+	scriptpath = os.path.realpath(__file__)
+	lineno = getframeinfo(currentframe()).lineno + 1
+	append2logfile(paths['output_top_dir'], mainlogfile, 'line {1} in {2}\nWriting to summary file at {0}'.format('{0}/summary'.format(paths['output_top_dir']), lineno, scriptpath))
 	with open('{0}/summary'.format(paths['output_top_dir']), 'a') as summaryFl:
 		summaryFl.write('{0}\n'.format(text))
 
@@ -145,7 +148,9 @@ def MakeDir(pathsname, path):
 	paths[pathsname] = path
 	if not os.path.exists(path): 
 		os.makedirs(path)
-		append2logfile(paths['output_top_dir'], mainlogfile, 'Created dir for {0}:\n{1}'.format(pathsname, path))
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 1
+		append2logfile(paths['output_top_dir'], mainlogfile, 'line {2} in {3}\nCreated dir for {0}:\n{1}'.format(pathsname, path, lineno, scriptpath))
 
 
 def addStrandToGFF(strandDct, GFFpth):
@@ -361,7 +366,9 @@ def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None):
 	if os.path.isfile(outputGFFpth):
 		os.remove(outputGFFpth)
 
-	append2logfile(paths['output_top_dir'], mainlogfile, 'Writing LTR_retrotransposon features:\n{0}\nfrom:\n{1}\nto:\n{2}'.format(','.join(sorted(list(elementSet))),inputGFFpth, outputGFFpth))
+	scriptpath = os.path.realpath(__file__)
+	lineno = getframeinfo(currentframe()).lineno + 1
+	append2logfile(paths['output_top_dir'], mainlogfile, 'line {3} in {4}\nWriting LTR_retrotransposon features:\n{0}\nfrom:\n{1}\nto:\n{2}'.format(','.join(sorted(list(elementSet))),inputGFFpth, outputGFFpth, lineno, scriptpath))
 	with open(inputGFFpth, 'r') as inGFF:
 		currentNewElement = GFF3_line()
 		for line in inGFF:
@@ -386,7 +393,9 @@ def writeLTRsGFF(inputGFFpth, outputGFFpth, elementSet=None):
 	if os.path.isfile(outputGFFpth):
 		os.remove(outputGFFpth)
 
-	append2logfile(paths['output_top_dir'], mainlogfile, 'Writing long_terminal_repeat features:\n{0}\nfrom:\n{1}\nto:\n{2}'.format(','.join(sorted(list(elementSet))),inputGFFpth, outputGFFpth))
+	scriptpath = os.path.realpath(__file__)
+	lineno = getframeinfo(currentframe()).lineno + 1
+	append2logfile(paths['output_top_dir'], mainlogfile, 'line {3} in {4}\nWriting long_terminal_repeat features:\n{0}\nfrom:\n{1}\nto:\n{2}'.format(','.join(sorted(list(elementSet))),inputGFFpth, outputGFFpth, lineno, scriptpath))
 	with open(inputGFFpth, 'r') as inGFF:
 		currentNewElement = GFF3_line()
 		LTR_counts = {}
@@ -421,11 +430,15 @@ def ltrharvest():
 			paths['inputFastaSuffixArray'] = '{0}/{1}.index'.format(paths['suffixerator_dir'], paths['inputFasta'])
 			gt_suffixerator_call_string = 'gt suffixerator -db {1} -indexname {0} -dna -tis -suf -lcp -des -ssp 1>suffixerator.stdout 2>suffixerator.stderr'.format(paths['inputFastaSuffixArray'], paths['inputFasta'])
 			gt_suffixerator_call = [ executables['genometools'], 'suffixerator',  '-db',  paths['inputFasta'], '-indexname', paths['inputFastaSuffixArray'], '-dna', '-tis', '-suf', '-lcp', '-des', '-ssp' ]
-			append2logfile(paths['output_top_dir'], mainlogfile, 'Began creating suffix array for  {0} using the call:\n{1}'.format(paths['inputFasta'], gt_suffixerator_call_string))
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 1
+			append2logfile(paths['output_top_dir'], mainlogfile, 'line {2} in {3}\nBegan creating suffix array for  {0} using the call:\n{1}'.format(paths['inputFasta'], gt_suffixerator_call_string, lineno, scriptpath))
 
 			# Run suffixerator
 			makecall(gt_suffixerator_call, '{0}/suffixerator.stdout'.format(paths['suffixerator_dir']), '{0}/suffixerator.stderr'.format(paths['suffixerator_dir']))
-			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished gt suffixerator' )
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 1
+			append2logfile(paths['output_top_dir'], mainlogfile, 'line {0} in {1}\nFinished gt suffixerator'.format(lineno, scriptpath) )
 			paths['suffixeratorInputFastaCopy'] = '{0}/{1}'.format(paths['suffixerator_dir'], filenames['inputFasta'])
 			copyfile(paths['inputFasta'], paths['suffixeratorInputFastaCopy'])
 			# Add suffix array path to status file (for resuming later)
@@ -440,17 +453,26 @@ def ltrharvest():
 			# Run LTRharvest
 			gt_ltrharvest_call = [ executables['genometools'], 'ltrharvest', '-similar', str(ltrharvest_similar), '-index', paths['inputFastaSuffixArray'], '-gff3', paths['LTRharvestGFF'], '-seqids', 'yes', '-v', 'yes', '-mintsd', str(ltrharvest_mintsd), '-maxtsd', str(ltrharvest_maxtsd), '-xdrop', str(ltrharvest_xdrop), '-mat', str(ltrharvest_mat), '-mis', str(ltrharvest_mis), '-ins', str(ltrharvest_ins), '-del', str(ltrharvest_del), '-minlenltr', str(ltrharvest_minlenltr), '-maxlenltr', str(ltrharvest_maxlenltr), '-mindistltr', str(ltrharvest_mindistltr), '-maxdistltr', str(ltrharvest_maxdistltr), '-vic', str(ltrharvest_vic) ]
 			gt_ltrharvest_call_string = '{0} {1}'.format(' '.join(gt_ltrharvest_call),  '1>ltrharvest.stdout 2>ltrharvest.stderr'.format(paths['inputFastaSuffixArray'], paths['LTRharvestGFF'], executables['genometools']))
-			append2logfile(paths['output_top_dir'], mainlogfile, 'Began running LTRharvest on {0} using the call:\n{1}'.format(paths['inputFasta'], gt_ltrharvest_call_string))
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 1
+			append2logfile(paths['output_top_dir'], mainlogfile, 'line {2} in {3}\nBegan running LTRharvest on {0} using the call:\n{1}'.format(paths['inputFasta'], gt_ltrharvest_call_string, lineno, scriptpath))
 			makecall(gt_ltrharvest_call,  '{0}/ltrharvest.stdout'.format(paths['ltrharvest_dir']), '{0}/ltrharvest.stderr'.format(paths['ltrharvest_dir']))
-			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished gt ltrharvest' )
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 1
+			append2logfile(paths['output_top_dir'], mainlogfile, 'line {0} in {1}\nFinished gt ltrharvest'.format(lineno, scriptpath))
 
 			# Need to sort GFF3, sometimes it's not sorted like LTRdigest needs it sorted
 			gt_sort_call = [ executables['genometools'], 'gff3', '-sort', '-retainids', paths['LTRharvestGFF'] ]
 			gt_sort_call_string = 'gt gff3 -sort -retainids {0} > {0}.sorted 2>{0}.gff3sort.err'.format(paths['LTRharvestGFF'])
-			append2logfile(paths['output_top_dir'], mainlogfile, 'Began sorting LTRharvest:\n{0}'.format(gt_ltrharvest_call_string))
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 1
+			append2logfile(paths['output_top_dir'], mainlogfile, 'line {1} in {2}\nBegan sorting LTRharvest:\n{0}'.format(gt_ltrharvest_call_string, lineno, scriptpath))
 			makecall(gt_sort_call,  stdout='{0}.sorted'.format(paths['LTRharvestGFF']), stderr='{0}.gff3sort.err'.format(paths['LTRharvestGFF']))
 			os.rename('{0}.sorted'.format(paths['LTRharvestGFF']), paths['LTRharvestGFF'])
-			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished sorting GFF3' )
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+			append2logfile(paths['output_top_dir'], mainlogfile, 'line {0} in {1}\nFinished sorting GFF3'.format(lineno, scriptpath))
 
 			# Add LTRharvest GFF3 path to status file (for resuming later)
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
@@ -480,8 +502,14 @@ def ltrdigest():
 
 			gt_ltrdigest_call_string = '{0} -j {1} ltrdigest -matchdescstart -outfileprefix {2} -hmms {3} -seqfile {4} < {5} > {6}'.format(executables['genometools'], procs, paths['LTRdigestOutputPrefix'], paths['LTRdigestHMMs'], paths['suffixeratorInputFastaCopy'], paths['CurrentGFF'], '{0}.gff'.format(paths['LTRdigestOutputPrefix']))
 
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began running LTRdigest on {0} using the call:\n{1}'.format(paths['inputFasta'], gt_ltrdigest_call_string))
 			makecall(gt_ltrdigest_call, '{0}.gff'.format(paths['LTRdigestOutputPrefix']), '{0}/ltrdigest.stderr'.format(paths['ltrdigest_dir']), paths['CurrentGFF'])
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished gt ltrdigest' )
 
 			# Add LTRdigest GFF3 path to status file (for resuming later)
@@ -717,6 +745,9 @@ def addORFs(maingff, orfgff, newgff):
 	if os.path.isfile(orffasta):
 		os.remove(orffasta)
 
+	scriptpath = os.path.realpath(__file__)
+	lineno = getframeinfo(currentframe()).lineno + 2
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Incorporating ORFs in {0} with GFF {1} in to {2}'.format(orfgff, maingff, newgff))
 	with open(orfgff, 'r') as inFl:
 		for line in inFl:
@@ -826,6 +857,9 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 		if not 'LTRharvest_LTR_retrotransposons_fasta' in paths: # If this is in paths this step has been completed. Skip
 			paths['LTRharvest_LTR_retrotransposons_GFF'] = '{0}/LTRharvest_LTR_retrotransposons.gff'.format(paths['GFFOutputDir'])
 			paths['LTRharvest_LTR_retrotransposons_fasta'] = '{0}/LTRharvest_LTR_retrotransposons.fasta'.format(paths['FastaOutputDir'])
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting LTR_retrotransposons from LTRharvest GFF')
 			# Write GFF for just LTR_retrotransposon features
 			with open(paths['LTRharvestGFF'], 'r') as harvestFl:
@@ -836,17 +870,29 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 							with open(paths['LTRharvest_LTR_retrotransposons_GFF'], 'a') as LTRharvest_LTR_retrotransposons_GFF:
 								LTRharvest_LTR_retrotransposons_GFF.write('{0}\n'.format(str(gffLine)))
 
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting LTR_retrotransposons from LTRharvest GFF')
 			getfasta_ltrretrotransposons_call = [  executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', '{0}'.format(paths['LTRharvest_LTR_retrotransposons_GFF']) ]
 			getfasta_ltrretrotransposons_call_string = 'bedtools getfasta -fi {0} -s -bed {1} > {2} 2> {3}'.format(paths['inputFasta'], paths['LTRharvest_LTR_retrotransposons_GFF'], paths['LTRharvest_LTR_retrotransposons_fasta'], '{0}/bedtools_getfasta.stderr'.format(paths['FastaOutputDir']))
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting LTR_retrotransposon sequences from LTRharvest GFF:\n{0}'.format(getfasta_ltrretrotransposons_call_string))
 			makecall(getfasta_ltrretrotransposons_call, paths['LTRharvest_LTR_retrotransposons_fasta'], '{0}/bedtools_getfasta.stderr'.format(paths['FastaOutputDir']))
 
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting LTR_retrotransposon sequences from LTRharvest GFF')
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Changing FASTA headers from bedtools getfasta-style to LTR_retrotransposon ID')
 
 			ChangeFastaHeaders(paths['LTRharvest_LTR_retrotransposons_fasta'], paths['LTRharvest_LTR_retrotransposons_GFF'])
 
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Done changing FASTA headers from bedtools getfasta-style to LTR_retrotransposon ID')
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('LTRharvest_LTR_retrotransposons_fasta\t{0}\n'.format(paths['LTRharvest_LTR_retrotransposons_fasta']))
@@ -866,6 +912,9 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			nhmmer_dfam_call = [ '{0}/nhmmer'.format(executables['hmmer']), '--tblout', paths['nhmmer_DfamHits_table'], '--incE', str(nhmmer_inclusion_evalue), '-E', str(nhmmer_reporting_evalue), '--cpu', str(procs), paths['DfamDB'], paths['LTRharvest_LTR_retrotransposons_fasta'] ]
 			nhmmer_dfam_call_string = '{0} {1}'.format(' '.join(nhmmer_dfam_call), '1>/dev/null 2>{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
 			#nhmmer_dfam_call_string = '{0} {1}'.format(' '.join(nhmmer_dfam_call), '1>{0}.nhmmer_DfamHits.stdout 2>{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began nhmmer of Dfam:\n{0}'.format(nhmmer_dfam_call_string))
 			#makecall(nhmmer_dfam_call, '{0}.nhmmer_DfamHits.stdout'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])), '{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
 			makecall(nhmmer_dfam_call, '/dev/null', '{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
@@ -881,6 +930,9 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			paths['DfamResultsTableParsed'] = '{0}/{1}.LTR_retrotransposon_DfamBestHits.tab'.format(paths['DfamClassificationDir'], filenames['inputFasta'])
 			dfam_results_parse_call_string = '{0}/nhmmer_table2columns.py < {1} > {2} 2>{3}/nhmmer_table2columns.py.stderr'.format(paths['scriptsDir'], paths['DfamTable'], paths['DfamResultsTableParsed'], paths['DfamClassificationDir'])
 			dfam_results_parse_call = ['{0}/nhmmer_table2columns.py'.format(paths['scriptsDir']) ]
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting best hits from  nhmmer on Dfam results:\n{0}'.format(dfam_results_parse_call_string))
 			makecall(dfam_results_parse_call, paths['DfamResultsTableParsed'], '{0}/nhmmer_table2columns.py.stderr'.format(paths['DfamClassificationDir']), stdin=paths['DfamTable'])
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting best hits from  nhmmer on Dfam results')
@@ -914,6 +966,9 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			paths['tblastx_RepbaseHits_table'] = '{0}/{1}.tblastx_Repbase.tab'.format(paths['RepbaseClassificationDir'], filenames['inputFasta'])
 			tblastx_repbase_call = [ '{0}/tblastx'.format(executables['blast']), '-db', 'Repbase_LTR_RTs.fasta', '-query', paths['LTRharvest_LTR_retrotransposons_fasta'], '-evalue', str(repbase_tblastx_evalue), '-outfmt', '7 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore sstrand', '-num_threads', str(procs), '-max_hsps', '25' ]
 			tblastx_repbase_call_string = '{0} -db {1} -query {2} -evalue {5} -outfmt "7 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore sstrand" -num_threads {3} -max_hsps 25 1>{4} 2>{4}.stderr'.format('{0}/tblastx'.format(executables['blast']), 'Repbase_LTR_RTs.fasta', paths['LTRharvest_LTR_retrotransposons_fasta'], procs, paths['tblastx_RepbaseHits_table'], repbase_tblastx_evalue)
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began tblastx of Repbase:\n{0}'.format(tblastx_repbase_call_string))
 			makecall(tblastx_repbase_call, paths['tblastx_RepbaseHits_table'], '{0}.stderr'.format(paths['tblastx_RepbaseHits_table']))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished tblastx of Repbase')
@@ -929,6 +984,9 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			paths['RepbaseResultsTableParsed'] = '{0}/{1}.LTR_retrotransposon_RepbaseBestHits.tab'.format(paths['RepbaseClassificationDir'], filenames['inputFasta'])
 			repbase_results_parse_call_string = '{0}/best_blast_hit.py < {1} > {2} 2>{3}/best_blast_hit.py.stderr'.format(paths['scriptsDir'], paths['RepbaseTable'], paths['RepbaseResultsTableParsed'], paths['RepbaseClassificationDir'])
 			repbase_results_parse_call = ['{0}/best_blast_hit.py'.format(paths['scriptsDir']) ]
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting best hits from  tblastx on Repbase results:\n{0}'.format(repbase_results_parse_call_string))
 			makecall(repbase_results_parse_call, paths['RepbaseResultsTableParsed'], '{0}/best_blast_hit.py.stderr'.format(paths['RepbaseClassificationDir']), stdin=paths['RepbaseTable'])
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting best hits from  tblastx on Repbase results')
@@ -943,6 +1001,9 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 
 			add_repbase_hits_to_ltrdigest_gff_call_string = '{0}/gffAddAttr.py -gff {1} -attr repbaseClassification -map {2} -mapKey ID -restrictType LTR_retrotransposon -replaceIfNone > {3} 2>{4}/gffAddAttr.py.RepbaseHits.stderr'.format(paths['scriptsDir'], gff_for_repbase_classification, paths['RepbaseResultsTableParsed'], paths['GFFwithRepbaseClassification'], paths['GFFOutputDir'])
 			add_repbase_hits_to_ltrdigest_gff_call = [ '{0}/gffAddAttr.py'.format(paths['scriptsDir']), '-gff', gff_for_repbase_classification, '-attr', 'repbaseClassification', '-map', paths['RepbaseResultsTableParsed'], '-mapKey', 'ID', '-restrictType', 'LTR_retrotransposon', '-replaceIfNone' ]
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began adding best hits from tblastx on Repbase results to LTRdigest GFF:\n{0}'.format(add_repbase_hits_to_ltrdigest_gff_call_string))
 			makecall(add_repbase_hits_to_ltrdigest_gff_call, paths['GFFwithRepbaseClassification'], '{0}/gffAddAttr.py.RepbaseHits.stderr'.format(paths['GFFOutputDir']))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished adding best hits from tblastx on Repbase results to LTRdigest GFF')
@@ -963,6 +1024,9 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 
 			paths['LTRdigestClassifiedNoFP'] = '{0}/{1}.LTRdigestClassifiedNoFP.gff'.format(paths['GFFOutputDir'], filenames['inputFasta'])
 			TruePositiveLTRclassificationsDct = { 'dfamClassification':paths['DfamTruePosLTRlist'], 'repbaseClassification':paths['RepbaseTruePosLTRlist'] }
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began removing false positives from LTRdigest GFF with classifications.')
 			RemoveNonLTRretrotransposons(gff_classified, TruePositiveLTRclassificationsDct, outputFlName=paths['LTRdigestClassifiedNoFP'], REPORTCONFLICTS=True, KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, logFilePth='{0}/RemoveNonLTRretrotransposons.log'.format(paths['GFFOutputDir']))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished removing false positives from LTRdigest GFF with classifications. TP file at:\n{0}'.format(paths['LTRdigestClassifiedNoFP']))
@@ -1414,6 +1478,9 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
 			MakeDir('MCLdir', '{0}/MCL'.format(paths['output_top_dir'], I))
 			paths['LTRdigest_LTR_retrotransposons_GFF'] = '{0}/LTRdigest_LTR_retrotransposons.gff'.format(paths['GFFOutputDir'])
 			paths['LTRdigest_LTR_retrotransposons_fasta'] = '{0}/LTRdigest_LTR_retrotransposons.fasta'.format(paths['FastaOutputDir'])
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting LTR_retrotransposons from {0}'.format(paths['CurrentGFF']))
 
 			# Write GFF for just LTR_retrotransposon features
@@ -1487,6 +1554,9 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
 					# make blast db for all-by-all blast
 					makeblastdb_AllByAll_call_string = '{0}/makeblastdb -in {1} -dbtype nucl'.format(executables['blast'], classifFastas[classif])
 					makeblastdb_AllByAll_call = [ '{0}/makeblastdb'.format(executables['blast']), '-in', classifFastas[classif], '-dbtype', 'nucl' ]
+					scriptpath = os.path.realpath(__file__)
+					lineno = getframeinfo(currentframe()).lineno + 2
+					append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 					append2logfile(paths['output_top_dir'], mainlogfile, 'Began creating blast db for all-by-all blast of LTR_retrotransposon sequences using the call:\n{0}'.format(makeblastdb_AllByAll_call_string))
 					makecall(makeblastdb_AllByAll_call, '{0}.makeblastdb.stdout'.format(classifFastas[classif]), '{0}.makeblastdb.stderr'.format(classifFastas[classif]))
 					append2logfile(paths['output_top_dir'], mainlogfile, 'Finished creating blast db for all-by-all blast of {0} LTR_retrotransposon sequences.'.format(classif))
@@ -1514,6 +1584,9 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
 				paths['LTRretrotransposonNetworktab'] = '{0}/LTR_retrotransposon_{1}.tab'.format(paths['MCL_{0}_I{1}_dir'.format(classif, I)], classif)
 				mcxload_call = ['{0}/mcxload'.format(executables['mcl']), '-abc', paths['MCL_{0}_abc'.format(classif)], '--stream-mirror', '--stream-neg-log10', '-stream-tf', 'ceil(200)', '-o', paths['LTRretrotransposonNetworkmci'], '-write-tab', paths['LTRretrotransposonNetworktab']]
 				mcxload_call_string = '{0}/mcxload -abc {1} --stream-mirror --stream-neg-log10 -stream-tf ceil(200) -o {2} -write-tab {3} > {4}/mcxload.stdout 2>{4}mcxload.stderr'.format(executables['mcl'], paths['MCL_{0}_abc'.format(classif)], paths['LTRretrotransposonNetworkmci'], paths['LTRretrotransposonNetworktab'], paths['MCL_{0}_I{1}_dir'.format(classif, I)])
+				scriptpath = os.path.realpath(__file__)
+				lineno = getframeinfo(currentframe()).lineno + 2
+				append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 				append2logfile(paths['output_top_dir'], mainlogfile, 'Began creating network for {0} using mcxload:\n{1}'.format(classif, mcxload_call_string))
 				makecall(mcxload_call, '{0}/mcxload.stdout'.format(paths['MCL_{0}_I{1}_dir'.format(classif, I)]), '{0}/mcxload.stderr'.format(paths['MCL_{0}_I{1}_dir'.format(classif, I)]))
 				append2logfile(paths['output_top_dir'], mainlogfile, 'Finished creating network for {0} LTR RTs using mcxload.'.format(classif))
@@ -1806,14 +1879,14 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
 			paths['AlnPth'] = '{0}.aln'.format(paths['EntireelementsFasta'])
 
 		# Align regions from selected elements
-		if len(elementList) <= mafft_small_maxclustsize:
-			mafft_call = [ executables['mafft'], '--quiet', '--retree', '2', '--thread', str(procs), '--maxiterate', str(mafft_small_maxiterate), paths['AlnFasta'] ]
-		elif len(elementList) > mafft_small_maxclustsize and len(elementList) <= mafft_medium_maxclustsize:
-			mafft_call = [ executables['mafft'], '--quiet', '--retree', '2','--thread', str(procs), '--maxiterate', str(mafft_medium_maxiterate), paths['AlnFasta'] ]
-		elif len(elementList) > mafft_medium_maxclustsize and len(elementList) <= mafft_large_maxclustsize:
+		if len(elementList) <= mafft_smallAln_maxclustsize:
+			mafft_call = [ executables['mafft'], '--quiet', '--retree', '2', '--thread', str(procs), '--maxiterate', str(mafft_smallAln_maxiterate), paths['AlnFasta'] ]
+		elif len(elementList) > mafft_smallAln_maxclustsize and len(elementList) <= mafft_mediumAln_maxclustsize:
+			mafft_call = [ executables['mafft'], '--quiet', '--retree', '2','--thread', str(procs), '--maxiterate', str(mafft_mediumAln_maxiterate), paths['AlnFasta'] ]
+		elif len(elementList) > mafft_mediumAln_maxclustsize and len(elementList) <= mafft_largeAln_maxclustsize:
 			#mafft_call = [ executables['mafft'], '--memsave', '--memsavetree', '--quiet', '--retree', '1', '--thread', str(procs), paths['AlnFasta'] ]
 			mafft_call = [ executables['mafft'], '--quiet', '--retree', '1', '--thread', str(procs), paths['AlnFasta'] ]
-		elif len(elementList) > mafft_large_maxclustsize:
+		elif len(elementList) > mafft_largeAln_maxclustsize:
 			# Write would-be alignment path to status file
 			paths['ClusterTrimmedAln'] = '{0}.trimal'.format(paths['AlnPth'])
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
@@ -1824,6 +1897,9 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
 
 		mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
 
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Aligning\n{0}'.format(mafft_call_string))
 		makecall(mafft_call, paths['AlnPth'], '{0}.stderr'.format(paths['AlnPth']))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Finished aligning')
@@ -2174,6 +2250,9 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 		if not gcSummaryFl in paths:
 
 			geneconv_calls = []
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Checking directory structure for GENECONV using {0}'.format(g) )
 
 			for classif in classifs:
@@ -2204,6 +2283,9 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 							alnPth = paths['WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_{4}_NoGCfiltering.nohomoflank.noOutgroup'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, j)]
 						if os.path.isfile(alnPth):
 							if not os.stat(alnPth).st_size == 0: # if alignment file is non-empty
+								scriptpath = os.path.realpath(__file__)
+								lineno = getframeinfo(currentframe()).lineno + 2
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 								append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run GENECONV on:\n{0}'.format(alnPth))
 								call = [ executables['geneconv'], alnPth, '/w124', g, '-include_monosites', '-nolog', '-Dumptab', '-Fancy' ]
 								geneconv_calls.append((call, '/dev/null', None, None))
@@ -2227,6 +2309,9 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 								continue
 						if os.path.isfile(alnPth):
 							if not os.stat(alnPth).st_size == 0: # if alignment file is non-empty
+								scriptpath = os.path.realpath(__file__)
+								lineno = getframeinfo(currentframe()).lineno + 2
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 								append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run GENECONV on:\n{0}'.format(alnPth))
 								call = [ executables['geneconv'], alnPth, '/w124', g, '-include_monosites', '-nolog', '-Dumptab', '-Fancy' ]
 								geneconv_calls.append((call, '/dev/null', '{0}.geneconv.err'.format(alnPth), None))
@@ -2234,6 +2319,9 @@ def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClus
 							continue
 			if geneconv_calls == []:
 				return
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Running GENECONV, example call:\n{0}'.format(' '.join(geneconv_calls[0][0] )))
 			chunk_size = ceil(len(geneconv_calls)/procs)
 			with Pool(processes=procs) as p:
@@ -2458,6 +2546,9 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 					filenames['Tree'] = '{0}_I{1}_{2}.tree'.format(classif, I, j)
 					fasttree_call = [ executables['fasttree'], '-nt', '-gtr' ]
 					fasttree_call_string = '{0} -nt -gtr <{1} >{2} 2>{2}.stderr'.format(executables['fasttree'], paths[aln],paths['Tree'])
+					scriptpath = os.path.realpath(__file__)
+					lineno = getframeinfo(currentframe()).lineno + 2
+					append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 					append2logfile(paths['output_top_dir'], mainlogfile, 'Began inferring phylogeny using FastTree:\n{0}'.format(fasttree_call_string))
 					makecall(fasttree_call, stdout=paths['Tree'], stderr='{0}.stderr'.format(paths['Tree']), stdin=paths[aln])
 					append2logfile(paths['output_top_dir'], mainlogfile, 'Finished inferring phylogeny using FastTree')
@@ -2565,6 +2656,9 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 		sys.exit('modeltest() parameter clustering_method needs to be either WickerFam or MCL and it is: {0}'.format(clustering_method))
 
 	if checkStatusFl('{0}.LTR_divergence_complete'.format(key_base)):
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'ltr_divergence() already completed: {0}'.format(paths['{0}.LTR_divergence_complete'.format(key_base)]))
 		return
 
@@ -2582,6 +2676,9 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 		ltrs_trimal_calls = {}
 		num_pairs = 0
 
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Parsing LTRs from GFF3:\n{0}'.format(paths['CurrentGFF']))
 		with open(paths['CurrentGFF'], 'r') as GFF_fl:
 			for line in GFF_fl:
@@ -2589,7 +2686,7 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 					gffLine = GFF3_line(line)
 					elementName = gffLine.attributes['Parent']
 
-					# Skip element kinds with potentially non-identical LTRs upon insertion
+					# Skip element kinds with potentially non-identical LTRs upon insertion, e.g. DIRS, Ngaro
 					YESLTR = False
 					for SF in LTR_SFs:
 						if classifs_by_element[elementName].startswith(SF):
@@ -2611,6 +2708,7 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 								mafft_LTRs_call = [ executables['mafft'], '--quiet', '--globalpair', '--maxiterate', '1000', LTRsFASTAfilepath ]
 								ltrs_mafft_calls[elementName] = (mafft_LTRs_call, LTRsAlignmentFilepath, None, None)
 
+
 								if TRIMAL:
 									trimal_LTRs_call = [ executables['trimal'], '-in', LTRsAlignmentFilepath, '-out', LTRsTrimmedAlnFilepath, '-automated1' ]
 									ltrs_trimal_calls[elementName] = (trimal_LTRs_call, LTRsTrimmedAlnFilepath, None, None)
@@ -2621,6 +2719,9 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 
 		chunk_size = ceil(num_pairs/procs)
 		# Write to log file here about chunk size and processors used
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'For align_ltrs(): procs={0} chunk_size={1}'.format(procs,chunk_size))
 		if not checkStatusFl(GFFKey):
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Writing GFF3s for each LTR pair:\n{0}'.format(paths[GFFKey]) )
@@ -2657,7 +2758,7 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 				statusFlAppend.write('{0}\t{1}\n'.format(AlnKey, paths[AlnKey])) # Add LTRs FASTA path to status file (for resuming later)
 
 		if not checkStatusFl(TrimalKey):
-			append2logfile(paths['output_top_dir'], mainlogfile, 'Trimming MAFFT alignment using TrimAl -automated1:\n{0}'.format(list(ltrs_trimal_calls.values())[0]) )
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Trimming MAFFT LTRs alignment using TrimAl -automated1:\n{0}'.format(list(ltrs_trimal_calls.values())[0]) )
 			with Pool(processes=procs) as p: # Do alignment for each LTR pair
 				p.map(makecallMultiprocessing, ltrs_trimal_calls.values(), chunksize=chunk_size)
 			p.join()
@@ -2734,12 +2835,18 @@ def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='Wick
 		sys.exit('modeltest() parameter clustering_method needs to be either WickerFam or MCL and it is: {0}'.format(clustering_method))
 
 	if checkStatusFl(SummaryKey):
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'ltr_divergence() already completed: {0}'.format(paths['{0}.GENECONVLTRs'.format(key_base)]))
 		return
 
 	if not checkStatusFl('{0}.GENECONVLTRs.{1}'.format(key_base, g[1:])):
 
 		geneconv_calls = []
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Checking directory structure for GENECONV using {0}'.format(g) )
 
 		if TRIMAL:
@@ -2750,6 +2857,9 @@ def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='Wick
 		num_elements = len(files)
 		alnLens = {}
 		show = False
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run GENECONV for finding intraelement gene conversion between LTRs')
 		for f in files:
 			flpth = '{0}/{1}'.format(paths[AlnKey], f)
@@ -2862,6 +2972,9 @@ def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'p
 	MakeDir('PAUPNexusInputDir', '{0}/nexus'.format(paths['PAUPdivergenceDir'.format(I)]))
 	MakeDir('PAUPDivOutDir', '{0}/divergences'.format(paths['PAUPdivergenceDir'.format(I)]))
 	if checkStatusFl(SummaryKey):
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'ltr_divergence() already completed: {0}'.format(paths[SummaryKey]))
 		return
 	if LTRDIVERGENCE:
@@ -2936,6 +3049,9 @@ END;
 							else: # No model test result, perhaps the cluster is too small (default may be no modeltesting for clusters <5 elements)
 								if len(set(str(seqRec[0].seq))) == 2 and len(set(str(seqRec[1].seq))) == 2: # HKY+85 does not work when there are only 2 character states
 									model = 'JC'
+									scriptpath = os.path.realpath(__file__)
+									lineno = getframeinfo(currentframe()).lineno + 2
+									append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 									append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using JC'.format('jModeltest2summary_{0}'.format(classif)))
 									paupBlock += '''[!
 Likelihood settings from best-fit model (JC) selected by default
@@ -2950,6 +3066,9 @@ END;
 '''.format(model, el)
 								else:
 									model = 'HKY85'
+									scriptpath = os.path.realpath(__file__)
+									lineno = getframeinfo(currentframe()).lineno + 2
+									append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 									append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using HKY85'.format('jModeltest2summary_{0}'.format(classif)))
 									paupBlock += '''[!
 Likelihood settings from best-fit model (HKY) selected by default
@@ -2983,6 +3102,9 @@ MATRIX
 END;
 '''.format(len(seqRec[0].seq), seqRec[0].id+'_L', seqRec[1].id+'_R', str(seqRec[0].seq), str(seqRec[1].seq))
 							if len(set(str(seqRec[0].seq))) == 2 and len(set(str(seqRec[1].seq))) == 2: # HKY+85 does not work when there are only 2 character states
+								scriptpath = os.path.realpath(__file__)
+								lineno = getframeinfo(currentframe()).lineno + 2
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 								append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using JC'.format('jModeltest2summary_{0}'.format(classif)))
 								model = 'JC'
 								paupBlock += '''[!
@@ -2997,6 +3119,9 @@ SaveDist format=oneColumn file=../divergences/divergence.{0}.{1};
 END;
 '''.format(model, el)
 							else:
+								scriptpath = os.path.realpath(__file__)
+								lineno = getframeinfo(currentframe()).lineno + 2
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 								append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using HKY85'.format('jModeltest2summary_{0}'.format(classif)))
 								model = 'HKY85'
 								paupBlock += '''[!
@@ -3264,6 +3389,9 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
 		# Read GENECONV output
 		if REMOVEGENECONV:
 			gc = 'GCfiltered'
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Excluding {0} elements with evidence of gene conversion'.format(classif))
 			if MCLCLUST:
 				gcSummaryPth = 'MCL_I{0}_GENECONV_summary'.format(I)
@@ -3317,6 +3445,9 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
 						alnPthKeys.append(alnPth)
 
 	if BOOTSTRAP:
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Ready to begin bootstrapping for:\n{0}'.format('\n'.join(alnPthKeys)))
 		if ULTRAMETRIC:
 			if WICKERCLUST:
@@ -3341,13 +3472,21 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 
 	global paths
 
+	scriptpath = os.path.realpath(__file__)
+	lineno = getframeinfo(currentframe()).lineno + 2
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Began bootstrap()')
 	OutgroupSummaryKey = None
 	seqbootCalls = []
 	ULTRAMETRIC = convert_to_ultrametric
 
+	# Store calls for SEQBOOT
 	for AlnFasta in alnPthsLst:
-		if not os.path.isfile(paths[AlnFasta]):
+		if os.path.isfile(paths[AlnFasta]):
+			if os.stat(alnPth).st_size == 0: # if alignment file is empty
+				continue
+				
+		else:
 			continue
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run SEQBOOT for:\n{0}'.format(paths[AlnFasta]))
 		AlignIO.convert(in_file=paths[AlnFasta], out_file='{0}.phylip'.format(paths[AlnFasta]), in_format='fasta', out_format='phylip')
@@ -3358,15 +3497,22 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 		
 		seqbootCalls.append([['{0}/seqboot'.format(executables['phylip'])], '/'.join(paths[AlnFasta].split('/')[:-1])])
 
-	chunk_size = ceil(len(seqbootCalls)/procs)
-	with Pool(processes=procs) as p:
-		p.map(SeqbootCall, seqbootCalls, chunksize=chunk_size)
-	p.join()
+	if not seqbootCalls == []:
+		chunk_size = ceil(len(seqbootCalls)/procs)
+		with Pool(processes=procs) as p:
+			p.map(SeqbootCall, seqbootCalls, chunksize=chunk_size)
+		p.join()
 
-	append2logfile(paths['output_top_dir'], mainlogfile, 'Finished running SEQBOOT')
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Finished running SEQBOOT')
 
 	fasttreeCalls = []
 	for AlnFasta in alnPthsLst:
+		if os.path.isfile(paths[AlnFasta]):
+			if os.stat(alnPth).st_size == 0: # if alignment file is empty
+				continue
+				
+		else:
+			continue
 		alignment_length = len(list(SeqIO.parse(paths[AlnFasta], 'fasta'))[0])
 		Alns = list(SeqIO.parse(paths[AlnFasta], 'fasta'))
 		numAlns = len(Alns)
@@ -3401,6 +3547,9 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 		# Split seqboot multi-phylip output
 		MakeDir('classifDir', '{0}/{1}'.format(OutPth, classif))
 		MakeDir('clustDir', '{0}/{1}'.format(paths['classifDir'], clust))
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run FastTree for:\n{0}'.format(paths[AlnFasta]))
 		# Integrate both Wicker and MCL
 		runID = '{0}_{1}_Bootstrap_{2}_{3}'.format(clustMethod, settings, classif, clust)
@@ -3411,12 +3560,18 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 			paths['mainTree_{0}'.format(runID)] = mainTree
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('{0}\t{1}\n'.format('mainTree_{0}'.format(runID), mainTree))
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Generated main tree:\n{0}'.format(mainTree))
 
 		if not 'Trees_{0}'.format(runID) in paths:
 			with open(seqbootOutputPhylip, 'r') as alnIters:
 				replicate = 0
 				repFlPth = None
+				scriptpath = os.path.realpath(__file__)
+				lineno = getframeinfo(currentframe()).lineno + 2
+				append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 				append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing for bootstrapping')
 				for line in alnIters:
 					if line.strip().replace(' ', '') == '{0}{1}'.format(numAlns, alnLen): # new alignment
@@ -3453,6 +3608,9 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 						with open(paths['Trees_{0}'.format(runID)], 'a') as treeFl:
 							treeFl.write('{0}\n'.format(tree))
 
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'All bootstrap replicate trees in this file:\n{0}'.format(paths['Trees_{0}'.format(runID)]))
 			paths[runID] = paths['clustDir']
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
@@ -3469,6 +3627,9 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 
 		# run PATHd8 to convert tree to ultrametric
 		if ULTRAMETRIC:
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning Ultrametric transformation for {0}'.format(runID))
 			with open(bootstrapped, 'r') as bstreefl:
 				tree = bstreefl.read().strip()
@@ -3485,6 +3646,9 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 				print('Unable to root {0}. No ultrametric tree will be made'.format(AlnFasta))
 			else:
 				other_taxon = random.choice(list(SeqIO.parse(paths[AlnFasta], 'fasta'))).id # a random element from the current cluster to tell PATHd8 where the mrca is (outgroupXother_taxon) for determining relative branch lengths
+				scriptpath = os.path.realpath(__file__)
+				lineno = getframeinfo(currentframe()).lineno + 2
+				append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 				append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning PATHd8 for {0}'.format(runID))
 				pathd8_file_str = '''Sequence length={0};
 mrca: {1}, {2}, fixage=1;
@@ -3513,10 +3677,16 @@ mrca: {1}, {2}, fixage=1;
 										statusFl.write('{0}\t{1}\n'.format(newLocationKey, newLocation))
 
 							
+				scriptpath = os.path.realpath(__file__)
+				lineno = getframeinfo(currentframe()).lineno + 2
+				append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 				append2logfile(paths['output_top_dir'], mainlogfile, 'Finished PATHd8 for {0}'.format(runID))
 
 		bootstrappedLocation = '{0}/{1}_{2}.bootstrapped.newick'.format(paths['classifDir'], classif, clust)
 		copyfile(bootstrapped, bootstrappedLocation)
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Finished bootstrapping. Tree with bootstrap support values here:\n{0}'.format(bootstrappedLocation))
 
 
@@ -3526,6 +3696,9 @@ def div2Rplots(I=6):
 	fl = os.path.abspath(paths['DivergenceSummary_I{0}'.format(I)])
 	call = [ executables['rscript'], '{0}/div2density.R'.format(paths['scriptsDir']), R_wd, fl ]
 	call_str = '{0} {1} {2} {3}'.format(executables['rscript'], '{0}/div2density.R'.format(paths['scriptsDir']), R_wd, fl)
+	scriptpath = os.path.realpath(__file__)
+	lineno = getframeinfo(currentframe()).lineno + 2
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Making R plot\n{0}'.format(call_str))
 	with open('{0}/RscriptCalls.txt'.format(paths['output_top_dir']), 'a') as RcallFl:
 		RcallFl.write(call_str+'\n')
@@ -3782,6 +3955,9 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 	elif clustering_method == 'MCL':
 		MCLCLUST = True
 		ClustMethod =  'MCL_I{0}'.format(I)
+	scriptpath = os.path.realpath(__file__)
+	lineno = getframeinfo(currentframe()).lineno + 2
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning making Circos plots')
 	MakeDir('CircosTopDir', '{0}/Circos'.format(paths['output_top_dir']))
 
@@ -3824,6 +4000,9 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 							GFFoutFl.write(line)
 						with open(allGFFoutPth, 'a') as GFFoutFl:
 							GFFoutFl.write(line)
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Created GFF files for each classification for converting to Circos heatmap tracks.')
 
 			for classif in classifs:
@@ -3847,10 +4026,16 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 				if os.path.isfile(g2fl):
 					# Convert GENECONV output to Circos links track
 					geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, append=True)
+				scriptpath = os.path.realpath(__file__)
+				lineno = getframeinfo(currentframe()).lineno + 2
+				append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 				append2logfile(paths['output_top_dir'], mainlogfile, 'Created links tracks for Circos from intra-cluster inter-element GENECONV output')
 
 			gff2heatmapCall = [ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', allGFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ]
 			makecall(gff2heatmapCall, stdout='{0}/all.heatmap.track'.format(paths['CircosTopDir']))
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Converted GFFs to heatmap tracks for Circos')
 
 		elif CLUSTERS:
@@ -3898,6 +4083,9 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					# Convert GENECONV output to Circos links track
 					links = geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, append=True, output='return', linksdct=links)
 					links_untransposed = geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, append=True, output='return', linksdct=links_untransposed, transposeLinks=False)
+				scriptpath = os.path.realpath(__file__)
+				lineno = getframeinfo(currentframe()).lineno + 2
+				append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 				append2logfile(paths['output_top_dir'], mainlogfile, 'Created links tracks for Circos from intra-cluster inter-element GENECONV output')
 				# Modify geneconv2circoslinks to include an option to return the links information instead of writing to file.
 				# Then use the returned infromation in the cluster loop to write a links track just for the cluster.
@@ -4180,6 +4368,9 @@ auto_alpha_steps  = 5'''.format(imagesize)
 					paths['Circos_output_dir_scaffolds_{0}'.format(ClustMethod)] = paths['plotdir']
 					with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 						statusFlAppend.write('{0}\t{1}\n'.format('Circos_output_dir_scaffolds_{0}'.format(ClustMethod), paths['plotdir']))
+					scriptpath = os.path.realpath(__file__)
+					lineno = getframeinfo(currentframe()).lineno + 2
+					append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 					append2logfile(paths['output_top_dir'], mainlogfile, 'Made Circos plots.')
 
 
@@ -4334,6 +4525,9 @@ auto_alpha_steps  = 5'''.format(imagesize)
 					paths['Circos_output_dir_elements_{0}'.format(ClustMethod)] = paths['plotdir']
 					with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 						statusFlAppend.write('{0}\t{1}\n'.format('Circos_output_dir_elements_{0}'.format(ClustMethod), paths['plotdir']))
+					scriptpath = os.path.realpath(__file__)
+					lineno = getframeinfo(currentframe()).lineno + 2
+					append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 					append2logfile(paths['output_top_dir'], mainlogfile, 'Made Circos plots.')
 
 def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
