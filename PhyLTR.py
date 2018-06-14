@@ -4375,8 +4375,9 @@ auto_alpha_steps  = 5'''.format(imagesize)
 						p.map(circosMultiprocessing, circoscalls, chunksize=chunk_size)
 					p.join()
 					paths['Circos_output_dir_scaffolds_{0}'.format(ClustMethod)] = paths['plotdir']
-					with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-						statusFlAppend.write('{0}\t{1}\n'.format('Circos_output_dir_scaffolds_{0}'.format(ClustMethod), paths['plotdir']))
+					if not checkStatusFl('Circos_output_dir_scaffolds_{0}'.format(ClustMethod)):
+						with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+							statusFlAppend.write('{0}\t{1}\n'.format('Circos_output_dir_scaffolds_{0}'.format(ClustMethod), paths['plotdir']))
 					scriptpath = os.path.realpath(__file__)
 					lineno = getframeinfo(currentframe()).lineno + 2
 					append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
@@ -4532,8 +4533,9 @@ auto_alpha_steps  = 5'''.format(imagesize)
 						p.map(circosMultiprocessing, circoscalls, chunksize=chunk_size)
 					p.join()
 					paths['Circos_output_dir_elements_{0}'.format(ClustMethod)] = paths['plotdir']
-					with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-						statusFlAppend.write('{0}\t{1}\n'.format('Circos_output_dir_elements_{0}'.format(ClustMethod), paths['plotdir']))
+					if not checkStatusFl('Circos_output_dir_scaffolds_{0}'.format(ClustMethod)):
+						with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+							statusFlAppend.write('{0}\t{1}\n'.format('Circos_output_dir_elements_{0}'.format(ClustMethod), paths['plotdir']))
 					scriptpath = os.path.realpath(__file__)
 					lineno = getframeinfo(currentframe()).lineno + 2
 					append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
