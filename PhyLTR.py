@@ -876,6 +876,7 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting LTR_retrotransposons from LTRharvest GFF')
 			getfasta_ltrretrotransposons_call = [  executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', '{0}'.format(paths['LTRharvest_LTR_retrotransposons_GFF']) ]
 			getfasta_ltrretrotransposons_call_string = 'bedtools getfasta -fi {0} -s -bed {1} > {2} 2> {3}'.format(paths['inputFasta'], paths['LTRharvest_LTR_retrotransposons_GFF'], paths['LTRharvest_LTR_retrotransposons_fasta'], '{0}/bedtools_getfasta.stderr'.format(paths['FastaOutputDir']))
+
 			scriptpath = os.path.realpath(__file__)
 			lineno = getframeinfo(currentframe()).lineno + 2
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
@@ -1063,7 +1064,9 @@ def shortClassif(ElNames=False):
 		for line in RepbaseFl:
 			full, short = line.strip().split()
 			RepbaseNames[full] = short
+	
 	ElementNames = {}
+
 	with open(paths['CurrentGFF']) as gffFl:
 		for line in gffFl:
 			if not line.startswith('#'):
@@ -1096,6 +1099,35 @@ def shortClassif(ElNames=False):
 									continue
 								else:
 									ElementNames[el] = 'Unknown'
+
+	paths['GFFByClassification'] = '{0}/ByClassification'.format(paths['GFFOutputDir'])
+	if os.path.exists(paths['GFFByClassification']):
+		rmtree(paths['GFFByClassification'])
+		MakeDir('GFFByClassification', paths['GFFByClassification'])
+
+	with open(paths['CurrentGFF']) as gffFl:
+		for line in gffFl:
+			if not line.startswith('#'):
+				gffLine = GFF3_line(line)
+				if not 'ID' in gffLine:
+					el = gffLine.attributes['Parent']
+				else:
+					el = gffLine.attributes['ID']
+				if 'repeat_region' in el:
+					el = 'LTR_retrotransposon{0}'.format(el.split('repeat_region')[1])
+
+				# Write GFFs for each classification
+				with open('{0}/{1}.LTR_RTs.{2}.gff'.format(paths['GFFByClassification'], filenames['inputFasta'], ElementNames[el]), 'a') as outFl:
+					if gffLine.type == 'repeat_region':
+						outFl.write('###')
+					outFl.write(line)
+
+					
+
+
+					
+				
+						
 	# return 1
 	if ElNames:
 		return ElementNames
@@ -1107,18 +1139,18 @@ def shortClassif(ElNames=False):
 		else:
 			Classifications[clasif] = set([el])
 	# Remove any existing GFF3s to avoid appending to them. May want to change so if a file exists it is read and reclassifying is skipped instead of overwritten.
-	classifs = set(list(DfamNames.values()) + list(RepbaseNames.values()))
-	for classif in classifs:
-		currentGFFpath = '{0}/{1}.gff'.format(paths['GFFOutputDir'], classif)
-		if os.path.isfile(currentGFFpath):
-			os.remove(currentGFFpath)
+	#classifs = set(list(DfamNames.values()) + list(RepbaseNames.values()))
+	#for classif in classifs:
+	#	currentGFFpath = '{0}/{1}.gff'.format(paths['GFFOutputDir'], classif)
+	#	if os.path.isfile(currentGFFpath):
+	#		os.remove(currentGFFpath)
 
-	for clasif in Classifications:
-		sortedClassifs = sorted(list(Classifications[clasif]))
-		classifGFFpath = '{0}/{1}.gff'.format(paths['GFFOutputDir'], clasif)
-		with open(classifGFFpath, 'a') as gffFl:
-			for el in sortedClassifs:
-				gffFl.write('{0}\n'.format(el))
+	#for clasif in Classifications:
+	#	sortedClassifs = sorted(list(Classifications[clasif]))
+	#	classifGFFpath = '{0}/{1}.gff'.format(paths['GFFOutputDir'], clasif)
+	#	with open(classifGFFpath, 'a') as gffFl:
+	#		for el in sortedClassifs:
+	#			gffFl.write('{0}\n'.format(el))
 	# return 2
 	return Classifications
 
@@ -1512,7 +1544,7 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
 
 		MakeDir('MCLdir', '{0}/MCL'.format(paths['output_top_dir'], I))
 		# If all elements combined are less than the min clust size specified by the user, then all elements are put into one cluster.
-		if CombineIfTooFew:
+		if CombineIfTooFew: # NOT ENABLED FOR USER. IT SHOULD WORK THOUGH.
 			if sum([len(clusters_by_classif[c]) for c in clusters_by_classif]) < minClustSize:
 				classif = 'All'
 				allClassifs = '{0}/out.allClust'.format(paths['MCLdir'])
@@ -1902,6 +1934,19 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Aligning\n{0}'.format(mafft_call_string))
 		makecall(mafft_call, paths['AlnPth'], '{0}.stderr'.format(paths['AlnPth']))
+		# MAFFT outputs some non-FASTA text along with the FASTA alignment. The text is first, then the alignment.
+		if os.path.exists(paths['AlnPth']):
+			with open('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']), 'w') as outFl:
+				with open(paths['AlnPth'], 'r') as inFl:
+					STARTFASTA = False
+					for line in inFl:
+						if line.startswith('>'):
+							STARTFASTA == True
+						if STARTFASTA == True:
+							outFl.write(line)
+			copyfile('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']), paths['AlnPth'])
+			os.remove('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']))
+
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Finished aligning')
 
 		# Trim alignment
