@@ -1103,13 +1103,13 @@ def shortClassif(ElNames=False):
 	paths['GFFByClassification'] = '{0}/ByClassification'.format(paths['GFFOutputDir'])
 	if os.path.exists(paths['GFFByClassification']):
 		rmtree(paths['GFFByClassification'])
-		MakeDir('GFFByClassification', paths['GFFByClassification'])
+	MakeDir('GFFByClassification', paths['GFFByClassification'])
 
 	with open(paths['CurrentGFF']) as gffFl:
 		for line in gffFl:
 			if not line.startswith('#'):
 				gffLine = GFF3_line(line)
-				if not 'ID' in gffLine:
+				if not 'ID' in gffLine.attributes or gffLine.type == 'ORF':
 					el = gffLine.attributes['Parent']
 				else:
 					el = gffLine.attributes['ID']
@@ -4604,7 +4604,7 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 
 	elif clustering_method == 'MCL':
 		mcl_top_dir = paths['MCL_I{0}'.format(I)]
-		paths['MCL_ClusterSummary_I{0}'.format(I)] = '{0}/Clusters/MCL_I{1}'.format(mcl_top_dir, I)
+		paths['MCL_ClusterSummary_I{0}'.format(I)] = '{0}/Clusters/MCL_I{1}.summary.tab'.format(mcl_top_dir, I)
 		with open(paths['MCL_ClusterSummary_I{0}'.format(I)], 'w') as outFl:
 			outFl.write('superfamily\tcluster\tsize\n')
 		for classif in clusters_by_classif:
