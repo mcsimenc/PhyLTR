@@ -1941,7 +1941,7 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
 					STARTFASTA = False
 					for line in inFl:
 						if line.startswith('>'):
-							STARTFASTA == True
+							STARTFASTA = True
 						if STARTFASTA == True:
 							outFl.write(line)
 			copyfile('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']), paths['AlnPth'])
@@ -3271,7 +3271,10 @@ END;
 		clustLenDct = {i:len(clusters[i]) for i in range(len(clusters))}
 		clustLenDcts[classif] = clustLenDct
 
-	paths['DivergenceSummary'] = '{0}/LTR_divergences.tab'.format(paths['DivergenceTopDir'])
+	if MCLCLUST:
+		paths['DivergenceSummary'] = '{0}/MCL_I{1}.LTR_divergences.tab'.format(paths['DivergenceTopDir'], I)
+	elif WICKERCLUST:
+		paths['DivergenceSummary'] = '{0}/WickerFamDir_{1}_pId_{2}_percAln_{3}_minLen.LTR_divergences.tab'.format(paths['DivergenceTopDir'], WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
 
 	with open(paths['DivergenceSummary'.format(I)],'w') as divSummaryFl:
 		divSummaryFl.write('elementName\tclassification\tMCLinflationValue\tcluster\tclusterSize\tmodel\tdivergence\tcorrectedDivergence\tIntraelementGeneConversion\n')
