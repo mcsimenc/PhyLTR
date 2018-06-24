@@ -30,7 +30,7 @@ blast=directory # the bin/ directory in the BLAST+ installation
 mcl=directory # the bin/ directory in the MCL installation
 ```
 
-PhyLTR uses two databases for classying LTR RTs by homology using HMMER3 (`nhmmer`)and BLAST+ (`tblastx`), Dfam and Repbase. Dfam used to be available for download, but the page doesn't seem to be up as of June 24, 2018. The files required by PhyLTR are
+PhyLTR uses two databases for classying LTR RTs by homology using HMMER3 (`nhmmer`)and BLAST+ (`tblastx`), Dfam and Repbase.
 
 ```
 PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm
@@ -41,7 +41,10 @@ PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF
 PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.list
 ```
 
-`Dfam_ERV_LTR.hmm`  needs to contain the elements from the full Dfam DB, Dfam.hmm, that are annotated as Class: LTR.
+`Dfam_ERV_LTR.hmm`  needs to contain the elements from the full Dfam DB, Dfam.hmm, that are annotated as Class: LTR. Download Dfam.hmm from `http://dfam.org/web_download/Release/Dfam_2.0/Dfam.hmm.gz` and then run this PhyLTR Python 3 script like this to reduce the HMM set to just those annotated as Class: LTR:
+```
+PhyLTR/scripts/DfamExtractLTRelements.py < Dfam.hmm > Dfam_ERV_LTR.hmm
+```
 
 `Dfam_ERV_LTR.SF` needs be a two-column file with the ID of a given element in the first column and its Superfamily annotation in the Dfam database. This file can be made using the following PhyLTR Python 3 script like this: 
 ```
