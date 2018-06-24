@@ -41,7 +41,7 @@ PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF
 PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.list
 ```
 
-`Dfam_ERV_LTR.hmm`  needs to contain the elements from the full Dfam DB, Dfam.hmm, that are annotated as Class: LTR. Download Dfam.hmm from `http://dfam.org/web_download/Release/Dfam_2.0/Dfam.hmm.gz` and then run this PhyLTR Python 3 script like this to reduce the HMM set to just those annotated as Class: LTR:
+`Dfam_ERV_LTR.hmm`  needs to contain the elements from the full Dfam DB, Dfam.hmm, that are annotated as Class: LTR. Download Dfam.hmm from http://dfam.org/web_download/Release/Dfam_2.0/Dfam.hmm.gz and then run this PhyLTR Python 3 script like this to reduce the HMM set to just those annotated as Class: LTR:
 ```
 PhyLTR/scripts/DfamExtractLTRelements.py < Dfam.hmm > Dfam_ERV_LTR.hmm
 ```
