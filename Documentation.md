@@ -29,3 +29,34 @@ hmmer=directory # the binaries/ directory in the HMMER3 installation
 blast=directory # the bin/ directory in the BLAST+ installation
 mcl=directory # the bin/ directory in the MCL installation
 ```
+
+PhyLTR uses two databases for classying LTR RTs by homology using HMMER3 (`nhmmer`)and BLAST+ (`tblastx`), Dfam and Repbase. Dfam used to be available for download, but the page doesn't seem to be up as of June 24, 2018. The files required by PhyLTR are
+
+```
+PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm
+PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF
+PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.list
+PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta
+PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.list
+PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF
+```
+
+`Dfam_ERV_LTR.hmm`  needs to contain the elements from the full Dfam DB, Dfam.hmm, that are annotated as Class: LTR.
+`Dfam_ERV_LTR.SF` needs be a two-column file with the ID of a given element in the first column and its Superfamily annotation in the Dfam database. This file can be made using the following PhyLTR Python 3 script like this: `PhyLTR/scripts/DfamHMM2SuperFamTable.py < Dfam_ERV_LTR.hmm > Dfam_ERV_LTR.SF`
+`Dfam_ERV_LTR.list` needs to be just the first column of the `Dfam_ERV_LTR.SF` file
+`Repbase_ERV_LTR.fasta` needs to be the concatenation of all LTR retrotransposon and Enogenous Retrovirus features from Repbase. An account with GIRI is required. This is how I did it:
+
+####Downoading Repbase
+1. Get an account with GIRI
+2. Go to http://www.girinst.org/repbase/update/browse.php
+3. Select LTR Retrotransposon from the Repeat class dropdown list.
+4. Select FASTA from the Output format drop down list.
+5. Click the Download button, sign in, and download the text page that opens.
+6. Repeat steps 3-5 but select Endogenous Retrovirus from the Repeat class dropdown list.
+
+R packages needed (tested with R 3.3.3 on a Mac)  
+---------------------------------------------------------------------------------  
+For divergence plots					ggplot2  
+For LTT plots						ape  
+							phangorn  
+							phytools  
