@@ -46,7 +46,6 @@ PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF
 `Dfam_ERV_LTR.list` needs to be just the first column of the `Dfam_ERV_LTR.SF` file
 `Repbase_ERV_LTR.fasta` needs to be the concatenation of all LTR retrotransposon and Enogenous Retrovirus features from Repbase. An account with GIRI is required. This is how I did it:
 
-####Downoading Repbase
 1. Get an account with GIRI
 2. Go to http://www.girinst.org/repbase/update/browse.php
 3. Select LTR Retrotransposon from the Repeat class dropdown list.
