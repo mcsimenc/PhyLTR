@@ -42,8 +42,13 @@ PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.list
 ```
 
 `Dfam_ERV_LTR.hmm`  needs to contain the elements from the full Dfam DB, Dfam.hmm, that are annotated as Class: LTR.
-`Dfam_ERV_LTR.SF` needs be a two-column file with the ID of a given element in the first column and its Superfamily annotation in the Dfam database. This file can be made using the following PhyLTR Python 3 script like this: `PhyLTR/scripts/DfamHMM2SuperFamTable.py < Dfam_ERV_LTR.hmm > Dfam_ERV_LTR.SF`
+
+`Dfam_ERV_LTR.SF` needs be a two-column file with the ID of a given element in the first column and its Superfamily annotation in the Dfam database. This file can be made using the following PhyLTR Python 3 script like this: 
+
+`PhyLTR/scripts/DfamHMM2SuperFamTable.py < Dfam_ERV_LTR.hmm > Dfam_ERV_LTR.SF`
+
 `Dfam_ERV_LTR.list` needs to be just the first column of the `Dfam_ERV_LTR.SF` file
+
 `Repbase_ERV_LTR.fasta` needs to be the concatenation of all LTR retrotransposon and Enogenous Retrovirus features from Repbase. An account with GIRI is required. This is how I did it:
 
 1. Get an account with GIRI
@@ -55,4 +60,5 @@ PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.list
 7. Concatenate the files using `cat` in BASH, name the concatenation `Repbase_ERV_LTR.fasta`, and put it in `PhyLTR/RepeatDatabases/Repbase`
 
 `Repbase_ERV_LTR.SF` needs to be a two-column file with the ID of a given element in the first column and its Superfamily annotation in the Repbase database. To make this file, download the LTR retrotransposon and Endogenous Retrovirus features from Repbase just like shown above for `Repbase_ERV_LTR.fasta` but select IG format instead of FASTA format. Then concatenate them and use the PhyLTR Python 3 script to create the two-colum file like this: `PhyLTR/scripts/RepbaseIG2superfamilies.py < Repbase.LTR-ERV-concatenated.IG > Repbase_ERV_LTR.SF`
+
 `Repbase_ERV_LTR.list` needs to be just the first column of the `Repbase_ERV_LTR.SF` file
