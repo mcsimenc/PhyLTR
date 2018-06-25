@@ -30,6 +30,11 @@ blast=directory # the bin/ directory in the BLAST+ installation
 mcl=directory # the bin/ directory in the MCL installation
 ```
 
+PhyLTR runs LTRdigest, a program that comes with genome tools, to identify putative protein-coding domains within the predicted LTR RTs. LTRdigest uses HMMER3 and a file containing pHMMs for transposable element-related proteins. This file should come with the PhyLTR distribution and contains HMMs downloaded from the Pfam website. It should be in this location:
+```
+PhyLTR/LTRdigest_HMMs/hmm
+```
+
 PhyLTR uses two databases for classying LTR RTs by homology using HMMER3 (`nhmmer`)and BLAST+ (`tblastx`), Dfam and Repbase.
 
 ```
