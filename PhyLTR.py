@@ -2578,7 +2578,7 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 				# e.g. aln = WickerAln_80_pId_80_percAln_80_minLen_Copia_cluster_0_GCfiltered
 				a = aln.split('_')
 				classif = a[7]
-				j = a[-2]
+				j = a[-2] # Cluster
 				suffix = a[-1]
 				OutDirKey = 'WickerModelTestDir_{0}_iters_{1}_pId_{2}_percAln_{3}_minLen_{4}_cluster_{5}_{6}'.format(iters, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, j, suffix)
 				OutSummaryKey = 'WickerModelTestSummary_{0}_iters_{1}_pId_{2}_percAln_{3}_minLen_{4}'.format(iters, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)
@@ -2648,7 +2648,7 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 
 			if not checkStatusFl(OutDirKey):
 				with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-					statusFlAppend.write('{0}\t{1}\n'.format(OutDirKey, paths[OutDirKey]))
+					statusFlAppend.write('{0}\t{1}\n'.format(OutDirKey, paths[ModelTestIterationDir]))
 					#statusFlAppend.write('{0}\t{1}\n'.format('jModeltest2out_{0}'.format(classif), paths['jModeltest2out_{0}'.format(classif)]))
 					if 'jModeltest2summary_{0}'.format(classif) in paths and COMPLETE_RUN:
 						if not checkStatusFl(OutSummaryKey):
@@ -3106,7 +3106,7 @@ END;
 									scriptpath = os.path.realpath(__file__)
 									lineno = getframeinfo(currentframe()).lineno + 2
 									append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-									append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using JC'.format('jModeltest2summary_{0}'.format(classif)))
+									append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using JC'.format(paths['jModeltest2summary_{0}'.format(classif)]))
 									paupBlock += '''[!
 Likelihood settings from best-fit model (JC) selected by default
 Model testing not done for some reason, possibly the cluster size is
@@ -3123,7 +3123,7 @@ END;
 									scriptpath = os.path.realpath(__file__)
 									lineno = getframeinfo(currentframe()).lineno + 2
 									append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-									append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using HKY85'.format('jModeltest2summary_{0}'.format(classif)))
+									append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using HKY85'.format(paths['jModeltest2summary_{0}'.format(classif)]))
 									paupBlock += '''[!
 Likelihood settings from best-fit model (HKY) selected by default
 Model testing not done for some reason, possibly the cluster size is
@@ -3159,7 +3159,7 @@ END;
 								scriptpath = os.path.realpath(__file__)
 								lineno = getframeinfo(currentframe()).lineno + 2
 								append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-								append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using JC'.format('jModeltest2summary_{0}'.format(classif)))
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using JC'.format(paths['jModeltest2summary_{0}'.format(classif)]))
 								model = 'JC'
 								paupBlock += '''[!
 Likelihood settings from best-fit model (JC) selected by default
@@ -3176,7 +3176,7 @@ END;
 								scriptpath = os.path.realpath(__file__)
 								lineno = getframeinfo(currentframe()).lineno + 2
 								append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-								append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using HKY85'.format('jModeltest2summary_{0}'.format(classif)))
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using HKY85'.format(paths['jModeltest2summary_{0}'.format(classif)]))
 								model = 'HKY85'
 								paupBlock += '''[!
 Likelihood settings from best-fit model (HKY) selected by default
