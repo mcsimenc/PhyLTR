@@ -3110,7 +3110,7 @@ END;
 									scriptpath = os.path.realpath(__file__)
 									lineno = getframeinfo(currentframe()).lineno + 2
 									append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-									append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using JC'.format(paths['jModeltest2summary_{0}\tcluster:{1}'.format(classif, j)]))
+									append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}\tcluster:{1}. Using JC'.format(classif, j))
 									paupBlock += '''[!
 Likelihood settings from best-fit model (JC) selected by default
 Model testing not done for some reason, possibly the cluster size is
@@ -3127,7 +3127,7 @@ END;
 									scriptpath = os.path.realpath(__file__)
 									lineno = getframeinfo(currentframe()).lineno + 2
 									append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-									append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using HKY85'.format(paths['jModeltest2summary_{0}\tcluster:{1}'.format(classif, j)]))
+									append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}\tcluster:{1}. Using HKY85'.format(classif, j))
 									paupBlock += '''[!
 Likelihood settings from best-fit model (HKY) selected by default
 Model testing not done for some reason, possibly the cluster size is
@@ -3163,7 +3163,7 @@ END;
 								scriptpath = os.path.realpath(__file__)
 								lineno = getframeinfo(currentframe()).lineno + 2
 								append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-								append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using JC'.format(paths['jModeltest2summary_{0}\tcluster:{1}'.format(classif, j)]))
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}\tcluster:{1}. Using JC'.format(classif, j))
 								model = 'JC'
 								paupBlock += '''[!
 Likelihood settings from best-fit model (JC) selected by default
@@ -3180,7 +3180,7 @@ END;
 								scriptpath = os.path.realpath(__file__)
 								lineno = getframeinfo(currentframe()).lineno + 2
 								append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-								append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}. Using HKY85'.format(paths['jModeltest2summary_{0}\tcluster:{1}'.format(classif, j)]))
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}\tcluster:{1}. Using HKY85'.format(classif, j))
 								model = 'HKY85'
 								paupBlock += '''[!
 Likelihood settings from best-fit model (HKY) selected by default
@@ -5223,7 +5223,7 @@ paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.list'.forma
 paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF'.format(paths['selfDir'])
 #paths['DfamSuperfamilies'] = '{0}/RepeatDatabases/Dfam/Dfam.unique_SFs'.format(paths['selfDir'])
 
-LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL']
+LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL', 'Unknown']
 
 MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
 MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
