@@ -158,8 +158,8 @@ if len(args) < 5:
 			have always seen terminal taxa drawn at different horizontal positions making the tree not look ultrametric.
 
 		-orfhits <path>
-			A file containing List of ORF IDs to color teal. For example, a file wth a list of ORFs that had blast hits
-			in a database.
+			A file containing List of ORF IDs (e.g. LTR_retrotransposon1224.ORF.08) to color teal. For example, a file
+			wth a list of IDs for ORFs that had blast hits in a database.
 
 		-transcribed <path>
 			A file containing a list of element IDs (e.g. LTR_retrotransposon123) to mark with a green asterix.
@@ -219,7 +219,7 @@ if '-orfhits' in args:
 TRANSCRIBED = False
 if '-transcribed' in args:
 	transcribedfl = args[args.index('-transcribed')+1]
-	transcribed = { line.strip():'     *' for line in open(transcribedfl, 'r') }
+	transcribed = { line.strip():'*' for line in open(transcribedfl, 'r') }
 	TRANSCRIBED = True
 	ANYANNOT = True
 	
@@ -359,6 +359,8 @@ t = Tree(tree_flpath)
 
 NOLTRDIVERGENCES = False
 greatest_div = {'element':None, 'value':0}
+for node in t.traverse():
+	node.support = node.support * 100
 for node in t:
 	node_name = str(node).split('-')[-1]
 	rt_name = 'LTR_retrotransposon{0}'.format(node_name.split('_')[0])
@@ -377,24 +379,28 @@ for node in t:
 			try:
 				classifFace = faces.TextFace(classifDct[rt_name], fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
 			except KeyError:
-				classifFace = faces.TextFace('GC-ERROR', fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
+				classifFace = faces.TextFace('?', fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
 			#(t & node_name).add_face(classifFace, 1, 'branch-right')
 			(t & node_name).add_face(classifFace, 0, 'aligned')
 
 		if GCLABEL:
+			GCAVAIL = False
 			try:
 				IGCface = faces.TextFace(IGCdct[rt_name], fsize = 8, penwidth = 10, fgcolor = 'Black')
+				GCAVAIL = True
 			except KeyError:
-				IGCface = faces.TextFace('GC-ERROR', fsize = 8, penwidth = 10, fgcolor = 'Black')
+				pass
+				#IGCface = faces.TextFace('?', fsize = 8, penwidth = 10, fgcolor = 'Black')
 			#(t & node_name).add_face(IGCface, 0, 'aligned')
-			(t & node_name).add_face(IGCface, 0, 'branch-right')
+			if GCAVAIL:
+				(t & node_name).add_face(IGCface, 1, 'branch-right')
 
 		if TRANSCRIBED:
 			#print(transcribed)
 			#print(rt_name)
 			#sys.exit()
 			try:
-				transcribedFace = faces.TextFace(transcribed[rt_name], fsize = 14, fgcolor='Green', penwidth = 18)
+				transcribedFace = faces.TextFace(transcribed[rt_name], fsize = 18, fgcolor='Green', penwidth = 18)
 			except KeyError:
 				transcribedFace = faces.TextFace('', fsize = 8, fgcolor = 'Green', penwidth = 12)
 			(t & node_name).add_face(transcribedFace, 2, 'branch-right')
@@ -534,6 +540,8 @@ t.render("{0}_phylo_uncorrectedDivergences.png".format(treeName), w=35, units="i
 t = Tree(tree_flpath)
 NOLTRDIVERGENCES = False
 greatest_divc = {'element':None, 'value':0}
+for node in t.traverse():
+	node.support = node.support * 100
 for node in t:
 	node_name = str(node).split('-')[-1]
 	rt_name = 'LTR_retrotransposon{0}'.format(node_name.split('_')[0])
@@ -550,21 +558,31 @@ for node in t:
 			try:
 				classifFace = faces.TextFace(classifDct[rt_name], fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
 			except KeyError:
-				classifFace = faces.TextFace('GC-ERROR', fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
+				classifFace = faces.TextFace('?', fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
 			#(t & node_name).add_face(classifFace, 1, 'branch-right')
 			(t & node_name).add_face(classifFace, 0, 'aligned')
 
 		if GCLABEL:
+			#try:
+			#	IGCface = faces.TextFace(IGCdct[rt_name], fsize = 8, penwidth = 10, fgcolor = 'Black')
+			#except KeyError:
+			#	IGCface = faces.TextFace('?', fsize = 8, penwidth = 10, fgcolor = 'Black')
+			##(t & node_name).add_face(IGCface, 0, 'aligned')
+			#(t & node_name).add_face(IGCface, 1, 'branch-right')
+			GCAVAIL = False
 			try:
 				IGCface = faces.TextFace(IGCdct[rt_name], fsize = 8, penwidth = 10, fgcolor = 'Black')
+				GCAVAIL = True
 			except KeyError:
-				IGCface = faces.TextFace('GC-ERROR', fsize = 8, penwidth = 10, fgcolor = 'Black')
+				pass
+				#IGCface = faces.TextFace('?', fsize = 8, penwidth = 10, fgcolor = 'Black')
 			#(t & node_name).add_face(IGCface, 0, 'aligned')
-			(t & node_name).add_face(IGCface, 0, 'branch-right')
+			if GCAVAIL:
+				(t & node_name).add_face(IGCface, 1, 'branch-right')
 
 		if TRANSCRIBED:
 			try:
-				transcribedFace = faces.TextFace(transcribed[rt_name], fsize = 14, fgcolor = 'Green', penwidth = 18)
+				transcribedFace = faces.TextFace(transcribed[rt_name], fsize = 18, fgcolor = 'Green', penwidth = 18)
 			except KeyError:
 				transcribedFace = faces.TextFace('', fsize = 8, fgcolor = 'Green', penwidth = 12)
 			(t & node_name).add_face(transcribedFace, 2, 'branch-right')
