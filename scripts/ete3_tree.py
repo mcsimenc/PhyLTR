@@ -129,22 +129,41 @@ args = sys.argv
 if len(args) < 5:
 
 	print('''
-		usage:
-			ete3_tree.py -t <newick_tree> -d <divergences> -g <gff> [-reroot [<node>|auto]] [-nlabel] [-lflabel] [-annot] [-ultrametric]
+		Usage:
+			ete3_tree.py -t <newick_tree> -d <divergences> -g <gff> [options] 
+
+		Description:
+
+			renders phylogenies for long terminal repeat retrotransposon phylogenies with diagrams of LTR elements' domain
+			architecture and optionally additional annotations (-lflabel, -classif, -geneconv, -transcribed, -orfhits)
 
 		-lflabel
-			show leaf labels
+			Show element IDs (integers) as leaf labels.
 
-		-annot
-			show leaf annotations (blast hits and domain architectures
+		-classif
+			Add the superfamily classification for each element (which is obtained from the LTR divergence file) 
+			above each LTR RT diagram.
 
-		-reroot
-			if <node>, the tree is rerooted at that node. If 'auto', then the filename for the input tree is parsed to get
-			the name of the outgroup used and the tree is rerooted on the outgroup.	
+		-geneconv
+			Add the word 'Yes' or 'No' to the immediately to the right of each leaf depending on whether intra-element
+			gene conversion tracts were detected between the LTRs of that element.
+
+		-reroot <int>|auto
+			Two options are possible for -reroot: 'auto', or an <int> corresponding to the element name (i.e.
+			LTR_retrotransposon<int>) to position as the earliest diverging lineage. Only use -reroot auto if
+			the newick filename contains the outgroup in the format output by PhyLTR. 
 
 		-ultrametric
-			Run ete3's convert_to_ultrametric() on the tree
-		-orfhits <path>		List of ORFs with hits to nr
+			Draw tree after applying ete3's convert_to_ultrametric() function. In my experience using this option, I
+			have always seen terminal taxa drawn at different horizontal positions making the tree not look ultrametric.
+
+		-orfhits <path>
+			A file containing List of ORF IDs to color teal. For example, a file wth a list of ORFs that had blast hits
+			in a database.
+
+		-transcribed <path>
+			A file containing a list of element IDs (e.g. LTR_retrotransposon123) to mark with a green asterix.
+			Instead of an asterix, a 'T' is shown as if -classif is used.
 		''', file=sys.stderr)
 
 	sys.exit()
@@ -179,6 +198,7 @@ divergencesCorrected = {}
 #domains_dct = {}
 IGCdct = {}
 classifDct = {}
+ANYANNOT = False
 
 if '-reroot' in args:
 	REROOT = True
@@ -189,20 +209,39 @@ if '-reroot' in args:
 else:
 	REROOT = False
 
+ORFHITS = False
 if '-orfhits' in args:
 	orfhitsfl = args[args.index('-orfhits')+1]
 	orfhits = { line.strip() for line in open(orfhitsfl, 'r') }
+	ORFHITS = True
+	ANYANNOT = True
+
+TRANSCRIBED = False
+if '-transcribed' in args:
+	transcribedfl = args[args.index('-transcribed')+1]
+	transcribed = { line.strip():'     *' for line in open(transcribedfl, 'r') }
+	TRANSCRIBED = True
+	ANYANNOT = True
 	
 	
 if '-lflabel' in args:
 	LEAF_LABELS = True
+	ANYANNOT = True
 else:
 	LEAF_LABELS = False
 
-if '-annot' in args:
+if '-classif' in args:
 	ANNOT = True
+	ANYANNOT = True
 else:
 	ANNOT = False
+
+if '-geneconv' in args:
+	GCLABEL = True
+	ANYANNOT = True
+else:
+	GCLABEL = False
+
 if '-ultrametric' in args:
 	ULTRAMETRIC = True
 else:
@@ -261,10 +300,10 @@ with open(gffFlPth, 'r') as gffFl:
 		elif feat == 'ORF':
 			el = gffLine.attributes['Parent']
 			orfid = gffLine.attributes['ID']
-			if orfid in orfhits:
-				domain = 'ORFHIT'
-			else:
-				domain = 'ORF'
+			domain = 'ORF'
+			if ORFHITS:
+				if orfid in orfhits:
+					domain = 'ORFHIT'
 			start = start - LTRRTlengths[el]['start'] + 1
 			end = end - LTRRTlengths[el]['start'] + 1
 			if el in LTRRTs:
@@ -318,6 +357,7 @@ t = Tree(tree_flpath)
 
 
 
+NOLTRDIVERGENCES = False
 greatest_div = {'element':None, 'value':0}
 for node in t:
 	node_name = str(node).split('-')[-1]
@@ -330,23 +370,50 @@ for node in t:
 	#	print(len(color_gradient['hex']))
 		col = color_gradient['hex'][int(divergences[rt_name][:6].replace('.', ''))]
 	else:
-		col = '#417849'
-	if ANNOT:
-		try:
-			classifFace = faces.TextFace(classifDct[rt_name], fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
-		except KeyError:
-			classifFace = faces.TextFace('ERROR', fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
-		try:
-			IGCface = faces.TextFace(IGCdct[rt_name], fsize = 8, penwidth = 10, fgcolor = 'Black')
-		except KeyError:
-			IGCface = faces.TextFace('ERROR', fsize = 8, penwidth = 10, fgcolor = 'Black')
-		#(t & node_name).add_face(domain_face, 0, 'aligned')
-		(t & node_name).add_face(IGCface, 0, 'aligned')
-		#(t & node_name).add_face(blast_hit_face, 1, 'branch-right')
-		(t & node_name).add_face(classifFace, 1, 'branch-right')
+		NOLTRDIVERGENCES = True
+		#col = '#417849'
+	if ANYANNOT:
+		if ANNOT:
+			try:
+				classifFace = faces.TextFace(classifDct[rt_name], fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
+			except KeyError:
+				classifFace = faces.TextFace('GC-ERROR', fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
+			#(t & node_name).add_face(classifFace, 1, 'branch-right')
+			(t & node_name).add_face(classifFace, 0, 'aligned')
 
-	cf = CircleFace(radius=4, color=col)
-	(t & node_name).add_face(cf, 0, 'branch-right')
+		if GCLABEL:
+			try:
+				IGCface = faces.TextFace(IGCdct[rt_name], fsize = 8, penwidth = 10, fgcolor = 'Black')
+			except KeyError:
+				IGCface = faces.TextFace('GC-ERROR', fsize = 8, penwidth = 10, fgcolor = 'Black')
+			#(t & node_name).add_face(IGCface, 0, 'aligned')
+			(t & node_name).add_face(IGCface, 0, 'branch-right')
+
+		if TRANSCRIBED:
+			#print(transcribed)
+			#print(rt_name)
+			#sys.exit()
+			try:
+				transcribedFace = faces.TextFace(transcribed[rt_name], fsize = 14, fgcolor='Green', penwidth = 18)
+			except KeyError:
+				transcribedFace = faces.TextFace('', fsize = 8, fgcolor = 'Green', penwidth = 12)
+			(t & node_name).add_face(transcribedFace, 2, 'branch-right')
+			#add_face(face, column, position='branch-right') method of ete3.coretype.tree.TreeNode instance
+
+
+		#(t & node_name).add_face(domain_face, 0, 'aligned')
+		#(t & node_name).add_face(blast_hit_face, 1, 'branch-right')
+	else:
+		classifFace = faces.TextFace(' ', fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
+		(t & node_name).add_face(classifFace, 1, 'branch-right')
+		
+
+	if NOLTRDIVERGENCES:
+		cf = CircleFace(radius=4, color='white')
+		(t & node_name).add_face(cf, 0, 'branch-right')
+	else:
+		cf = CircleFace(radius=4, color=col)
+		(t & node_name).add_face(cf, 0, 'branch-right')
 
         #el = 'LTR_retrotransposon{0}'.format(leaf)
 	el = 'LTR_retrotransposon{0}'.format(node_name)
@@ -360,7 +427,7 @@ for node in t:
 				if strandDct[el] == '-': # invert the graphic
 					start = int(LTRRTlengths[el]['length']) - start
 					end = int(LTRRTlengths[el]['length']) - end
-				motif = [ start//50, end//50, "[]", None, 8, "black", "black", None ]# start, end, typ, w, h, fg, bg, name
+				motif = [ start//50, end//50, "[]", None, 8, "black", "black", None ]# start, end, shape, w, h, fg, bg, name
 					#motif = [ LTRRTs[el][feat][LTR][0]//100, LTRRTs[el][feat][LTR][1]//100, "[]", None, 4, "black", "black", None ]
 					#motif = [ LTRRTs[el][feat][LTR][0]//10, LTRRTs[el][feat][LTR][1]//10, "[]", None, 8, "black", "black", None ]
 					#motif = [ LTRRTs[el][feat][LTR][0], LTRRTs[el][feat][LTR][1], "[]", None, 1, "black", "black", None ]
@@ -422,7 +489,7 @@ for node in t:
 
 	#seqFace = SeqMotifFace(seq=None, motifs=box_motifs, gap_format="line")
 	seqFace = SeqMotifFace(seq=None, motifs=Motifs, gap_format="line")
-	(t & node_name).add_face(seqFace, 0, 'aligned')
+	(t & node_name).add_face(seqFace, 0, position='aligned')
 
 
 
@@ -431,7 +498,10 @@ if REROOT:
 	t.set_outgroup( t & reroot_at )
 else:
 	# Auto-reroot on taxon with highest divergence corrected
-	t.set_outgroup( t & greatest_div['element'].lstrip('LTR_retrotransposon') )
+	if greatest_div['element'] == None: # This happens when divergences are not obtained for a given cluster/superfamily (e.g. DIRS)
+		pass
+	else:
+		t.set_outgroup( t & greatest_div['element'].lstrip('LTR_retrotransposon') )
 
 ts = TreeStyle()
 
@@ -462,7 +532,7 @@ t.render("{0}_phylo_uncorrectedDivergences.png".format(treeName), w=35, units="i
 #
 
 t = Tree(tree_flpath)
-
+NOLTRDIVERGENCES = False
 greatest_divc = {'element':None, 'value':0}
 for node in t:
 	node_name = str(node).split('-')[-1]
@@ -473,27 +543,44 @@ for node in t:
 			greatest_divc['element'] = rt_name
 		col = color_gradient['hex'][int(divergencesCorrected[rt_name][:6].replace('.', ''))]
 	else:
-		col = '#417849'
-	if ANNOT:
-#        descFace.margin_top = 10
-#        descFace.margin_bottom = 10
-		#blast_hit_face = faces.TextFace(blast_hit_dct[rt_name], fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
-		try:
-			classifFace = faces.TextFace(classifDct[rt_name], fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
-		except KeyError:
-			classifFace = faces.TextFace('ERROR', fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
-		#domain_face = faces.TextFace(domains_dct[rt_name], fsize = 8, penwidth = 10, fgcolor = 'Black')
-		try:
-			IGCface = faces.TextFace(IGCdct[rt_name], fsize = 8, penwidth = 10, fgcolor = 'Black')
-		except KeyError:
-			IGCface = faces.TextFace('ERROR', fsize = 8, penwidth = 10, fgcolor = 'Black')
+		NOLTRDIVERGENCES = True
+		#col = '#417849'
+	if ANYANNOT:
+		if ANNOT:
+			try:
+				classifFace = faces.TextFace(classifDct[rt_name], fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
+			except KeyError:
+				classifFace = faces.TextFace('GC-ERROR', fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
+			#(t & node_name).add_face(classifFace, 1, 'branch-right')
+			(t & node_name).add_face(classifFace, 0, 'aligned')
+
+		if GCLABEL:
+			try:
+				IGCface = faces.TextFace(IGCdct[rt_name], fsize = 8, penwidth = 10, fgcolor = 'Black')
+			except KeyError:
+				IGCface = faces.TextFace('GC-ERROR', fsize = 8, penwidth = 10, fgcolor = 'Black')
+			#(t & node_name).add_face(IGCface, 0, 'aligned')
+			(t & node_name).add_face(IGCface, 0, 'branch-right')
+
+		if TRANSCRIBED:
+			try:
+				transcribedFace = faces.TextFace(transcribed[rt_name], fsize = 14, fgcolor = 'Green', penwidth = 18)
+			except KeyError:
+				transcribedFace = faces.TextFace('', fsize = 8, fgcolor = 'Green', penwidth = 12)
+			(t & node_name).add_face(transcribedFace, 2, 'branch-right')
+
 		#(t & node_name).add_face(domain_face, 0, 'aligned')
-		(t & node_name).add_face(IGCface, 0, 'aligned')
 		#(t & node_name).add_face(blast_hit_face, 1, 'branch-right')
+	else:
+		classifFace = faces.TextFace(' ', fsize = 8, fgcolor = 'DarkBlue', penwidth = 8)
 		(t & node_name).add_face(classifFace, 1, 'branch-right')
 
-	cf = CircleFace(radius=4, color=col)
-	(t & node_name).add_face(cf, 0, 'branch-right')
+	if NOLTRDIVERGENCES:
+		cf = CircleFace(radius=4, color='white')
+		(t & node_name).add_face(cf, 0, 'branch-right')
+	else:
+		cf = CircleFace(radius=4, color=col)
+		(t & node_name).add_face(cf, 0, 'branch-right')
 
         #el = 'LTR_retrotransposon{0}'.format(leaf)
 	el = 'LTR_retrotransposon{0}'.format(node_name)
@@ -507,8 +594,8 @@ for node in t:
 				if strandDct[el] == '-': # invert the graphic
 					start = int(LTRRTlengths[el]['length']) - start
 					end = int(LTRRTlengths[el]['length']) - end
-				motif = [ start//50, end//50, "[]", None, 8, "black", "black", None ]# start, end, typ, w, h, fg, bg, name
-				#start, end, typ, w, h, fg, bg, name
+				motif = [ start//50, end//50, "[]", None, 8, "black", "black", None ]# start, end, shape, w, h, fg, bg, name
+				#start, end, shape, w, h, fg, bg, name
 				#motif = [ LTRRTs[el][feat][LTR][0], LTRRTs[el][feat][LTR][1], "[]", None, 4, "black", "black", None ]
 				#motif = [ LTRRTs[el][feat][LTR][0]//100, LTRRTs[el][feat][LTR][1]//100, "[]", None, 4, "black", "black", None ]
 				#motif = [ LTRRTs[el][feat][LTR][0]//50, LTRRTs[el][feat][LTR][1]//50, "[]", None, 8, "black", "black", None ]
@@ -570,13 +657,16 @@ for node in t:
 
 	#seqFace = SeqMotifFace(seq=None, motifs=box_motifs, gap_format="line")
 	seqFace = SeqMotifFace(seq=None, motifs=Motifs, gap_format="line")
-	(t & node_name).add_face(seqFace, 0, 'aligned')
+	(t & node_name).add_face(seqFace, 0, position='aligned')
 
 
 if REROOT:
 	t.set_outgroup( t & reroot_at )
 else:
-	t.set_outgroup( t & greatest_divc['element'].lstrip('LTR_retrotransposon') )
+	if greatest_div['element'] == None: # This happens when divergences are not obtained for a given cluster/superfamily (e.g. DIRS)
+		pass
+	else:
+		t.set_outgroup( t & greatest_div['element'].lstrip('LTR_retrotransposon') )
 
 ts = TreeStyle()
 
