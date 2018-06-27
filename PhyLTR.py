@@ -4704,7 +4704,7 @@ def help2():
 	--modeltest_criterion		    <str>		BIC
 	--gc_ltr_div_scaling		    <int>		1
 	--maxiterate_small_clusters	    <int>		20
-	--maxiterate_medium_clusters	    <int>		5
+	--maxiterate_medium_clusters	    <int>		3
 	--mafft_smallAln_maxclustsize	    <int>	 	50
 	--mafft_mediumAln_maxclustsize	    <int>		500
 	--mafft_largeAln_maxclustsize  	    <int>		1000
@@ -5171,7 +5171,7 @@ else:
 if '--maxiterate_medium_clusters' in args:
 	mafft_mediumAln_maxiterate = int(args[args.index('--maxiterate_medium_clusters')+1])
 else:
-	mafft_mediumAln_maxiterate = 5
+	mafft_mediumAln_maxiterate = 3
 if '--mafft_smallAln_maxclustsize' in args:
 	mafft_smallAln_maxclustsize = int(args[args.index('--mafft_smallAln_maxclustsize')+1])
 else:
