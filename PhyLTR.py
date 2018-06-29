@@ -2652,7 +2652,8 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 
 			if not checkStatusFl(OutDirKey):
 				with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-					statusFlAppend.write('{0}\t{1}\n'.format(OutDirKey, paths[ModelTestIterationDir]))
+				'{0}/iter_{1}'.format(paths['ModelTestClustDir']
+					statusFlAppend.write('{0}\t{1}\n'.format(OutDirKey, paths['ModelTestIterationDir']))
 					#statusFlAppend.write('{0}\t{1}\n'.format('jModeltest2out_{0}'.format(classif), paths['jModeltest2out_{0}'.format(classif)]))
 					if 'jModeltest2summary_{0}'.format(classif) in paths and COMPLETE_RUN:
 						if not checkStatusFl(OutSummaryKey):
