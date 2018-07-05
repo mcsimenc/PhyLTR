@@ -2652,7 +2652,6 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 
 			if not checkStatusFl(OutDirKey):
 				with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-				'{0}/iter_{1}'.format(paths['ModelTestClustDir']
 					statusFlAppend.write('{0}\t{1}\n'.format(OutDirKey, paths['ModelTestIterationDir']))
 					#statusFlAppend.write('{0}\t{1}\n'.format('jModeltest2out_{0}'.format(classif), paths['jModeltest2out_{0}'.format(classif)]))
 					if 'jModeltest2summary_{0}'.format(classif) in paths and COMPLETE_RUN:
@@ -4599,8 +4598,16 @@ auto_alpha_steps  = 5'''.format(imagesize)
 				append2logfile(paths['output_top_dir'], mainlogfile, 'Made Circos plots.')
 
 def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
+	'''
+	Creates files related to each cluster.
+
+	1. Creates a file for either MCL or WickerFam clustering at PhyLTR.output/<clustMethod>/<settings>/Clusters/<clustMethod>_<settings>.summary.tab
+	2. Creates GFF files for each cluster in PhyLTR.output/GFF_output/<superfamily>.<clustMethod>.<settings>/<superfamily>.<clustMethod>.<settings>.cluster_<i>.gff
+	'''
+	
 	if clustering_method == 'WickerFam':
 		wicker_top_dir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
+		settings = '{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
 		paths['WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.summary.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
 		with open(paths['WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'w') as outFl:
 			outFl.write('superfamily\tcluster\tsize\n')
@@ -4608,14 +4615,45 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 			with open(paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)], 'r') as inFl:
 				c = 0
 				for line in inFl:
-					clust_size = len(line.strip().split())
+					clust_members = set([el.lstrip('LTR_retrotransposon') for el in line.strip().split()])
+					clust_size = len(clust_members)
+					# Write GFF3 for cluster
+					MakeDir('{0}_cluster_GFF3s'.format(classif), '{0}/{1}.{2}.{3}'.format(paths['GFFByClassification'], classif, clustering_method, settings))
+					with open(paths['CurrentGFF']) as gffFl:
+						with open('{0}/{1}.{2}.{3}.cluster_{4}.gff'.format(paths['{0}_cluster_GFF3s'.format(classif)], classif, clustering_method, settings, c), 'w') as outFl:
+							for line in gffFl:
+								if line.startswith('#'):
+									continue
+								gffLine = GFF3_line(line)
+								if 'Parent' in gffLine.attributes:
+									if 'LTR_retrotransposon' in gffLine.attributes['Parent']:
+										elNum = gffLine.attributes['Parent'].lstrip('LTR_retrotransposon')
+									elif 'repeat_region' in gffLine.attributes['Parent']:
+										elNum = gffLine.attributes['Parent'].lstrip('repeat_region')
+									else:
+										sys.exit('PROBLEM WITH summarizeClusters() Parent attribute for \n{0}'.format(str(gffLine)))
+								elif 'ID' in gffLine.attributes:
+									if 'LTR_retrotransposon' in gffLine.attributes['ID']:
+										elNum = gffLine.attributes['ID'].lstrip('LTR_retrotransposon')
+									elif 'repeat_region' in gffLine.attributes['ID']:
+										elNum = gffLine.attributes['ID'].lstrip('repeat_region')
+									else:
+										sys.exit('PROBLEM WITH summarizeClusters() ID attribute for \n{0}'.format(str(gffLine)))
+								else:
+									sys.exit('sumarizeClusters(): No Parent or ID attribute for gff line: {0}'.format(str(gffLine)))
 
+								if elNum in clust_members:
+									if gffLine.type == 'repeat_region':
+										outFl.write('###\n')
+									outFl.write(line)
+					# Write line to summary file
 					with open(paths['WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'a') as outFl:
 						outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
 					c += 1
 
 	elif clustering_method == 'MCL':
 		mcl_top_dir = paths['MCL_I{0}'.format(I)]
+		settings = 'I{0}'.format(I)
 		paths['MCL_ClusterSummary_I{0}'.format(I)] = '{0}/Clusters/MCL_I{1}.summary.tab'.format(mcl_top_dir, I)
 		with open(paths['MCL_ClusterSummary_I{0}'.format(I)], 'w') as outFl:
 			outFl.write('superfamily\tcluster\tsize\n')
@@ -4623,7 +4661,41 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 			with open(paths['MCL_{0}_I{1}'.format(classif, I)], 'r') as inFl:
 				c = 0
 				for line in inFl:
-					clust_size = len(line.strip().split())
+					clust_members = set([el.lstrip('LTR_retrotransposon') for el in line.strip().split()])
+					clust_size = len(clust_members)
+					# Write GFF3 for cluster
+					MakeDir('{0}_cluster_GFF3s'.format(classif), '{0}/{1}.{2}.{3}'.format(paths['GFFByClassification'], classif, clustering_method, settings))
+					with open(paths['CurrentGFF']) as gffFl:
+						with open('{0}/{1}.{2}.{3}.cluster_{4}.gff'.format(paths['{0}_cluster_GFF3s'.format(classif)], classif, clustering_method, settings, c), 'w') as outFl:
+							for line in gffFl:
+								if line.startswith('#'):
+									continue
+								gffLine = GFF3_line(line)
+								if 'Parent' in gffLine.attributes:
+									if 'LTR_retrotransposon' in gffLine.attributes['Parent']:
+										elNum = gffLine.attributes['Parent'].lstrip('LTR_retrotransposon')
+									elif 'repeat_region' in gffLine.attributes['Parent']:
+										elNum = gffLine.attributes['Parent'].lstrip('repeat_region')
+									else:
+										sys.exit('PROBLEM WITH summarizeClusters() Parent attribute for \n{0}'.format(str(gffLine)))
+								elif 'ID' in gffLine.attributes:
+									if 'LTR_retrotransposon' in gffLine.attributes['ID']:
+										elNum = gffLine.attributes['ID'].lstrip('LTR_retrotransposon')
+									elif 'repeat_region' in gffLine.attributes['ID']:
+										elNum = gffLine.attributes['ID'].lstrip('repeat_region')
+									else:
+										sys.exit('PROBLEM WITH summarizeClusters() ID attribute for \n{0}'.format(str(gffLine)))
+								else:
+									sys.exit('sumarizeClusters(): No Parent or ID attribute for gff line: {0}'.format(str(gffLine)))
+
+								if elNum in clust_members:
+									if gffLine.type == 'repeat_region':
+										outFl.write('###\n')
+									outFl.write(line)
+									
+								
+
+					# Write line to summary file
 					with open(paths['MCL_ClusterSummary_I{0}'.format(I)], 'a') as outFl:
 						outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
 					c += 1
@@ -5261,6 +5333,7 @@ elif 'LTRdigestGFF' in paths:
 elif 'LTRharvestGFF' in paths:
 	paths['CurrentGFF'] = paths['LTRharvestGFF']
 
+
 # These functions modify the global var paths
 # They run various procedures and generate files
 # They'll be skipped if they appear to have been done already and the requisite files for subsequent steps exist
@@ -5301,6 +5374,12 @@ clusters_by_classif = shortClassif()
 classifs_by_element = shortClassif(ElNames=True)
 classifs = set(list(clusters_by_classif.keys()))
 
+#### TEMPORARY RUN
+if WICKER:
+	summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
+if USEMCL:
+	summarizeClusters(I=6, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
+sys.exit()
 #summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
 #sys.exit()
 
@@ -5317,6 +5396,7 @@ classifs = set(list(clusters_by_classif.keys()))
 #
 #  II. Clustering, divergence, gene conversion, and phylogenetic analysis
 #
+
 if WICKER:
 	# 1. Perform clustering
 	WickerFam(pId=wicker_pId, percAln=wicker_pAln, minLen=wicker_minLen, use_ltrs=wicker_use_ltrs, use_internal=wicker_use_internal)
