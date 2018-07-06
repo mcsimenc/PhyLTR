@@ -1067,37 +1067,32 @@ def shortClassif(ElNames=False):
 	
 	ElementNames = {}
 
+	DEBUG = True
 	with open(paths['CurrentGFF']) as gffFl:
 		for line in gffFl:
 			if not line.startswith('#'):
 				if '\tLTR_retrotransposon\t' in line:
 					gffLine = GFF3_line(line)
 					el = gffLine.attributes['ID']
+					if el == 'LTR_retrotransposon1137':
+						DEBUG = True
 					for attr in gffLine.attributes:
+						annot = gffLine.attributes[attr]
+
 						if 'dfam' in attr:
-							if gffLine.attributes[attr] in DfamNames:
-								shortName = DfamNames[gffLine.attributes[attr]]
-								if shortName != 'None':
-									ElementNames[el] = shortName
-									
-							else:
-								if el in ElementNames: # Use repbase classification
-									continue
-								else:
+							if annot in DfamNames: # There is an annotation for this Dfam hit in the paths['DfamShortNames'] file
+								ElementNames[el] = DfamNames[annot] # A Dfam annotation will take precedence over a Repbase annotation
+							else: # There is not an annotation for this Dfam hit in the paths['DfamShortNames'] file
+								if el not in ElementNames:
 									ElementNames[el] = 'Unknown'
 
 						elif 'repbase' in attr:
-							if gffLine.attributes[attr] in RepbaseNames:
-								shortName = RepbaseNames[gffLine.attributes[attr]]
-								if shortName != 'None':
-									if el in ElementNames: # Use Dfam classification
-										continue
-									else:
-										ElementNames[el] = shortName
-							else:
-								if el in ElementNames: # Use Dfam classification
-									continue
-								else:
+							if el in ElementNames and ElementNames != 'Unknown': # Use Dfam classification because Dfam takes precedence over Repbase (a Dfam HMM hatch is more comprehensive)
+								continue
+							if annot in RepbaseNames: # Repbase annotation available
+								ElementNames[el] = RepbaseNames[annot]
+							else: # No Repbase annotation available, mark as Unknown if there is not already a Dfam annotation
+								if el not in ElementNames:
 									ElementNames[el] = 'Unknown'
 
 	paths['GFFByClassification'] = '{0}/ByClassification'.format(paths['GFFOutputDir'])
@@ -3085,6 +3080,8 @@ def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'p
 					for j in range(len(clusters)):
 						for el in clusters[j]:
 							paupBlock = ''
+							print('OK, WHAT IS IT?')
+							print('classif {0}, cluster {1}, element {2}'.format(classif, j, el))
 							seqRec = list(SeqIO.parse(PhyLTRalnPths[el], 'fasta'))
 							paupBlock = '''#NEXUS
 begin DATA;
@@ -3148,6 +3145,8 @@ END;
 					for j in range(len(clusters)):
 						for el in clusters[j]:
 							paupBlock = ''
+							print('OK, WHAT IS IT?')
+							print('classif {0}, cluster {1}, element {2}'.format(classif, j, el))
 							seqRec = list(SeqIO.parse(PhyLTRalnPths[el], 'fasta'))
 							paupBlock = '''#NEXUS
 begin DATA;
@@ -5374,12 +5373,17 @@ clusters_by_classif = shortClassif()
 classifs_by_element = shortClassif(ElNames=True)
 classifs = set(list(clusters_by_classif.keys()))
 
-#### TEMPORARY RUN
-if WICKER:
-	summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
-if USEMCL:
-	summarizeClusters(I=6, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
+for c in clusters_by_classif:
+	if c == 'Unknown':
+		print('\n'.join(clusters_by_classif[c]))
 sys.exit()
+
+#### TEMPORARY RUN
+#if WICKER:
+#	summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
+#if USEMCL:
+#	summarizeClusters(I=6, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
+#sys.exit()
 #summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
 #sys.exit()
 
