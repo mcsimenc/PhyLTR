@@ -1081,14 +1081,18 @@ def shortClassif(ElNames=False):
 
 						if 'dfam' in attr:
 							if annot in DfamNames: # There is an annotation for this Dfam hit in the paths['DfamShortNames'] file
+								if el in ElementNames:
+									if ElementNames[el] != 'Unknown' and DfamNames[annot] == 'Unknown': # Use Repbase classification if it's not Unknown and Dfam is Unknown
+										continue
 								ElementNames[el] = DfamNames[annot] # A Dfam annotation will take precedence over a Repbase annotation
 							else: # There is not an annotation for this Dfam hit in the paths['DfamShortNames'] file
 								if el not in ElementNames:
 									ElementNames[el] = 'Unknown'
 
 						elif 'repbase' in attr:
-							if el in ElementNames and ElementNames != 'Unknown': # Use Dfam classification because Dfam takes precedence over Repbase (a Dfam HMM hatch is more comprehensive)
-								continue
+							if el in ElementNames:
+								if ElementNames[el] != 'Unknown': # Use Dfam classification if it's there unless it's 'Unknown'
+									continue
 							if annot in RepbaseNames: # Repbase annotation available
 								ElementNames[el] = RepbaseNames[annot]
 							else: # No Repbase annotation available, mark as Unknown if there is not already a Dfam annotation
