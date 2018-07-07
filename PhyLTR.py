@@ -5373,10 +5373,10 @@ clusters_by_classif = shortClassif()
 classifs_by_element = shortClassif(ElNames=True)
 classifs = set(list(clusters_by_classif.keys()))
 
-for c in clusters_by_classif:
-	if c == 'Unknown':
-		print('\n'.join(clusters_by_classif[c]))
-sys.exit()
+#for c in clusters_by_classif:
+#	if c == 'Unknown':
+#		print('\n'.join(clusters_by_classif[c]))
+#sys.exit()
 
 #### TEMPORARY RUN
 #if WICKER:
@@ -5424,7 +5424,7 @@ if WICKER:
 if USEMCL:
 	# 1. Perform clustering
 	MCL(I=MCL_I, minClustSize=MinClustSize, CombineIfTooFew=False)	# Run MCL. I is the inflation paramater that controls granularity. Default is 6. MCL docs recommend 1.4, 2, 4, and 6, and between 1.1 and 10 for most cases.
-	summarizeClusters(I=6, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
+	summarizeClusters(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
 
 	if GENECONVCLUSTERS or LTRDIVERGENCE:
 		# 2. MSA for each cluster
