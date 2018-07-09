@@ -13,7 +13,7 @@ from math import ceil
 from Bio import SeqIO, AlignIO
 from multiprocessing import Pool, Manager
 from phyltrlib import *
-from copy import copy
+from copy import copy, deepcopy
 from inspect import currentframe, getframeinfo
 
 def mergeCoords(A,B):
@@ -742,8 +742,6 @@ def addORFs(maingff, orfgff, newgff):
 		orffasta = '{0}/{1}'.format('/'.join(newgff.split('/')[:-1]), '{0}.ORFs.fasta'.format(newgff.split('/')[-1][:-4]))
 	else:
 		orffasta = '{0}/{1}'.format('/'.join(newgff.split('/')[:-1]), '{0}.ORFs.fasta'.format(newgff.split('/')[-1]))
-	if os.path.isfile(orffasta):
-		os.remove(orffasta)
 
 	scriptpath = os.path.realpath(__file__)
 	lineno = getframeinfo(currentframe()).lineno + 2
@@ -768,51 +766,75 @@ def addORFs(maingff, orfgff, newgff):
 			else:
 				gffLine = GFF3_line(line)
 				GFFLines.append(gffLine)
-	internalparts = []
-	el = None
-	firstLTRend = None
-	for i in range(len(GFFLines)):
-		gl = GFFLines[i]
-		if gl.type == 'repeat_region':
-			internalparts = []
-			el = 'LTR_retrotransposon' + gl.attributes['ID'][13:]
-			NewGFFLines.append(gl)
-		elif gl.type == 'target_site_duplication':
-			NewGFFLines.append(gl)
-		elif gl.type == 'LTR_retrotransposon':
-			NewGFFLines.append(gl)
-		elif gl.type == 'long_terminal_repeat':
-			if firstLTRend != None:
-				if el in orfs:
-					orf_ct = 0
-					for orf in orfs[el]:
-						orf.start = firstLTRend + int(orf.start)
-						orf.end = firstLTRend + int(orf.end)
-						orf.seqid = gffLine.seqid # Change the scaffold name
-						OVERLAP = False
-						for part in internalparts:
-						#	print([orf.start, orf.end], [part.start, part.end])
-						#	print(Overlaps([orf.start, orf.end], [part.start, part.end]))
-							if Overlaps([orf.start, orf.end], [part.start, part.end]):
-								OVERLAP = True
-								break
-						if not OVERLAP:
-							orf_ct += 1
-							orf.attributes['ID'] = '{0}.ORF.{1:02d}'.format(orf.attributes['Parent'], orf_ct)
-							orf.attributes_order.insert(0, 'ID')
-							orf.refreshAttrStr()
-							with open(orffasta, 'a') as outFl:
+
+	with open(orffasta, 'w') as outFl:
+		internalparts = []
+		el = None
+		firstLTRend = None
+		for i in range(len(GFFLines)):
+			gl = GFFLines[i]
+			if gl.type == 'repeat_region':
+				internalparts = []
+				el = 'LTR_retrotransposon' + gl.attributes['ID'][13:]
+				NewGFFLines.append(gl)
+			elif gl.type == 'target_site_duplication':
+				NewGFFLines.append(gl)
+			elif gl.type == 'LTR_retrotransposon':
+				NewGFFLines.append(gl)
+			elif gl.type == 'long_terminal_repeat':
+				if firstLTRend != None: # This is the second LTR
+					if el in orfs:
+						orf_ct = 0
+						
+						with open('ERR','a') as errFl:
+							errFl.write('GOING IN\n')
+						for orf in orfs[el]:
+							orf.start = firstLTRend + int(orf.start)
+							orf.end = firstLTRend + int(orf.end)
+							#with open('ERR','a') as errFl:
+							#	errFl.write(str(orf)+'\n')
+							orf.seqid = gl.seqid # Change the scaffold name
+							#with open('ERR','a') as errFl:
+							#	errFl.write(str(orf)+'\n')
+							OVERLAP = False
+							for part in internalparts:
+							#	print([orf.start, orf.end], [part.start, part.end])
+							#	print(Overlaps([orf.start, orf.end], [part.start, part.end]))
+								if Overlaps([orf.start, orf.end], [part.start, part.end]):
+									#with open('ERR','a') as errFl:
+									#	errFl.write('OVERLAPS\n')
+									#	errFl.write(str(orf)+'\n')
+									#	errFl.write('{0}\t{1}\n'.format(orf.start, orf.end))
+									#	errFl.write(str(part)+'\n')
+									#	errFl.write('{0}\t{1}\n'.format(part.start, part.end))
+									
+									OVERLAP = True
+									break
+							if not OVERLAP:
+								orf_ct += 1
+								orf.attributes['ID'] = '{0}.ORF.{1:02d}'.format(orf.attributes['Parent'], orf_ct)
+								orf.attributes_order.insert(0, 'ID')
+								orf.refreshAttrStr()
 								outFl.write('>{0}\n{1}\n'.format(orf.attributes['ID'], orf.attributes['translated_seq']))
-							internalparts.append(orf)
-				internalparts.sort(key=lambda x:int(x.start))
-				NewGFFLines += internalparts
-				NewGFFLines.append(gl)
-				firstLTRend = None
-			elif firstLTRend == None:
-				firstLTRend = int(gl.end)
-				NewGFFLines.append(gl)
-		else:
-			internalparts.append(gl)
+								#with open('ERR','a') as errFl:
+								#	errFl.write('GOING OUT\n')
+								#	errFl.write(orf.seqid+'\n')
+								internalparts.append(orf)
+					internalparts.sort(key=lambda x:int(x.start))
+					NewGFFLines += internalparts
+					#with open('ERR','a') as errFl:
+					#	errFl.write('GOING NEWGFFLINES\n')
+					#for p in internalparts:
+					#	with open('ERR','a') as errFl:
+					#		errFl.write(str(p)+'\n')
+					#		errFl.write(p.seqid+'\n')
+					NewGFFLines.append(gl)
+					firstLTRend = None
+				elif firstLTRend == None: # This is the first LTR
+					firstLTRend = int(gl.end)
+					NewGFFLines.append(gl)
+			else:
+				internalparts.append(gl)
 	
 	with open(newgff, 'w') as outFl:
 		outFl.write('##gff-version 3\n')
@@ -5365,7 +5387,7 @@ AnnotateORFs(minLen=min_orf_len)
 #	3. Classify elements to superfamily using homology evidence in Dfam and/or Repbase
 #
 classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, repbase_tblastx_evalue=repbase_tblastx_evalue, nhmmer_reporting_evalue=nhmmer_reporting_evalue, nhmmer_inclusion_evalue=nhmmer_inclusion_evalue)  # Extract LTR_retrotransposon sequences for classification using homology
-#			# Find evidence of homology to repeats in Dfam using HMMER. NEED TO CHANGE THIS SO REVERSE COMPLEMENT IS ALSO SEARCHED (nhmmsearch I think)
+#			# Find evidence of homology to repeats in Dfam using HMMER.
 #			# Find evidence of homology to repeats in Repbase using tblastx
 #			# Remove false positives from LTRdigest GFF3
 #			# Input: Sequences (FASTA), DBs (Dfam & Repbase), LTRdigest or LTRharvest GFF3
