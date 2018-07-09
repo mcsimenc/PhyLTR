@@ -422,7 +422,7 @@ def ChangeFastaHeaders(inputFastaPath, inputGFFpath, attribute='ID'):
 
 	bedtoolsIDmap = bedtoolsid2attr(inputGFFpath, attr=attribute)
 	newFasta = '{0}.new.tmp'.format(inputFastaPath)
-	header_pattern='(.+?:\d+?-\d+?)\D'
+	header_pattern='(.+?:\d+?-\d+?)(?:$|\D)'
 	rename_fasta_seq_headers(inputFastaPath, header_pattern, bedtoolsIDmap, newFasta)
 	os.replace(newFasta, inputFastaPath)
 
@@ -436,6 +436,6 @@ def ChangeFastaHeadersMultiprocessing(bundle):
 
 	bedtoolsIDmap = bedtoolsid2attr(inputGFFpath, attr=attribute)
 	newFasta = '{0}.new.tmp'.format(inputFastaPath)
-	header_pattern='(.+?:\d+?-\d+?)\D'
+	header_pattern='(.+?:\d+?-\d+?)(?:$|\D)'
 	rename_fasta_seq_headers(inputFastaPath, header_pattern, bedtoolsIDmap, newFasta)
 	os.replace(newFasta, inputFastaPath)

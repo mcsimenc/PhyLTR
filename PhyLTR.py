@@ -326,7 +326,7 @@ def writeLTRretrotransposonInternalRegions(inputGFFpth, outputGFFpth, elementSet
 						if not currentNewElement.start == None:
 							if truncateParent == True:
 								gffLine.attributes['Parent'] = gffLine.attributes['Parent'].lstrip('LTR_retrotransposon')
-							currentNewElement.end = gffLine.start - 1
+							currentNewElement.end = gffLine.start
 
 							if currentNewElement.end - currentNewElement.start + 1 <= 0:
 								currentNewElement = GFF3_line()
@@ -345,7 +345,7 @@ def writeLTRretrotransposonInternalRegions(inputGFFpth, outputGFFpth, elementSet
 								outGFFfl.write('{0}\n'.format(str(currentNewElement)))
 								currentNewElement = GFF3_line()
 						else:
-							currentNewElement.start = gffLine.end + 1
+							currentNewElement.start = gffLine.end
 							if truncateParent == True:
 								currentNewElement.attributes['Parent'] = gffLine.attributes['Parent'].lstrip('LTR_retrotransposon')
 							else:
@@ -588,7 +588,8 @@ def bestORFs(fasta, outdir, gff, minLen=300):
 			if strand_gff == '+': # don't consider reverse strand ORFs if the element is already assigned to the forward strand.
 				continue
 			strand = '-'
-			start, end = sorted([int(desc.split()[1][1:]), int(desc.split()[3][:-1])])
+			start, end = sorted([int(desc.split()[1][1:]), int(desc.split()[3][:-1])]) # coords from getorf are 1-based, need to -1 from start
+			start -= 1
 			length = end - start + 1
 			if length < minLen:
 				continue
@@ -596,7 +597,8 @@ def bestORFs(fasta, outdir, gff, minLen=300):
 			if strand_gff == '-': # don't consider forward strand ORFs if the element is already assigned to the reverse strand.
 				continue
 			strand = '+'
-			start, end = sorted([int(desc.split()[1][1:]), int(desc.split()[3][:-1])])
+			start, end = sorted([int(desc.split()[1][1:]), int(desc.split()[3][:-1])]) # coords from getorf are 1-based, need to -1 from start
+			start -= 1
 			length = end - start + 1
 			if length < minLen:
 				continue
@@ -853,10 +855,11 @@ def AnnotateORFs(minLen):
 
 	if not checkStatusFl('WithORFsGFF'):
 		MakeDir('ORFsDir', '{0}/AnnotateORFs'.format(paths['output_top_dir']))
-		internalGFF = '{0}/internals.fasta'.format(paths['ORFsDir'])
-		internalFASTA = '{0}/internals.gff'.format(paths['ORFsDir'])
+		internalGFF = '{0}/internals.gff'.format(paths['ORFsDir'])
+		internalFASTA = '{0}/internals.fasta'.format(paths['ORFsDir'])
 		writeLTRretrotransposonInternalRegions(paths['CurrentGFF'], internalGFF, elementSet=None, truncateParent=False)
-		getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', internalGFF ]
+		#getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', internalGFF ]
+		getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-bed', internalGFF ]
 		makecall(getfasta_call, internalFASTA)
 		ChangeFastaHeaders(internalFASTA, internalGFF, attribute='Parent')
 		bestORFs(fasta=internalFASTA, outdir=paths['ORFsDir'], gff=paths['CurrentGFF'], minLen=minLen)
