@@ -16,7 +16,7 @@ def help():
 
  Input:
  -----------
- <domains>	2-col tsv	geneName	domain
+ <domains>	2-col tsv	domain	geneName
  <go_ips>	GFF3		with attr. (col 9) of: GO_terms and InterProScan_terms
  <mapped_descs>	2-col tsv	geneName	desc
  <membership>	3-col tsv	LTRRTnum	classification	cluster
@@ -118,11 +118,27 @@ with open(args[4], 'r') as inFl:
 print('gene\tblast2goMapped\tGOterms\tIPSterms\tdomainHit\telement\tclassification\tcluster')
 with open(args[1], 'r') as inFl:
 	for line in inFl:
-		g, e = line.strip().split()
+		contents = line.strip().split()
+		orf, g = contents[:2]
 		if g not in DESC:
 			DESC[g] = 'None'
-		print('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}'.format(g, DESC[g], GO[g], IPS[g], t, INFO[e][0], INFO[e][1]))
+		el = orf.split('.')[0]
+		try:
+			INFO[el]
+			print('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}'.format(g, DESC[g], GO[g], IPS[g], orf, el, INFO[el][0], INFO[el][1]))
+		except KeyError:
+			print('{0} not found in cluster membership file.'.format(el))
 
+#element	classification	cluster
+#11113	Ngaro	0
+#12956	Ngaro	0
+#7768	Ngaro	0
+#13094	Ngaro	1
+#14761	Ngaro	1
+#5903	Ngaro	2
+#16057	Ngaro	2
+#10498	Ngaro	3
+#12561	Ngaro	4
 #Azfi_s0001.g000026	RVT_1
 #Azfi_s0001.g000029	ORF
 #Azfi_s0001.g000030	ORF

@@ -4631,14 +4631,18 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 
 	1. Creates a file for either MCL or WickerFam clustering at PhyLTR.output/<clustMethod>/<settings>/Clusters/<clustMethod>_<settings>.summary.tab
 	2. Creates GFF files for each cluster in PhyLTR.output/GFF_output/<superfamily>.<clustMethod>.<settings>/<superfamily>.<clustMethod>.<settings>.cluster_<i>.gff
+	3. Creates a text file tsv, 3-col: elementName	classification	cluster
 	'''
 	
 	if clustering_method == 'WickerFam':
 		wicker_top_dir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
 		settings = '{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
 		paths['WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.summary.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		paths['WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.membership.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
 		with open(paths['WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'w') as outFl:
-			outFl.write('superfamily\tcluster\tsize\n')
+			outFl.write('classification\tcluster\tsize\n')
+		with open(paths['WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'w') as outFl:
+			outFl.write('element\tclassification\tcluster\n')
 		for classif in clusters_by_classif:
 			with open(paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)], 'r') as inFl:
 				c = 0
@@ -4677,14 +4681,20 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 					# Write line to summary file
 					with open(paths['WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'a') as outFl:
 						outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
+					with open(paths['WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'a') as outFl:
+						for el in clust_members:
+							outFl.write('{0}\t{1}\t{2}\n'.format(el, classif, c))
 					c += 1
 
 	elif clustering_method == 'MCL':
 		mcl_top_dir = paths['MCL_I{0}'.format(I)]
 		settings = 'I{0}'.format(I)
 		paths['MCL_ClusterSummary_I{0}'.format(I)] = '{0}/Clusters/MCL_I{1}.summary.tab'.format(mcl_top_dir, I)
+		paths['MCL_ClusterMembership_I{0}'.format(I)] = '{0}/Clusters/MCL_I{1}.membership.tab'.format(mcl_top_dir, I)
 		with open(paths['MCL_ClusterSummary_I{0}'.format(I)], 'w') as outFl:
 			outFl.write('superfamily\tcluster\tsize\n')
+		with open(paths['MCL_ClusterMembership_I{0}'.format(I)], 'w') as outFl:
+			outFl.write('element\tclassification\tcluster\n')
 		for classif in clusters_by_classif:
 			with open(paths['MCL_{0}_I{1}'.format(classif, I)], 'r') as inFl:
 				c = 0
@@ -4726,6 +4736,9 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 					# Write line to summary file
 					with open(paths['MCL_ClusterSummary_I{0}'.format(I)], 'a') as outFl:
 						outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
+					with open(paths['MCL_ClusterMembership_I{0}'.format(I)], 'a') as outFl:
+						for el in clust_members:
+							outFl.write('{0}\t{1}\t{2}\n'.format(el, classif, c))
 					c += 1
 
 
