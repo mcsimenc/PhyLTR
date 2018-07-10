@@ -5324,7 +5324,7 @@ paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.list'.forma
 paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF'.format(paths['selfDir'])
 #paths['DfamSuperfamilies'] = '{0}/RepeatDatabases/Dfam/Dfam.unique_SFs'.format(paths['selfDir'])
 
-LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL', 'Unknown']
+LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL', 'Tas', 'Suzu', 'Sinbad', 'Unknown']
 
 MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
 MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
