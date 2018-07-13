@@ -327,7 +327,7 @@ args = sys.argv
 
 if not '-gff' in args or not '-ref' in args or not '-out' in args or not '-prot' in args or not '-procs' in args:
 	help()
-	print('\n MISSING ONE OR MORE OPTIONS\n')
+	print('\n MISSING ONE OR MORE OPTIONS\n', file=sys.stderr)
 	sys.exit()
 
 

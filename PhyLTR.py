@@ -160,29 +160,39 @@ def addStrandToGFF(strandDct, GFFpth):
 	strand as values. A new GFF will be written, and the old one removed.
 	'''
 	newgff = '{0}.updatingstrandinprocess'.format(GFFpth)
+	if os.path.exists(newgff):
+		os.remove(newgff)
 
 	with open(GFFpth) as inFl:
 		for line in inFl:
 			if not line.startswith('#'):
-				gffLine = GFF3_line(line)
+				try:
+					gffLine = GFF3_line(line)
+				except:
+					print(line)
+					sys.exit()
 				if gffLine.strand == '?':
-					if 'ID' in gffLine.attributes:
-						elNum = re.search('\d*$', gffLine.attributes['ID']).group(0)
-					elif 'Parent' in gffLine.attributes:
+					if 'Parent' in gffLine.attributes:
 						elNum = re.search('\d*$', gffLine.attributes['Parent']).group(0)
-				
+					elif 'ID' in gffLine.attributes:
+						elNum = re.search('\d*$', gffLine.attributes['ID']).group(0)
 					else:
 						print('WARNING:\taddStrandToGFF() found the following GFF file to contain the following line where strand is unknown and the attributes lack ID or Parent keys\n{0}\n{1}'.format(GFFpth, line.strip()), file=sys.stderr)
 
 					if elNum in strandDct:
+						if elNum == '?':
+							continue
 						gffLine.strand = strandDct[elNum]
-						with open(newgff) as outGFFfl:
-							outGFFfl.write(str(gffLine))
+						with open(newgff, 'a') as outGFFfl:
+							outGFFfl.write(str(gffLine)+'\n')
 					else:
-						with open(newgff) as outGFFfl:
+						with open(newgff, 'a') as outGFFfl:
 							outGFFfl.write(line)
+				else:
+					with open(newgff, 'a') as outGFFfl:
+						outGFFfl.write(line)
 			else:
-				with open(newgff) as outGFFfl:
+				with open(newgff, 'a') as outGFFfl:
 					outGFFfl.write(line)
 	os.rename(newgff, GFFpth)
 
@@ -304,8 +314,8 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl, annotAttr2DbDict, outputFlName,
 
 	with open(outputFlName, 'w') as outFl:
 		for element in sorted(list(LTR_retrotransposon_GFF_lines.keys())):
-			outFl.write('\n'.join(LTR_retrotransposon_GFF_lines[element]))
-			outFl.write('\n###\n')
+			if LTR_retrotransposon_GFF_lines[element] != []:
+				outFl.write('###\n'.join(LTR_retrotransposon_GFF_lines[element])+'\n')
 
 	logfile.close()
 
@@ -962,6 +972,8 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting best hits from  nhmmer on Dfam results:\n{0}'.format(dfam_results_parse_call_string))
 			makecall(dfam_results_parse_call, paths['DfamResultsTableParsed'], '{0}/nhmmer_table2columns.py.stderr'.format(paths['DfamClassificationDir']), stdin=paths['DfamTable'])
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting best hits from  nhmmer on Dfam results')
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('DfamResultsTableParsed\t{0}\n'.format(paths['DfamResultsTableParsed']))
 
 			# Add best hits to GFF
 			paths['GFFwithDfamClassification'] = '{0}/{1}.LTRdigest.withDfam.gff'.format(paths['GFFOutputDir'], filenames['inputFasta'])
@@ -971,7 +983,6 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			makecall(add_dfam_hits_to_ltrdigest_gff_call, paths['GFFwithDfamClassification'], '{0}/gffAddAttr.py.DfamHits.stderr'.format(paths['GFFOutputDir']))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished adding best hits from nhmmer on Dfam results to LTRdigest GFF')
 
-			append2logfile(paths['output_top_dir'], mainlogfile, 'Update strandedness in GFF3 based on Dfam results')
 
 			# Add LTRdigest GFF3 with Dfam classifications path to status file (for resuming later)
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
@@ -1015,6 +1026,8 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting best hits from  tblastx on Repbase results:\n{0}'.format(repbase_results_parse_call_string))
 			makecall(repbase_results_parse_call, paths['RepbaseResultsTableParsed'], '{0}/best_blast_hit.py.stderr'.format(paths['RepbaseClassificationDir']), stdin=paths['RepbaseTable'])
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('RepbaseResultsTableParsed\t{0}\n'.format(paths['RepbaseResultsTableParsed']))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting best hits from  tblastx on Repbase results')
 
 			# Add best hits to GFF
@@ -1055,11 +1068,41 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began removing false positives from LTRdigest GFF with classifications.')
 			RemoveNonLTRretrotransposons(gff_classified, TruePositiveLTRclassificationsDct, outputFlName=paths['LTRdigestClassifiedNoFP'], REPORTCONFLICTS=True, KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, logFilePth='{0}/RemoveNonLTRretrotransposons.log'.format(paths['GFFOutputDir']))
+			paths['CurrentGFF'] = paths['LTRdigestClassifiedNoFP']
+
+			if CLASSIFYDFAM:
+				strands = {}
+				with open(paths['DfamResultsTableParsed'], 'r') as inFl:
+					for line in inFl:
+						el, hit, strand = line.strip().split()
+						el = el.lstrip('LTR_retrotransposon')
+						strands[el] = strand
+				addStrandToGFF(strands, paths['CurrentGFF'])
+
+			if CLASSIFYREPBASE:
+				strands = {}
+				with open(paths['RepbaseResultsTableParsed'], 'r') as inFl:
+					for line in inFl:
+						el, hit, strand = line.strip().split()
+						el = el.lstrip('LTR_retrotransposon')
+						strands[el] = strand
+				addStrandToGFF(strands, paths['CurrentGFF'])
+
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Update strandedness in GFF3 based on Dfam and/or Repbase results')
+
+			#def addStrandToGFF(strandDct, GFFpth):
+			#	'''
+			#	Updates strand field for element with ? as strand based on Dfam and Repbase results.
+			#	Provide a dictionary with LTR RT # (e.g. 4 for LTR_retrotransposon4) as keys and
+			#	strand as values. A new GFF will be written, and the old one removed.
+			#	'''
+
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished removing false positives from LTRdigest GFF with classifications. TP file at:\n{0}'.format(paths['LTRdigestClassifiedNoFP']))
 			# Add LTRdigest GFF3 with FP removed path to status file (for resuming later)
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('LTRdigestClassifiedNoFP\t{0}\n'.format(paths['LTRdigestClassifiedNoFP']))
-			paths['CurrentGFF'] = paths['LTRdigestClassifiedNoFP']
+
+			
 
 			# Remove large tblastx output and Dfam output. best hits are kept
 			if not KEEP_UNUSED_FILES:
