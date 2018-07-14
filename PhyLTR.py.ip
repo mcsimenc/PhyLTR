@@ -2961,6 +2961,7 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 
 
 	lastEl = None
+	LTRlengths = {}
 	with open(paths[LTRsGFF], 'w') as outFl:
 		with open(paths['CurrentGFF'], 'r') as inFl: # Write LTRs GFF
 			for line in inFl:
@@ -2973,19 +2974,98 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 						gl.attributes['ID'] = '{0}.1'.format(el)
 					else:
 						gl.attributes['ID'] = '{0}.2'.format(el)
+					LTRlengths[gl.attributes['ID']] = gl.end - gl.start + 1
 					gl.attributes_order.insert(0, 'ID')
 					gl.refreshAttrStr()
 					outFl.write(str(gl)+'\n')
 					lastEl = el
 
 	getfasta(paths[LTRsGFF], paths['inputFasta'], paths[LTRsFASTA], headerKey='ID') # Get LTRs FASTA
-	
-	runblast(query=paths[LTRsFASTA], subject=paths['inputFasta'], out=paths[BLASToutput], evalue=soloLTRmaxEvalue, outfmt='7', percid=soloLTRminPid, blast='blastn', procs=procs) # Do blastn x input fasta
 
-#soloLTRminLen
+	if not checkStatusFl(BLASToutput):
+		runblast(query=paths[LTRsFASTA], subject=paths['inputFasta'], out=paths[BLASToutput], evalue=soloLTRmaxEvalue, outfmt='7', percid=soloLTRminPid, blast='blastn', procs=procs) # Do blastn x input fasta
+		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+			statusFlAppend.write('{0}\t{1}\n'.format(BLASToutput, paths[BLASToutput]))
 
-	
 	# parse results and assign LTRs to clusters and write GFF3 for each cluster
+	RR = {} # repeat_region features that hits shouldn't overlap
+	i = 0
+	with open(paths['RepeatRegionsGFF'], 'r') as inFl:
+		for line in inFl:
+			if not line.startswith('#'):
+				gl = GFF3_line(line)
+				if not gl.seqid in RR:
+					# convert coords from 0-based (GFF3) to 1-based for easier overlap comparison
+					RR[gl.seqid] = {i:{'coords':(gl.start+1, gl.end)}}
+				else:
+					RR[gl.seqid][i] = {'coords':(gl.start+1, gl.end)}
+				i+=1
+
+	Hits = {} # hits from genomic blast of LTRs
+	i = 0
+	with open(paths[BLASToutput], 'r') as inFl:
+		for line in inFl:
+			if not line.startswith('#'):
+				c = line.strip().split()
+				query, subj, pid, alnLen = c[:4]
+				alnLen = int(alnLen)
+				pLen = alnLen/LTRlengths[query]*100 # percent of LTR length in the alignment
+				if pLen < soloLTRminLen: # skip alignments shorter 
+					continue
+
+				bit = float(c[-1])
+				s, e = [int(x) for x in c[8:10]]
+				
+				if not subj in Hits:
+					# convert coords from 0-based (GFF3) to 1-based for easier overlap comparison
+					Hits[subj] = {i:{'coords':(s+1, e), 'bit':bit, 'pLen':pLen, 'LTR':query}}
+				else:
+					Hits[subj][i] = {'coords':(s+1, e), 'bit':bit, 'pLen':pLen, 'LTR':query}
+				i+=1
+
+				# Fields: query id, subject id, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score
+				#LTR_retrotransposon1000.1	Sacu_v1.1_s0020	100.00	268	0	0	1	268	246379	246112	3e-139	496
+
+	# Discard hits that overlap a repeat region
+	HitsR1 = {}
+	for scaf in Hits:
+		if scaf not in RR:
+			HitsR1[scaf] = Hits[scaf]
+			continue
+		KEEP = True
+		for i in Hits[scaf]:
+			coordsLTR = Hits[scaf][i]['coords']
+			LTR = Hits[scaf][i]['LTR']
+			for j in RR[scaf]:
+				if not KEEP:
+					break
+				coordsLTRRT = RR[scaf][j]['coords']
+				if Overlaps(coordsLTR, coordsLTRRT):
+					KEEP = False
+			if KEEP:
+				if scaf in HitsR1:
+					HitsR1[scaf][i] = Hits[scaf][i]
+				else:
+					HitsR1[scaf] = {i:Hits[scaf][i]}
+
+	# If hits overlap, keep only the hit with the highest bit score
+	HitsR2 = {}
+	for scaf in HitsR1:
+		OL = {} # To store overlaps
+		# Sort hits by bit score to ensure a lower-scoring hit doesn't make it into the result
+		sortedHits = sorted([(H,sorted(list(HitsR1[scaf][H].items()), key=lambda x:x[0])) for H in HitsR1[scaf]], key=lambda y:y[1][1][1], reverse=True)
+		#for i in HitsR1[scaf]:
+		#	coordsLTR = Hits[scaf][i]['coords']
+		#	LTR = Hits[scaf][i]['LTR']
+		#	for j in RR[scaf]:
+		#		if not KEEP:
+		#			break
+		#		coordsLTRRT = RR[scaf][j]['coords']
+		#		if Overlaps(coordsLTR, coordsLTRRT):
+		#			KEEP = False
+		#	if KEEP:
+		#		HitsR2[scaf] = Hits[scaf][i]
+
 	# write table with cluster and # of solo LTRs
 
 	# Check that LTRs don't overlap anything
@@ -5544,8 +5624,8 @@ elif 'LTRharvestGFF' in paths:
 
 if WICKER:
 	SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
-if MCL:
-	SoloLTRsearch(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
+#if MCL:
+#	SoloLTRsearch(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
 
 sys.exit()
 
