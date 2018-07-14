@@ -2939,10 +2939,14 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 		WICKERCLUST = True
 		clustMethodTopDir = '{0}/WickerFamDir/{1}_pId_{2}_percAln_{3}_minLen'.format(paths['output_top_dir'], WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
 		key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		ClusterSummaryFl = 'WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		ClusterMembershipFl = 'WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
 	elif clustering_method == 'MCL':
 		MCLCLUST = True
 		clustMethodTopDir = '{0}/MCL/I{1}'.format(paths['output_top_dir'], I)
 		key_base = 'MCL_I{0}'.format(I)
+		ClusterSummaryFl = 'MCL_ClusterSummary_I{0}'.format(I)
+		ClusterMembershipFl = 'MCL_ClusterMembership_I{0}'.format(I)
 
 	OutputDir = 'SoloLTRSearch.{0}'.format(key_base)
 	paths[OutputDir] = '{0}/SoloLTRsearch'.format(clustMethodTopDir)
@@ -3074,25 +3078,68 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 			if Remaining == []:
 				break
 
-	print(sum([len(Hits[val]) for val in Hits]))
-	print(sum([len(HitsR1[val]) for val in HitsR1]))
-	print(sum([len(HitsR2[val]) for val in HitsR2]))
-				
-						
-
-		#for i in HitsR1[scaf]:
-		#	coordsLTR = Hits[scaf][i]['coords']
-		#	LTR = Hits[scaf][i]['LTR']
-		#	for j in RR[scaf]:
-		#		if not KEEP:
-		#			break
-		#		coordsLTRRT = RR[scaf][j]['coords']
-		#		if Overlaps(coordsLTR, coordsLTRRT):
-		#			KEEP = False
-		#	if KEEP:
-		#		HitsR2[scaf] = Hits[scaf][i]
+	#print(sum([len(Hits[val]) for val in Hits]))
+	#print(sum([len(HitsR1[val]) for val in HitsR1]))
+	#print(sum([len(HitsR2[val]) for val in HitsR2]))
 
 	# write table with cluster and # of solo LTRs
+	ClusterMembership = {}
+	ClusterSizes = {}
+	with open(paths[ClusterMembershipFl], 'r') as inFl:
+		for line in inFl:
+			if not line.startswith('element'):
+				el, classif, clust = line.strip().split()
+				ClusterMembership[el] = (classif, clust)
+
+				if classif in ClusterSizes:
+
+					if clust in ClusterSizes[classif]:
+						ClusterSizes[classif][clust] += 1
+					else:
+						ClusterSizes[classif][clust] = 1
+				else:
+					ClusterSizes[classif] = {clust:1}
+					
+	
+	SoloLTRclusterMembership = {}
+	for scaf in HitsR2:
+		for LTRinfo in HitsR2[scaf]:
+			#LTRinfo = {'coords': (8851, 8469), 'bit': 507.0, 'LTR': 'LTR_retrotransposon1004.2', 'pLen': 100.0}
+			SoloLTR = HitsR2[scaf][LTRinfo]['LTR']
+			el = SoloLTR.split('.')[0].lstrip('LTR_retrotransposon')
+			try:
+				classif, clust = ClusterMembership[el]
+			except KeyError:
+				print('{0} not in ClusterMembership file'.format(el), file=sys.stderr)
+
+			if classif in SoloLTRclusterMembership:
+
+				if clust in SoloLTRclusterMembership[classif]:
+					SoloLTRclusterMembership[classif][clust] += 1
+				else:
+					SoloLTRclusterMembership[classif][clust] = 1
+			else:
+				SoloLTRclusterMembership[classif] = {clust:1}
+
+	print('classif\tclust\tFullLengthElements\tNumberOfSoloLTRs\tFull2SoloRatio')
+	for classif in sorted(list(SoloLTRclusterMembership.keys())):
+		for clust in sorted(list(SoloLTRclusterMembership[classif]), key=int):
+			solos = SoloLTRclusterMembership[classif][clust]
+			fulls = ClusterSizes[classif][clust]
+			ratio = fulls/solos
+			print('{0}\t{1}\t{2}\t{3}\t{4}'.format(classif, clust, fulls, solos, ratio))
+				
+
+	#element	classification	cluster
+	#3657	Unknown	0
+	#2241	Unknown	0
+	#700	Unknown	0
+	#4633	Unknown	0
+	#2444	Unknown	0
+	#785	Unknown	0
+	#3766	Unknown	0
+	#1275	Unknown	0
+	#3495	Unknown	0
 
 	# Check that LTRs don't overlap anything
 
@@ -4885,11 +4932,13 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 	if clustering_method == 'WickerFam':
 		wicker_top_dir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
 		settings = '{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-		paths['WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.summary.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-		paths['WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.membership.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-		with open(paths['WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'w') as outFl:
+		ClusterSummaryFl = 'WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		ClusterMembershipFl = 'WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		paths[ClusterSummaryFl] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.summary.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		paths[ClusterMembershipFl] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.membership.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		with open(paths[ClusterSummaryFl], 'w') as outFl:
 			outFl.write('classification\tcluster\tsize\n')
-		with open(paths['WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'w') as outFl:
+		with open(paths[ClusterMembershipFl], 'w') as outFl:
 			outFl.write('element\tclassification\tcluster\n')
 		for classif in clusters_by_classif:
 			with open(paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)], 'r') as inFl:
@@ -4927,21 +4976,24 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 										outFl.write('###\n')
 									outFl.write(line)
 					# Write line to summary file
-					with open(paths['WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'a') as outFl:
+					with open(paths[ClusterSummaryFl], 'a') as outFl:
 						outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
-					with open(paths['WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'a') as outFl:
+					with open(paths[ClusterMembershipFl], 'a') as outFl:
 						for el in clust_members:
 							outFl.write('{0}\t{1}\t{2}\n'.format(el, classif, c))
 					c += 1
 
+
 	elif clustering_method == 'MCL':
 		mcl_top_dir = paths['MCL_I{0}'.format(I)]
 		settings = 'I{0}'.format(I)
-		paths['MCL_ClusterSummary_I{0}'.format(I)] = '{0}/Clusters/MCL_I{1}.summary.tab'.format(mcl_top_dir, I)
-		paths['MCL_ClusterMembership_I{0}'.format(I)] = '{0}/Clusters/MCL_I{1}.membership.tab'.format(mcl_top_dir, I)
-		with open(paths['MCL_ClusterSummary_I{0}'.format(I)], 'w') as outFl:
+		ClusterSummaryFl = 'MCL_ClusterSummary_I{0}'.format(I)
+		ClusterMembershipFl = 'MCL_ClusterMembership_I{0}'.format(I)
+		paths[ClusterSummaryFl] = '{0}/Clusters/MCL_I{1}.summary.tab'.format(mcl_top_dir, I)
+		paths[ClusterMembershipFl] = '{0}/Clusters/MCL_I{1}.membership.tab'.format(mcl_top_dir, I)
+		with open(paths[ClusterSummaryFl], 'w') as outFl:
 			outFl.write('superfamily\tcluster\tsize\n')
-		with open(paths['MCL_ClusterMembership_I{0}'.format(I)], 'w') as outFl:
+		with open(paths[ClusterMembershipFl], 'w') as outFl:
 			outFl.write('element\tclassification\tcluster\n')
 		for classif in clusters_by_classif:
 			with open(paths['MCL_{0}_I{1}'.format(classif, I)], 'r') as inFl:
@@ -4982,13 +5034,17 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 								
 
 					# Write line to summary file
-					with open(paths['MCL_ClusterSummary_I{0}'.format(I)], 'a') as outFl:
+					with open(paths[ClusterSummaryFl], 'a') as outFl:
 						outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
-					with open(paths['MCL_ClusterMembership_I{0}'.format(I)], 'a') as outFl:
+					with open(paths[ClusterMembershipFl], 'a') as outFl:
 						for el in clust_members:
 							outFl.write('{0}\t{1}\t{2}\n'.format(el, classif, c))
 					c += 1
 
+	with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+		statusFlAppend.write('{0}\t{1}\n'.format(ClusterSummaryFl, paths[ClusterSummaryFl]))
+	with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+		statusFlAppend.write('{0}\t{1}\n'.format(ClusterMembershipFl, paths[ClusterMembershipFl]))
 
 
 
@@ -5648,7 +5704,11 @@ elif 'LTRharvestGFF' in paths:
 # If they run they will append to the log
 
 
+#clusters_by_classif = shortClassif()
+#classifs_by_element = shortClassif(ElNames=True)
+#classifs = set(list(clusters_by_classif.keys()))
 if WICKER:
+	#summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
 	SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
 #if MCL:
 #	SoloLTRsearch(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
