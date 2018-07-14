@@ -2950,7 +2950,7 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 
 	OutputDir = 'SoloLTRSearch.{0}'.format(key_base)
 	paths[OutputDir] = '{0}/SoloLTRsearch'.format(clustMethodTopDir)
-	MakeDir(key_base, paths[OutputDir])
+	MakeDir(OutputDir, paths[OutputDir])
 
 	LTRsGFF = '{0}.LTRs_GFF'.format(key_base)
 	paths[LTRsGFF] = '{0}/{1}.gff'.format(paths[OutputDir], LTRsGFF)
@@ -2961,6 +2961,15 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 
 	RepeatRegionsGFF = 'repeat_regions'
 	paths['RepeatRegionsGFF'] = '{0}/{1}.gff'.format(paths[OutputDir], RepeatRegionsGFF)
+
+	SoloLTRsummary = '{0}.SoloLTRsummary'.format(key_base)
+	paths[SoloLTRsummary] = '{0}/{1}.tsv'.format(paths[OutputDir],SoloLTRsummary)
+
+	if checkStatusFl(SoloLTRsummary):
+		append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch() already completed for {0}'.format(key_base))
+		return
+		
+
 	writeLTRretrotransposonGFF(paths['CurrentGFF'], paths['RepeatRegionsGFF'], elementSet=None, REPEATREGION=True, truncateParent=False) # Write repeat_region features for checking overlaps with LTR hits
 
 
@@ -3121,14 +3130,17 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 			else:
 				SoloLTRclusterMembership[classif] = {clust:1}
 
-	print('classif\tclust\tFullLengthElements\tNumberOfSoloLTRs\tFull2SoloRatio')
-	for classif in sorted(list(SoloLTRclusterMembership.keys())):
-		for clust in sorted(list(SoloLTRclusterMembership[classif]), key=int):
-			solos = SoloLTRclusterMembership[classif][clust]
-			fulls = ClusterSizes[classif][clust]
-			ratio = fulls/solos
-			print('{0}\t{1}\t{2}\t{3}\t{4}'.format(classif, clust, fulls, solos, ratio))
+	with open(paths[SoloLTRsummary], 'w') as outFl:
+		outFl.write('classif\tclust\tFullLengthElements\tNumberOfSoloLTRs\tFull2SoloRatio\n')
+		for classif in sorted(list(SoloLTRclusterMembership.keys())):
+			for clust in sorted(list(SoloLTRclusterMembership[classif]), key=int):
+				solos = SoloLTRclusterMembership[classif][clust]
+				fulls = ClusterSizes[classif][clust]
+				ratio = fulls/solos
+				outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format(classif, clust, fulls, solos, ratio))
 				
+	with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+		statusFlAppend.write('{0}\t{1}\n'.format(SoloLTRsummary, paths[SoloLTRsummary]))
 
 	#element	classification	cluster
 	#3657	Unknown	0
