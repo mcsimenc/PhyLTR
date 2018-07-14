@@ -3051,9 +3051,35 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 	# If hits overlap, keep only the hit with the highest bit score
 	HitsR2 = {}
 	for scaf in HitsR1:
-		OL = {} # To store overlaps
-		# Sort hits by bit score to ensure a lower-scoring hit doesn't make it into the result
+		# Sort hits by bit score to allow not checking bit score if Overlaps()==True
 		sortedHits = sorted([(H,sorted(list(HitsR1[scaf][H].items()), key=lambda x:x[0])) for H in HitsR1[scaf]], key=lambda y:y[1][1][1], reverse=True)
+		Remaining = [ LTRinfo[0] for LTRinfo in sortedHits ] # Elements are discarded if they overlap or are added to HitsR2
+		#LTRinfo = (4482, [('LTR', 'LTR_retrotransposon1012.1'), ('bit', 300.0), ('coords', (133796, 133460)), ('pLen', 100.88757396449704)])
+		while Remaining != []:
+			LTR1 = Remaining[0]
+			Remove = set()
+			for LTR2 in Remaining:
+				if LTR1 == LTR2: # skip identities
+					continue
+				if Overlaps(HitsR1[scaf][LTR1]['coords'], HitsR1[scaf][LTR2]['coords']):
+					Remove.add(LTR2) # discard
+			
+			if scaf in HitsR2:
+				HitsR2[scaf][LTR1] = HitsR1[scaf][LTR1]
+			else:
+				HitsR2[scaf] = {LTR1:HitsR1[scaf][LTR1]}
+
+			Remove.add(LTR1) # kept, but remove from Remaining
+			Remaining = [LTR for LTR in Remaining if not LTR in Remove]
+			if Remaining == []:
+				break
+
+	print(sum([len(Hits[val]) for val in Hits]))
+	print(sum([len(HitsR1[val]) for val in HitsR1]))
+	print(sum([len(HitsR2[val]) for val in HitsR2]))
+				
+						
+
 		#for i in HitsR1[scaf]:
 		#	coordsLTR = Hits[scaf][i]['coords']
 		#	LTR = Hits[scaf][i]['LTR']
