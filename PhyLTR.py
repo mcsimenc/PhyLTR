@@ -364,12 +364,13 @@ def writeLTRretrotransposonInternalRegions(inputGFFpth, outputGFFpth, elementSet
 							currentNewElement.refreshAttrStr()
 								
 
-def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None):
+def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None, REPEATREGION=False, truncateParent=True):
 	''' 
 	Requires Class GFF3_line
 	Writes GFF3 for LTR_retrotransposon type features from a LTRharvest-type file.
 	Only for elements in elementSet if provided, if elementSet == None, all elements are written.
 	If truncateParent=True, Parent attribute has 'LTR_retrotranspson' trimmed from it.
+	If REPEATREGION==True, extract entire repeat region
 	'''
 	global paths
 
@@ -378,16 +379,24 @@ def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None):
 
 	scriptpath = os.path.realpath(__file__)
 	lineno = getframeinfo(currentframe()).lineno + 1
-	append2logfile(paths['output_top_dir'], mainlogfile, 'line {3} in {4}\nWriting LTR_retrotransposon features:\n{0}\nfrom:\n{1}\nto:\n{2}'.format(','.join(sorted(list(elementSet))),inputGFFpth, outputGFFpth, lineno, scriptpath))
+	if not elementSet == None:
+		append2logfile(paths['output_top_dir'], mainlogfile, 'line {3} in {4}\nWriting LTR_retrotransposon features:\n{0}\nfrom:\n{1}\nto:\n{2}'.format(','.join(sorted(list(elementSet))),inputGFFpth, outputGFFpth, lineno, scriptpath))
+	else:
+		append2logfile(paths['output_top_dir'], mainlogfile, 'line {2} in {3}\nWriting LTR_retrotransposon features:\nall elements\nfrom:\n{0}\nto:\n{1}'.format(inputGFFpth, outputGFFpth, lineno, scriptpath))
+	if REPEATREGION:
+		feat = '\trepeat_region\t'
+	else:
+		feat = '\tLTR_retrotransposon\t'
 	with open(inputGFFpth, 'r') as inGFF:
 		currentNewElement = GFF3_line()
 		for line in inGFF:
-			if '\tLTR_retrotransposon\t' in line:
+			if feat in line:
 				gffLine = GFF3_line(line)
 				if elementSet == None or (elementSet != None and gffLine.attributes['ID'] in elementSet):
 					with open(outputGFFpth, 'a') as outFl:
-						gffLine.attributes['ID'] = gffLine.attributes['ID'][19:]
-						gffLine.refreshAttrStr()
+						if truncateParent:
+							gffLine.attributes['ID'] = gffLine.attributes['ID'][19:]
+							gffLine.refreshAttrStr()
 						outFl.write(str(gffLine)+'\n')
 
 
@@ -1778,23 +1787,22 @@ def removeRedundant(fastaPth):
 	tmp = '{0}.nonredundant'.format(fastaPth)
 	if os.path.isfile(tmp):
 		os.remove(tmp)
-	with open(fastaPth, 'r') as inFl:
-		SKIP = False
-		for line in inFl:
-			if line.startswith('>'):
-				if line in seqnames:
-					SKIP = True
-					continue
-				else:
-					SKIP = False
-					seqnames.add(line)
-					with open(tmp, 'a') as outFl:
+	with open(tmp, 'w') as outFl:
+		with open(fastaPth, 'r') as inFl:
+			SKIP = False
+			for line in inFl:
+				if line.startswith('>'):
+					if line in seqnames:
+						SKIP = True
+						continue
+					else:
+						SKIP = False
+						seqnames.add(line)
 						outFl.write(line)
-			else:
-				if SKIP:
-					continue
 				else:
-					with open(tmp, 'a') as outFl:
+					if SKIP:
+						continue
+					else:
 						outFl.write(line)
 	os.rename(tmp, fastaPth)
 
@@ -1810,7 +1818,25 @@ def getfasta(inGFFpth, fastaRefPth, outFastaPth, headerKey='ID'):
 	removeRedundant(outFastaPth)
 
 
-def runblast(query, subject, out, evalue, outfmt, percid, blast='blastn', procs=1):
+# DOESN'T WORK WITH OTHER THAN blastn
+#def runblast(query, subject, out, evalue, outfmt, percid, blast='blastn', procs=1):
+#	'''
+#	runs blast programs
+#	if subject does not have a blastdb one will be created
+#	expects procs to be a global variable
+#	'''
+#	dbtypes = { 'blastn':'nucl', 'blastp':'prot', 'blastx':'prot', 'tblastx':'nucl', 'tblastn':'nucl' }
+#
+#	assert blast in dbtypes,'runblast() blast param must be one of blastn, blastp, blastx, tblastn, tblastx'
+#
+#	makeblastdb_call_string = '{0}/makeblastdb -in {1} -dbtype {2} -parse_seqids'.format(executables['blast'], subject, dbtypes[blast] )
+#	makeblastdb_call = [ '{0}/makeblastdb'.format(executables['blast']), '-in', subject, '-dbtype', dbtypes[blast], '-parse_seqids' ]
+#	makecall(makeblastdb_call)
+#	blast_call = [ '{0}/{1}'.format(executables['blast'], blast), '-db', subject, '-query', query, '-evalue', str(evalue), '-outfmt', str(outfmt), '-num_threads', str(procs), '-perc_identity', str(percid) ]
+#	blast_call_string = '{0}/{1} -db {2} -query {3} -evalue {4} -outfmt {5} -num_threads {6} -perc_identity {7} 1>{8} 2>{9}'.format(executables['blast'], blast, subject, query, evalue, outfmt, procs, percid, out, '{0}/runblast.{1}.err'.format('/'.join(out.split('/')[:-1]), blast))
+#	makecall(blast_call, stdout=out, stderr='{0}/runblast.{1}.err'.format('/'.join(out.split('/')[:-1]), blast))
+
+def runblast(query, subject, out, evalue, outfmt, percid=None, blast='blastn', procs=1):
 	'''
 	runs blast programs
 	if subject does not have a blastdb one will be created
@@ -1823,10 +1849,14 @@ def runblast(query, subject, out, evalue, outfmt, percid, blast='blastn', procs=
 	makeblastdb_call_string = '{0}/makeblastdb -in {1} -dbtype {2} -parse_seqids'.format(executables['blast'], subject, dbtypes[blast] )
 	makeblastdb_call = [ '{0}/makeblastdb'.format(executables['blast']), '-in', subject, '-dbtype', dbtypes[blast], '-parse_seqids' ]
 	makecall(makeblastdb_call)
-	blast_call = [ '{0}/{1}'.format(executables['blast'], blast), '-db', subject, '-query', query, '-evalue', str(evalue), '-outfmt', str(outfmt), '-num_threads', str(procs), '-perc_identity', str(percid) ]
-	blast_call_string = '{0}/{1} -db {2} -query {3} -evalue {4} -outfmt {5} -num_threads {6} -perc_identity {7} 1>{8} 2>{9}'.format(executables['blast'], blast, subject, query, evalue, outfmt, procs, percid, out, '{0}/runblast.{1}.err'.format('/'.join(out.split('/')[:-1]), blast))
+	if percid == None or blast != 'blastn': # -perc_identity is only a blastn option
+		blast_call = [ '{0}/{1}'.format(executables['blast'], blast), '-db', subject, '-query', query, '-evalue', str(evalue), '-outfmt', str(outfmt), '-num_threads', str(procs)]
+		blast_call_string = '{0}/{1} -db {2} -query {3} -evalue {4} -outfmt {5} -num_threads {6} 1>{7} 2>{8}'.format(executables['blast'], blast, subject, query, evalue, outfmt, procs, out, '{0}/runblast.{1}.err'.format('/'.join(out.split('/')[:-1]), blast))
+	else:
+		blast_call = [ '{0}/{1}'.format(executables['blast'], blast), '-db', subject, '-query', query, '-evalue', str(evalue), '-outfmt', str(outfmt), '-num_threads', str(procs), '-perc_identity', str(percid) ]
+		blast_call_string = '{0}/{1} -db {2} -query {3} -evalue {4} -outfmt {5} -num_threads {6} -perc_identity {7} 1>{8} 2>{9}'.format(executables['blast'], blast, subject, query, evalue, outfmt, procs, percid, out, '{0}/runblast.{1}.err'.format('/'.join(out.split('/')[:-1]), blast))
+	append2logfile(paths['output_top_dir'], mainlogfile, blast_call_string)
 	makecall(blast_call, stdout=out, stderr='{0}/runblast.{1}.err'.format('/'.join(out.split('/')[:-1]), blast))
-
 
 def reportpairswithhomologousflanks(blastqueryfasta, blastResults, outFlPth, bpflank, perc_len_cutoff):
 	'''
@@ -2727,7 +2757,7 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 					else:
 						pass
 
-def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
+def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, DONTALIGN=False):
 
 	'''
 	Run through GFF3
@@ -2778,7 +2808,7 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 		MakeDir(FASTAKey, paths[FASTAKey])
 		TrimalKey = '{0}.LTRs.aln.trimal'.format(key_base)
 	else:
-		sys.exit('modeltest() parameter clustering_method needs to be either WickerFam or MCL and it is: {0}'.format(clustering_method))
+		sys.exit('align_ltrs() parameter clustering_method needs to be either WickerFam or MCL and it is: {0}'.format(clustering_method))
 
 	if checkStatusFl('{0}.LTR_divergence_complete'.format(key_base)):
 		scriptpath = os.path.realpath(__file__)
@@ -2874,6 +2904,14 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('{0}\t{1}\n'.format(NewHeaderKey, paths[FASTAKey])) # Add LTRs FASTA path to status file (for resuming later)
 
+		if DONTALIGN: # Stop here. Happens when only doing solo LTR search.
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+			append2logfile(paths['output_top_dir'], mainlogfile, 'align_ltrs() stopping after writing FASTAs for each LTR'.format(procs,chunk_size))
+			return
+			
+
 		if not checkStatusFl(AlnKey):
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Making MAFFT alignments for each LTR pair:\n{0}'.format(list(ltrs_mafft_calls.values())[0]))
 			with Pool(processes=procs) as p: # Do alignment for each LTR pair
@@ -2891,6 +2929,246 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('{0}\t{1}\n'.format(TrimalKey, paths[TrimalKey])) # Add LTRs FASTA path to status file (for resuming later)
 				statusFlAppend.write('{0}.LTR_divergence_complete\t{0}'.format(key_base))
+
+def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
+
+	global paths
+	global filenames
+
+	# Set up directory structure for output (LTRs GFF & FASTA)
+	if clustering_method == 'WickerFam':
+		WICKERCLUST = True
+		clustMethodTopDir = '{0}/WickerFamDir/{1}_pId_{2}_percAln_{3}_minLen'.format(paths['output_top_dir'], WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		ClusterSummaryFl = 'WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		ClusterMembershipFl = 'WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+	elif clustering_method == 'MCL':
+		MCLCLUST = True
+		clustMethodTopDir = '{0}/MCL/I{1}'.format(paths['output_top_dir'], I)
+		key_base = 'MCL_I{0}'.format(I)
+		ClusterSummaryFl = 'MCL_ClusterSummary_I{0}'.format(I)
+		ClusterMembershipFl = 'MCL_ClusterMembership_I{0}'.format(I)
+
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning SoloLTRsearch(): {0}'.format(key_base))
+	OutputDir = 'SoloLTRSearch.{0}'.format(key_base)
+	paths[OutputDir] = '{0}/SoloLTRsearch'.format(clustMethodTopDir)
+	MakeDir(OutputDir, paths[OutputDir])
+
+	LTRsGFF = '{0}.LTRs_GFF'.format(key_base)
+	paths[LTRsGFF] = '{0}/{1}.gff'.format(paths[OutputDir], LTRsGFF)
+	LTRsFASTA = '{0}.LTRs_FASTA'.format(key_base)
+	paths[LTRsFASTA] = '{0}/{1}.fasta'.format(paths[OutputDir], LTRsFASTA)
+	BLASToutput = '{0}.LTRs.blastn2ref'.format(key_base)
+	paths[BLASToutput] = '{0}.blastn.tsv'.format(paths[LTRsFASTA])
+
+	RepeatRegionsGFF = 'repeat_regions'
+	paths['RepeatRegionsGFF'] = '{0}/{1}.gff'.format(paths[OutputDir], RepeatRegionsGFF)
+
+	SoloLTRsummary = '{0}.SoloLTRsummary'.format(key_base)
+	paths[SoloLTRsummary] = '{0}/{1}.tsv'.format(paths[OutputDir],SoloLTRsummary)
+
+	if checkStatusFl(SoloLTRsummary):
+		append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch() already completed for {0}'.format(key_base))
+		return
+		
+
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Writing GFFs for SoloLTRsearch(): {0}'.format(key_base))
+	writeLTRretrotransposonGFF(paths['CurrentGFF'], paths['RepeatRegionsGFF'], elementSet=None, REPEATREGION=True, truncateParent=False) # Write repeat_region features for checking overlaps with LTR hits
+
+
+	lastEl = None
+	LTRlengths = {}
+	with open(paths[LTRsGFF], 'w') as outFl:
+		with open(paths['CurrentGFF'], 'r') as inFl: # Write LTRs GFF
+			for line in inFl:
+				if line.startswith('#'):
+					continue
+				gl = GFF3_line(line)
+				if gl.type == 'long_terminal_repeat':
+					el = gl.attributes['Parent']
+					if el != lastEl:
+						gl.attributes['ID'] = '{0}.1'.format(el)
+					else:
+						gl.attributes['ID'] = '{0}.2'.format(el)
+					LTRlengths[gl.attributes['ID']] = gl.end - gl.start + 1
+					gl.attributes_order.insert(0, 'ID')
+					gl.refreshAttrStr()
+					outFl.write(str(gl)+'\n')
+					lastEl = el
+
+	getfasta(paths[LTRsGFF], paths['inputFasta'], paths[LTRsFASTA], headerKey='ID') # Get LTRs FASTA
+
+	if not checkStatusFl(BLASToutput):
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Running blastn for SoloLTRsearch(): {0}'.format(key_base))
+		runblast(query=paths[LTRsFASTA], subject=paths['inputFasta'], out=paths[BLASToutput], evalue=soloLTRmaxEvalue, outfmt='7', percid=soloLTRminPid, blast='blastn', procs=procs) # Do blastn x input fasta
+		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+			statusFlAppend.write('{0}\t{1}\n'.format(BLASToutput, paths[BLASToutput]))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Finished blastn for SoloLTRsearch(): {0}'.format(key_base))
+
+	# parse results and assign LTRs to clusters and write GFF3 for each cluster
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Parsing repeat_regions GFF3 for SoloLTRsearch(): {0}'.format(key_base))
+	RR = {} # repeat_region features that hits shouldn't overlap
+	i = 0
+	with open(paths['RepeatRegionsGFF'], 'r') as inFl:
+		for line in inFl:
+			if not line.startswith('#'):
+				gl = GFF3_line(line)
+				if not gl.seqid in RR:
+					# convert coords from 0-based (GFF3) to 1-based for easier overlap comparison
+					RR[gl.seqid] = {i:{'coords':(gl.start+1, gl.end)}}
+				else:
+					RR[gl.seqid][i] = {'coords':(gl.start+1, gl.end)}
+				i+=1
+
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Parsing potential solo LTR hits from blastn output for SoloLTRsearch(): {0}'.format(key_base))
+	Hits = {} # hits from genomic blast of LTRs
+	i = 0
+	with open(paths[BLASToutput], 'r') as inFl:
+		for line in inFl:
+			if not line.startswith('#'):
+				c = line.strip().split()
+				query, subj, pid, alnLen = c[:4]
+				#alnLen = int(alnLen)
+				LTRlen = int(c[7]) - int(c[6]) + 1
+				#pLen = alnLen/LTRlengths[query]*100 # percent of LTR length in the alignment
+				pLen = LTRlen/LTRlengths[query]*100 # percent of LTR length in the alignment
+				if pLen < soloLTRminLen: # skip alignments shorter 
+					continue
+
+				bit = float(c[-1])
+				s, e = [int(x) for x in c[8:10]] # subject start and end
+				
+				if not subj in Hits:
+					# convert coords from 0-based (GFF3) to 1-based for easier overlap comparison
+					Hits[subj] = {i:{'coords':(s+1, e), 'bit':bit, 'pLen':pLen, 'LTR':query}}
+				else:
+					Hits[subj][i] = {'coords':(s+1, e), 'bit':bit, 'pLen':pLen, 'LTR':query}
+				i+=1
+
+				# Fields: query id, subject id, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score
+				#LTR_retrotransposon1000.1	Sacu_v1.1_s0020	100.00	268	0	0	1	268	246379	246112	3e-139	496
+
+	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\ndiscarding hits that overlap repeat_regions'.format(key_base))
+	# Discard hits that overlap a repeat region
+	HitsR1 = {}
+	for scaf in Hits:
+		if scaf not in RR:
+			HitsR1[scaf] = Hits[scaf]
+			continue
+		KEEP = True
+		for i in Hits[scaf]:
+			coordsLTR = Hits[scaf][i]['coords']
+			LTR = Hits[scaf][i]['LTR']
+			for j in RR[scaf]:
+				if not KEEP:
+					break
+				coordsLTRRT = RR[scaf][j]['coords']
+				if Overlaps(coordsLTR, coordsLTRRT):
+					KEEP = False
+			if KEEP:
+				if scaf in HitsR1:
+					HitsR1[scaf][i] = Hits[scaf][i]
+				else:
+					HitsR1[scaf] = {i:Hits[scaf][i]}
+
+	# If hits overlap, keep only the hit with the highest bit score
+	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nretaining highest scoring hits among hits that overlap'.format(key_base))
+	HitsR2 = {}
+	for scaf in HitsR1:
+		# Sort hits by bit score to allow not checking bit score if Overlaps()==True
+		sortedHits = sorted([(H,sorted(list(HitsR1[scaf][H].items()), key=lambda x:x[0])) for H in HitsR1[scaf]], key=lambda y:y[1][1][1], reverse=True)
+		Remaining = [ LTRinfo[0] for LTRinfo in sortedHits ] # Elements are discarded if they overlap or are added to HitsR2
+		#LTRinfo = (4482, [('LTR', 'LTR_retrotransposon1012.1'), ('bit', 300.0), ('coords', (133796, 133460)), ('pLen', 100.88757396449704)])
+		while Remaining != []:
+			LTR1 = Remaining[0]
+			Remove = set()
+			for LTR2 in Remaining:
+				if LTR1 == LTR2: # skip identities
+					continue
+				if Overlaps(HitsR1[scaf][LTR1]['coords'], HitsR1[scaf][LTR2]['coords']):
+					Remove.add(LTR2) # discard
+			
+			if scaf in HitsR2:
+				HitsR2[scaf][LTR1] = HitsR1[scaf][LTR1]
+			else:
+				HitsR2[scaf] = {LTR1:HitsR1[scaf][LTR1]}
+
+			Remove.add(LTR1) # kept, but remove from Remaining
+			Remaining = [LTR for LTR in Remaining if not LTR in Remove]
+			if Remaining == []:
+				break
+
+	#print(sum([len(Hits[val]) for val in Hits]))
+	#print(sum([len(HitsR1[val]) for val in HitsR1]))
+	#print(sum([len(HitsR2[val]) for val in HitsR2]))
+
+	# write table with cluster and # of solo LTRs
+	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nparsing cluster membership and summary files'.format(key_base))
+	ClusterMembership = {}
+	ClusterSizes = {}
+	with open(paths[ClusterMembershipFl], 'r') as inFl:
+		for line in inFl:
+			if not line.startswith('element'):
+				el, classif, clust = line.strip().split()
+				ClusterMembership[el] = (classif, clust)
+
+				if classif in ClusterSizes:
+
+					if clust in ClusterSizes[classif]:
+						ClusterSizes[classif][clust] += 1
+					else:
+						ClusterSizes[classif][clust] = 1
+				else:
+					ClusterSizes[classif] = {clust:1}
+					
+	
+	SoloLTRclusterMembership = {}
+	for scaf in HitsR2:
+		for LTRinfo in HitsR2[scaf]:
+			#LTRinfo = {'coords': (8851, 8469), 'bit': 507.0, 'LTR': 'LTR_retrotransposon1004.2', 'pLen': 100.0}
+			SoloLTR = HitsR2[scaf][LTRinfo]['LTR']
+			el = SoloLTR.split('.')[0].lstrip('LTR_retrotransposon')
+			try:
+				classif, clust = ClusterMembership[el]
+			except KeyError:
+				print('{0} not in ClusterMembership file'.format(el), file=sys.stderr)
+
+			if classif in SoloLTRclusterMembership:
+
+				if clust in SoloLTRclusterMembership[classif]:
+					SoloLTRclusterMembership[classif][clust] += 1
+				else:
+					SoloLTRclusterMembership[classif][clust] = 1
+			else:
+				SoloLTRclusterMembership[classif] = {clust:1}
+
+	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nwriting output'.format(key_base))
+	with open(paths[SoloLTRsummary], 'w') as outFl:
+		outFl.write('classif\tclust\tFullLengthElements\tNumberOfSoloLTRs\tFull2SoloRatio\n')
+		for classif in sorted(list(SoloLTRclusterMembership.keys())):
+			for clust in sorted(list(SoloLTRclusterMembership[classif]), key=int):
+				solos = SoloLTRclusterMembership[classif][clust]
+				fulls = ClusterSizes[classif][clust]
+				ratio = fulls/solos
+				outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format(classif, clust, fulls, solos, ratio))
+				
+	with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+		statusFlAppend.write('{0}\t{1}\n'.format(SoloLTRsummary, paths[SoloLTRsummary]))
+	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nFINISHED'.format(key_base))
+
+	#element	classification	cluster
+	#3657	Unknown	0
+	#2241	Unknown	0
+	#700	Unknown	0
+	#4633	Unknown	0
+	#2444	Unknown	0
+	#785	Unknown	0
+	#3766	Unknown	0
+	#1275	Unknown	0
+	#3495	Unknown	0
+
+	# Check that LTRs don't overlap anything
+
 
 def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
 	'''
@@ -4680,11 +4958,13 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 	if clustering_method == 'WickerFam':
 		wicker_top_dir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
 		settings = '{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-		paths['WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.summary.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-		paths['WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.membership.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-		with open(paths['WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'w') as outFl:
+		ClusterSummaryFl = 'WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		ClusterMembershipFl = 'WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		paths[ClusterSummaryFl] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.summary.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		paths[ClusterMembershipFl] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.membership.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		with open(paths[ClusterSummaryFl], 'w') as outFl:
 			outFl.write('classification\tcluster\tsize\n')
-		with open(paths['WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'w') as outFl:
+		with open(paths[ClusterMembershipFl], 'w') as outFl:
 			outFl.write('element\tclassification\tcluster\n')
 		for classif in clusters_by_classif:
 			with open(paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)], 'r') as inFl:
@@ -4722,21 +5002,24 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 										outFl.write('###\n')
 									outFl.write(line)
 					# Write line to summary file
-					with open(paths['WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'a') as outFl:
+					with open(paths[ClusterSummaryFl], 'a') as outFl:
 						outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
-					with open(paths['WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])], 'a') as outFl:
+					with open(paths[ClusterMembershipFl], 'a') as outFl:
 						for el in clust_members:
 							outFl.write('{0}\t{1}\t{2}\n'.format(el, classif, c))
 					c += 1
 
+
 	elif clustering_method == 'MCL':
 		mcl_top_dir = paths['MCL_I{0}'.format(I)]
 		settings = 'I{0}'.format(I)
-		paths['MCL_ClusterSummary_I{0}'.format(I)] = '{0}/Clusters/MCL_I{1}.summary.tab'.format(mcl_top_dir, I)
-		paths['MCL_ClusterMembership_I{0}'.format(I)] = '{0}/Clusters/MCL_I{1}.membership.tab'.format(mcl_top_dir, I)
-		with open(paths['MCL_ClusterSummary_I{0}'.format(I)], 'w') as outFl:
+		ClusterSummaryFl = 'MCL_ClusterSummary_I{0}'.format(I)
+		ClusterMembershipFl = 'MCL_ClusterMembership_I{0}'.format(I)
+		paths[ClusterSummaryFl] = '{0}/Clusters/MCL_I{1}.summary.tab'.format(mcl_top_dir, I)
+		paths[ClusterMembershipFl] = '{0}/Clusters/MCL_I{1}.membership.tab'.format(mcl_top_dir, I)
+		with open(paths[ClusterSummaryFl], 'w') as outFl:
 			outFl.write('superfamily\tcluster\tsize\n')
-		with open(paths['MCL_ClusterMembership_I{0}'.format(I)], 'w') as outFl:
+		with open(paths[ClusterMembershipFl], 'w') as outFl:
 			outFl.write('element\tclassification\tcluster\n')
 		for classif in clusters_by_classif:
 			with open(paths['MCL_{0}_I{1}'.format(classif, I)], 'r') as inFl:
@@ -4777,13 +5060,17 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 								
 
 					# Write line to summary file
-					with open(paths['MCL_ClusterSummary_I{0}'.format(I)], 'a') as outFl:
+					with open(paths[ClusterSummaryFl], 'a') as outFl:
 						outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
-					with open(paths['MCL_ClusterMembership_I{0}'.format(I)], 'a') as outFl:
+					with open(paths[ClusterMembershipFl], 'a') as outFl:
 						for el in clust_members:
 							outFl.write('{0}\t{1}\t{2}\n'.format(el, classif, c))
 					c += 1
 
+	with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+		statusFlAppend.write('{0}\t{1}\n'.format(ClusterSummaryFl, paths[ClusterSummaryFl]))
+	with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+		statusFlAppend.write('{0}\t{1}\n'.format(ClusterMembershipFl, paths[ClusterMembershipFl]))
 
 
 
@@ -5369,6 +5656,24 @@ if '--wicker_no_internals' in args:
 	wicker_use_internal = False
 else:
 	wicker_use_internal = True
+
+# Solo LTR search parameters
+if '--soloLTRsearch' in args:
+	SOLOLTR = True
+else:
+	SOLOLTR = False
+if '--soloLTRminPid' in args:
+	soloLTRminPid = str(float(args[args.index('--soloLTRminPid')+1]))
+else:
+	soloLTRminPid = 80.0
+if '--soloLTRminLen' in args:
+	soloLTRminLen = float(args[args.index('--soloLTRminLen')+1])
+else:
+	soloLTRminLen = 80.0
+if '--soloLTRmaxEvalue' in args:
+	soloLTRmaxEvalue = float(args[args.index('--soloLTRmaxEvalue')+1])
+else:
+	soloLTRmaxEvalue = 1e-3
 	
 paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta'.format(paths['selfDir'])
 paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(paths['selfDir'])
@@ -5423,6 +5728,11 @@ elif 'LTRharvestGFF' in paths:
 # They'll be skipped if they appear to have been done already and the requisite files for subsequent steps exist
 # They'll also be skipped if the are not supposed to run for the requested procedure
 # If they run they will append to the log
+
+
+#clusters_by_classif = shortClassif()
+#classifs_by_element = shortClassif(ElNames=True)
+#classifs = set(list(clusters_by_classif.keys()))
 
 #clusterSummary()
 sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
@@ -5539,6 +5849,14 @@ if USEMCL:
 #
 #
 #  
+if WICKER:
+	#summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
+	SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
+if MCL:
+	SoloLTRsearch(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
+
+print('FINISHED SOLO LTR SEARCH')
+
 if CIRCOS:
 	if WICKER:
 		Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
