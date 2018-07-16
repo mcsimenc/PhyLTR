@@ -2724,17 +2724,13 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 						getPAUP = False
 						COMPLETE_RUN = False
 						paupLines = ''
+						lastline = ''
 						for line in jmt2outFl:
 							if line.startswith('PAUP* Commands Block:'):
 								PAUP = True
 							elif line.startswith('::Best Models::'):
 								END = True
 					
-								#method, model, a, c, g, t, kappa, titv, Ra, Rb, Rc, Rd, Re, Rf, pInv, gamma = line.strip().split()
-								with open(jmt2summaryFlPth, 'a') as summaryFl:
-									summaryFl.write('{0}\t{1}\t{2}\n'.format(line.strip(), j, clustSize))
-									summaryFl.write(paupLines)
-									COMPLETE_RUN = True
 							if line.startswith('END;') and getPAUP:
 								paupLines += 'Dset distance=ML;\n'
 								paupLines += 'SaveDist format=oneColumn file=dist;\n'
@@ -2746,6 +2742,13 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 								getPAUP = True
 							elif getPAUP:
 								paupLines += line
+
+							if line.startswith('BIC') and END:
+								#method, model, a, c, g, t, kappa, titv, Ra, Rb, Rc, Rd, Re, Rf, pInv, gamma = line.strip().split()
+								with open(jmt2summaryFlPth, 'a') as summaryFl:
+									summaryFl.write('{0}\t{1}\t{2}\n'.format(line.strip(), j, clustSize))
+									summaryFl.write(paupLines)
+									COMPLETE_RUN = True
 
 			if not checkStatusFl(OutDirKey):
 				with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
