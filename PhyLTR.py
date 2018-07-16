@@ -3147,12 +3147,12 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 
 	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nwriting output'.format(key_base))
 	with open(paths[SoloLTRsummary], 'w') as outFl:
-		outFl.write('classif\tclust\tFullLengthElements\tNumberOfSoloLTRs\tFull2SoloRatio\n')
+		outFl.write('classif\tclust\tFullLengthElements\tNumberOfSoloLTRs\tSolo2FullRatio\n')
 		for classif in sorted(list(SoloLTRclusterMembership.keys())):
 			for clust in sorted(list(SoloLTRclusterMembership[classif]), key=int):
 				solos = SoloLTRclusterMembership[classif][clust]
 				fulls = ClusterSizes[classif][clust]
-				ratio = fulls/solos
+				ratio = solos/fulls
 				outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format(classif, clust, fulls, solos, ratio))
 				
 	with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
