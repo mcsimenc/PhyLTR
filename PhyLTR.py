@@ -2708,7 +2708,7 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 					makecall(fasttree_call, stdout=paths['Tree'], stderr='{0}.stderr'.format(paths['Tree']), stdin=paths[aln])
 					append2logfile(paths['output_top_dir'], mainlogfile, 'Finished inferring phylogeny using FastTree')
 					paths['jModeltest2out_{0}'.format(classif)] = '{0}/{1}.jModelTest2.out'.format(paths['ModelTestIterationDir'], filenames['Tree'])
-					jmodeltestCallString = 'java -jar {0} -d {1} -w -g 4 -f -BIC -a -u {2} -o {3} -tr {4} -s 11'.format(executables['jmodeltest2'], paths[aln], paths['Tree'], str(procs), paths['jModeltest2out_{0}'.format(classif)])
+					jmodeltestCallString = 'java -jar {0} -d {1} -w -g 4 -f -BIC -a -u {2} -o {3} -tr {4} -s 11'.format(executables['jmodeltest2'], paths[aln], paths['Tree'], paths['jModeltest2out_{0}'.format(classif)], str(procs))
 					append2logfile(paths['output_top_dir'], mainlogfile, 'Starting jModeltest2\n{0}'.format(jmodeltestCallString))
 					subprocess.call([ 'java', '-jar', executables['jmodeltest2'], '-d', paths[aln], '-w', '-g', '4', '-f', '-BIC', '-a', '-u', paths['Tree'], '-o', paths['jModeltest2out_{0}'.format(classif)], '-tr', str(procs), '-s', '11'])
 									
