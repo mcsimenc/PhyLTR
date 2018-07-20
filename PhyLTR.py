@@ -1196,7 +1196,7 @@ def shortClassif(ElNames=False):
 					# Write GFFs for each classification
 					with open('{0}/{1}.LTR_RTs.{2}.gff'.format(paths['GFFByClassification'], filenames['inputFasta'], ElementNames[el]), 'a') as outFl:
 						if gffLine.type == 'repeat_region':
-							outFl.write('###')
+							outFl.write('###\n')
 						outFl.write(line)
 
 		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
@@ -2730,7 +2730,7 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 								PAUP = True
 							elif line.startswith('::Best Models::'):
 								END = True
-					
+
 							if line.startswith('END;') and getPAUP:
 								paupLines += 'Dset distance=ML;\n'
 								paupLines += 'SaveDist format=oneColumn file=dist;\n'
@@ -3410,6 +3410,7 @@ def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'p
 				clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
 
 				PhyLTRalnPths = { '_'.join(f.split('_')[:2]):'{0}/{1}'.format(paths[TrimalKey], f) for f in os.listdir(paths[TrimalKey]) if f.endswith('trimmed') } # LTR_retrotransposon148_LTRs.fasta.aln.trimmed 
+
 				if ModeltestSummaryKey in paths:
 					with open(paths[ModeltestSummaryKey]) as testOutputFl:
 						paupLines = ''
@@ -3433,8 +3434,8 @@ def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'p
 					for j in range(len(clusters)):
 						for el in clusters[j]:
 							paupBlock = ''
-							print('OK, WHAT IS IT?')
-							print('classif {0}, cluster {1}, element {2}'.format(classif, j, el))
+							#print('OK, WHAT IS IT?', file=sys.stderr))
+							#print('classif {0}, cluster {1}, element {2}'.format(classif, j, el), file=sys.stderr)
 							seqRec = list(SeqIO.parse(PhyLTRalnPths[el], 'fasta'))
 							paupBlock = '''#NEXUS
 begin DATA;
@@ -3448,6 +3449,7 @@ END;
 '''.format(len(seqRec[0].seq), seqRec[0].id+'_L', seqRec[1].id+'_R', str(seqRec[0].seq), str(seqRec[1].seq))
 
 							if str(j) in modeltestResults[classif]: # Have modeltest result for this cluster
+								#print('IN', file=sys.stderr)
 								model = modeltestResults[classif][str(j)][1]
 								for line in modeltestResults[classif][str(j)][0].split('\n'):
 									if line.startswith('SaveDist'):
@@ -5758,34 +5760,30 @@ classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLA
 #
 #		Global variables containg superfamily assignment for each element
 #
+append2logfile(paths['output_top_dir'], mainlogfile, 'before shortClassif()')
 clusters_by_classif = shortClassif()
 classifs_by_element = shortClassif(ElNames=True)
 classifs = set(list(clusters_by_classif.keys()))
 
-#for c in clusters_by_classif:
-#	if c == 'Unknown':
-#		print('\n'.join(clusters_by_classif[c]))
-#sys.exit()
-
-#### TEMPORARY RUN
-#if WICKER:
-#	summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
-#if USEMCL:
-#	summarizeClusters(I=6, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
-#sys.exit()
-#summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
-#sys.exit()
-
+# TEMPTEMPTEMPTEMP
+if WICKER:
+	append2logfile(paths['output_top_dir'], mainlogfile, 'LTRdivergence wicker')
+	ltr_divergence(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
 #
-#		# Input: LTR RT structures (GFF3) and Sequences (FASTA)
-#		# Output: List of elements with evidence of intra element LTR gene conversion (text table)
 #
-#Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-#if WICKER:
-#	Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-#if USEMCL:
-#	Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
-#sys.exit()
+if USEMCL:
+	append2logfile(paths['output_top_dir'], mainlogfile, 'LTRdivergence mcl')
+	ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None)
+
+if CIRCOS:
+	if WICKER:
+		Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+	if USEMCL:
+		Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
+#
+sys.exit()
+# ^ TEMPTEMPTEMPTEMP
+
 #
 #  II. Clustering, divergence, gene conversion, and phylogenetic analysis
 #
