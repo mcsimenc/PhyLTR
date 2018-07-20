@@ -812,10 +812,22 @@ def addORFs(maingff, orfgff, newgff):
 						for orf in orfs[el]:
 							orf.start = firstLTRend + int(orf.start)
 							orf.end = firstLTRend + int(orf.end)
+							#with open('ERR','a') as errFl:
+							#	errFl.write(str(orf)+'\n')
 							orf.seqid = gl.seqid # Change the scaffold name
+							#with open('ERR','a') as errFl:
+							#	errFl.write(str(orf)+'\n')
 							OVERLAP = False
 							for part in internalparts:
+							#	print([orf.start, orf.end], [part.start, part.end])
+							#	print(Overlaps([orf.start, orf.end], [part.start, part.end]))
 								if Overlaps([orf.start, orf.end], [part.start, part.end]):
+									#with open('ERR','a') as errFl:
+									#	errFl.write('OVERLAPS\n')
+									#	errFl.write(str(orf)+'\n')
+									#	errFl.write('{0}\t{1}\n'.format(orf.start, orf.end))
+									#	errFl.write(str(part)+'\n')
+									#	errFl.write('{0}\t{1}\n'.format(part.start, part.end))
 									
 									OVERLAP = True
 									break
@@ -825,9 +837,18 @@ def addORFs(maingff, orfgff, newgff):
 								orf.attributes_order.insert(0, 'ID')
 								orf.refreshAttrStr()
 								outFl.write('>{0}\n{1}\n'.format(orf.attributes['ID'], orf.attributes['translated_seq']))
+								#with open('ERR','a') as errFl:
+								#	errFl.write('GOING OUT\n')
+								#	errFl.write(orf.seqid+'\n')
 								internalparts.append(orf)
 					internalparts.sort(key=lambda x:int(x.start))
 					NewGFFLines += internalparts
+					#with open('ERR','a') as errFl:
+					#	errFl.write('GOING NEWGFFLINES\n')
+					#for p in internalparts:
+					#	with open('ERR','a') as errFl:
+					#		errFl.write(str(p)+'\n')
+					#		errFl.write(p.seqid+'\n')
 					NewGFFLines.append(gl)
 					firstLTRend = None
 				elif firstLTRend == None: # This is the first LTR
@@ -2660,7 +2681,1000 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 				classif = a[7]
 				j = a[-2] # Cluster
 				suffix = a[-1]
-				phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomologouspair=True, part='entire', clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, auto_outgroup=False, bootstrap_reps=100, minClustSize=4, convert_to_ultrametric=False, bpflank=None, combine_and_do_small_clusters=True):
+				OutDirKey = 'WickerModelTestDir_{0}_iters_{1}_pId_{2}_percAln_{3}_minLen_{4}_cluster_{5}_{6}'.format(iters, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, j, suffix)
+				OutSummaryKey = 'WickerModelTestSummary_{0}_iters_{1}_pId_{2}_percAln_{3}_minLen_{4}'.format(iters, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)
+					
+			MakeDir('ModelTest_{0}_{1}_dir'.format(suffix, classif), '{0}/{1}'.format(paths['ModelTestDir_{0}'.format(suffix)], classif))
+			sessionDir = paths['ModelTest_{0}_{1}_dir'.format(suffix, classif)]
+
+			if not OutDirKey in paths: # If true it means the model testing already finished for that group
+
+				MakeDir(OutDirKey, '{0}/{1}_iters'.format(sessionDir, iters))
+				MakeDir('ModelTestClustDir', '{0}/cluster_{1}'.format(paths[OutDirKey], j))
+
+				for i in range(int(iters)):
+
+					MakeDir('ModelTestIterationDir', '{0}/iter_{1}'.format(paths['ModelTestClustDir'], str(i+1)))
+
+					# FastTree
+					paths['Tree'] = '{0}/{1}_I{2}_{3}.tree'.format(paths['ModelTestIterationDir'], classif, I, j)
+					filenames['Tree'] = '{0}_I{1}_{2}.tree'.format(classif, I, j)
+					fasttree_call = [ executables['fasttree'], '-nt', '-gtr' ]
+					fasttree_call_string = '{0} -nt -gtr <{1} >{2} 2>{2}.stderr'.format(executables['fasttree'], paths[aln],paths['Tree'])
+					scriptpath = os.path.realpath(__file__)
+					lineno = getframeinfo(currentframe()).lineno + 2
+					append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+					append2logfile(paths['output_top_dir'], mainlogfile, 'Began inferring phylogeny using FastTree:\n{0}'.format(fasttree_call_string))
+					makecall(fasttree_call, stdout=paths['Tree'], stderr='{0}.stderr'.format(paths['Tree']), stdin=paths[aln])
+					append2logfile(paths['output_top_dir'], mainlogfile, 'Finished inferring phylogeny using FastTree')
+					paths['jModeltest2out_{0}'.format(classif)] = '{0}/{1}.jModelTest2.out'.format(paths['ModelTestIterationDir'], filenames['Tree'])
+					jmodeltestCallString = 'java -jar {0} -d {1} -w -g 4 -f -BIC -a -u {2} -o {3} -tr {4} -s 11'.format(executables['jmodeltest2'], paths[aln], paths['Tree'], paths['jModeltest2out_{0}'.format(classif)], str(procs))
+					append2logfile(paths['output_top_dir'], mainlogfile, 'Starting jModeltest2\n{0}'.format(jmodeltestCallString))
+					subprocess.call([ 'java', '-jar', executables['jmodeltest2'], '-d', paths[aln], '-w', '-g', '4', '-f', '-BIC', '-a', '-u', paths['Tree'], '-o', paths['jModeltest2out_{0}'.format(classif)], '-tr', str(procs), '-s', '11'])
+									
+					topDir = paths[OutDirKey]
+					jmt2summaryFlPth = '{0}/Summary.txt'.format(topDir)
+					paths['jModeltest2summary_{0}'.format(classif)] = jmt2summaryFlPth
+					#with open('{0}/{1}/{2}'.format(topDir, d, f), 'r') as jmt2outFl:
+					clustSize = len([ 1 for line in open(paths[aln],'r').read().split('\n') if line.startswith('>') ])
+
+					with open(paths['jModeltest2out_{0}'.format(classif)], 'r') as jmt2outFl:
+						END = False
+						PAUP = False
+						getPAUP = False
+						COMPLETE_RUN = False
+						paupLines = ''
+						lastline = ''
+						for line in jmt2outFl:
+							if line.startswith('PAUP* Commands Block:'):
+								PAUP = True
+							elif line.startswith('::Best Models::'):
+								END = True
+					
+							if line.startswith('END;') and getPAUP:
+								paupLines += 'Dset distance=ML;\n'
+								paupLines += 'SaveDist format=oneColumn file=dist;\n'
+								paupLines += line
+								getPAUP = False
+							elif line.startswith('[!') and PAUP:
+								paupLines += line
+								PAUP = False
+								getPAUP = True
+							elif getPAUP:
+								paupLines += line
+
+							if line.startswith('BIC') and END:
+								#method, model, a, c, g, t, kappa, titv, Ra, Rb, Rc, Rd, Re, Rf, pInv, gamma = line.strip().split()
+								with open(jmt2summaryFlPth, 'a') as summaryFl:
+									summaryFl.write('{0}\t{1}\t{2}\n'.format(line.strip(), j, clustSize))
+									summaryFl.write(paupLines)
+									COMPLETE_RUN = True
+
+			if not checkStatusFl(OutDirKey):
+				with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+					statusFlAppend.write('{0}\t{1}\n'.format(OutDirKey, paths['ModelTestIterationDir']))
+					#statusFlAppend.write('{0}\t{1}\n'.format('jModeltest2out_{0}'.format(classif), paths['jModeltest2out_{0}'.format(classif)]))
+					if 'jModeltest2summary_{0}'.format(classif) in paths and COMPLETE_RUN:
+						if not checkStatusFl(OutSummaryKey):
+							statusFlAppend.write('{0}\t{1}\n'.format(OutSummaryKey, paths['jModeltest2summary_{0}'.format(classif)]))
+					else:
+						pass
+
+def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, DONTALIGN=False):
+
+	'''
+	Run through GFF3
+	Make a GFF3 for every LTR pair
+	Create a bedtools getfasta call for every LTR pair GFF3
+	Change sequence headers
+	Create a mafft call for every LTR pair FASTA
+	Execute calls using multiprocessing
+
+	Elements with Superfamily classifications besides the ones in LTR_SFs are ignored because they might be DIRS or
+	another kind of SF with non-identical LTRs (thus the LTR divergence process would not be accurate)
+	'''
+	global paths
+	global filenames
+
+	TRIMAL = trimal
+	WICKERCLUST = False
+	MCLCLUST = False
+	# And set up directory structure for output (LTR pairs GFFs, FASTAs, and alignments)
+	if clustering_method == 'WickerFam':
+		WICKERCLUST = True
+		key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		WickerDir = 'WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		MakeDir('Alignments', '{0}/Alignments'.format(paths[WickerDir]))
+		AlnKey = '{0}.LTRAlnDir'.format(key_base)
+		paths[AlnKey] = '{0}/LTRs'.format(paths['Alignments'])
+		MakeDir(AlnKey, paths[AlnKey])
+		GFFKey = '{0}.GFFDir'.format(key_base)
+		paths[GFFKey] = '{0}/GFFs'.format(paths[WickerDir])
+		MakeDir(GFFKey, paths[GFFKey])
+		FASTAKey = '{0}.FASTADir'.format(key_base)
+		paths[FASTAKey] = '{0}/FASTAs'.format(paths[WickerDir])
+		MakeDir(FASTAKey, paths[FASTAKey])
+		TrimalKey = '{0}.LTRs.aln.trimal'.format(key_base)
+	elif clustering_method == 'MCL':
+		MCLCLUST = True
+		key_base = 'MCL_I{0}'.format(I)
+		MCLdir = 'MCL_I{0}'.format(I)
+		MakeDir('Alignments', '{0}/Alignments'.format(paths[MCLdir]))
+		AlnKey = '{0}.LTRAlnDir'.format(key_base)
+		paths[AlnKey] = '{0}/LTRs'.format(paths['Alignments'])
+		MakeDir(AlnKey, paths[AlnKey])
+		GFFKey = '{0}.GFFDir'.format(key_base)
+		paths[GFFKey] = '{0}/GFFs'.format(paths[MCLdir])
+		MakeDir(GFFKey, paths[GFFKey])
+		FASTAKey = '{0}.FASTADir'.format(key_base)
+		paths[FASTAKey] = '{0}/FASTAs'.format(paths[MCLdir])
+		MakeDir(FASTAKey, paths[FASTAKey])
+		TrimalKey = '{0}.LTRs.aln.trimal'.format(key_base)
+	else:
+		sys.exit('align_ltrs() parameter clustering_method needs to be either WickerFam or MCL and it is: {0}'.format(clustering_method))
+
+	if checkStatusFl('{0}.LTR_divergence_complete'.format(key_base)):
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'ltr_divergence() already completed: {0}'.format(paths['{0}.LTR_divergence_complete'.format(key_base)]))
+		return
+
+	if GENECONVLTRS or DIVERGENCE:
+
+		MakeDir('LTRsGFFoutputDir', '{0}/LTRs'.format(paths['GFFOutputDir']))
+		MakeDir('LTRsFASTAoutputDir', '{0}/LTRs'.format(paths['FastaOutputDir']))
+		MakeDir('Alignments', '{0}/Alignments'.format(paths['output_top_dir']))
+		MakeDir('LTRsAlignments_dir', '{0}/LTRs'.format(paths['Alignments']))
+
+		ltrs = {} # this will have the GFF lines for each LTR RT's LTRs
+		ltrs_getfasta_calls = {}
+		ltrs_changefastaheaders_calls = {}
+		ltrs_mafft_calls = {}
+		ltrs_trimal_calls = {}
+		num_pairs = 0
+
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Parsing LTRs from GFF3:\n{0}'.format(paths['CurrentGFF']))
+		with open(paths['CurrentGFF'], 'r') as GFF_fl:
+			for line in GFF_fl:
+				if '\tlong_terminal_repeat\t' in line:
+					gffLine = GFF3_line(line)
+					elementName = gffLine.attributes['Parent']
+
+					# Skip element kinds with potentially non-identical LTRs upon insertion, e.g. DIRS, Ngaro
+					YESLTR = False
+					for SF in LTR_SFs:
+						if classifs_by_element[elementName].startswith(SF):
+							YESLTR = True
+							break
+
+					if YESLTR:
+						if elementName in ltrs:
+							ltrs[elementName].append(line)
+							if len(ltrs[elementName]) == 2:
+								LTRsGFFfilepath = '{0}/{1}_LTRs.gff'.format(paths[GFFKey], elementName)
+								LTRsFASTAfilepath = '{0}/{1}_LTRs.fasta'.format(paths[FASTAKey], elementName)
+								LTRsAlignmentFilepath = '{0}/{1}_LTRs.fasta.aln'.format(paths[AlnKey], elementName)
+								LTRsTrimmedAlnFilepath = '{0}.trimmed'.format(LTRsAlignmentFilepath)
+								ltrs[elementName].append(LTRsGFFfilepath) # For writing GFF3
+								getfasta_LTRs_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', LTRsGFFfilepath ]  
+								ltrs_getfasta_calls[elementName] = (getfasta_LTRs_call, LTRsFASTAfilepath, None, None)
+								ltrs_changefastaheaders_calls[elementName] = (LTRsFASTAfilepath, LTRsGFFfilepath, 'Parent')
+								mafft_LTRs_call = [ executables['mafft'], '--quiet', '--globalpair', '--maxiterate', '1000', LTRsFASTAfilepath ]
+								ltrs_mafft_calls[elementName] = (mafft_LTRs_call, LTRsAlignmentFilepath, None, None)
+
+
+								if TRIMAL:
+									trimal_LTRs_call = [ executables['trimal'], '-in', LTRsAlignmentFilepath, '-out', LTRsTrimmedAlnFilepath, '-automated1' ]
+									ltrs_trimal_calls[elementName] = (trimal_LTRs_call, LTRsTrimmedAlnFilepath, None, None)
+
+								num_pairs += 1
+						else:
+							ltrs[elementName] = [line]
+
+		chunk_size = ceil(num_pairs/procs)
+		# Write to log file here about chunk size and processors used
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'For align_ltrs(): procs={0} chunk_size={1}'.format(procs,chunk_size))
+		if not checkStatusFl(GFFKey):
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Writing GFF3s for each LTR pair:\n{0}'.format(paths[GFFKey]) )
+			with Pool(processes=procs) as p: # Write GFF3s for each LTR pair
+				p.map(write_ltrs_gff3, ltrs.values(), chunksize=chunk_size)
+			p.join()
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('{0}\t{1}\n'.format(GFFKey, paths[GFFKey])) # Add LTRs GFF path to status file (for resuming later)
+
+		if not checkStatusFl(FASTAKey):
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Extracting sequences for LTR pairs:\n{0}'.format(list(ltrs_getfasta_calls.values())[0]))
+			with Pool(processes=procs) as p: # Write FASTA for each LTR pair
+				p.map(makecallMultiprocessing, ltrs_getfasta_calls.values(), chunksize=chunk_size)
+			p.join()
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('{0}\t{1}\n'.format(FASTAKey, paths[FASTAKey])) # Add LTRs FASTA path to status file (for resuming later)
+
+		NewHeaderKey = '{0}.LTRsFASTAnewheaders'.format(key_base)
+		if not checkStatusFl(NewHeaderKey):
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Changing bedtools getfasta default headers to LTR RT names:\n{0}'.format(paths[FASTAKey] ))
+			with Pool(processes=procs) as p: # Write FASTA for each LTR pair
+				p.map(ChangeFastaHeadersMultiprocessing, ltrs_changefastaheaders_calls.values(), chunksize=chunk_size)
+			p.join()
+			paths[NewHeaderKey] = paths[FASTAKey]
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('{0}\t{1}\n'.format(NewHeaderKey, paths[FASTAKey])) # Add LTRs FASTA path to status file (for resuming later)
+
+		if DONTALIGN: # Stop here. Happens when only doing solo LTR search.
+			scriptpath = os.path.realpath(__file__)
+			lineno = getframeinfo(currentframe()).lineno + 2
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+			append2logfile(paths['output_top_dir'], mainlogfile, 'align_ltrs() stopping after writing FASTAs for each LTR'.format(procs,chunk_size))
+			return
+			
+
+		if not checkStatusFl(AlnKey):
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Making MAFFT alignments for each LTR pair:\n{0}'.format(list(ltrs_mafft_calls.values())[0]))
+			with Pool(processes=procs) as p: # Do alignment for each LTR pair
+				p.map(makecallMultiprocessing, ltrs_mafft_calls.values(), chunksize=chunk_size)
+			p.join()
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('{0}\t{1}\n'.format(AlnKey, paths[AlnKey])) # Add LTRs FASTA path to status file (for resuming later)
+
+		if not checkStatusFl(TrimalKey):
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Trimming MAFFT LTRs alignment using TrimAl -automated1:\n{0}'.format(list(ltrs_trimal_calls.values())[0]) )
+			with Pool(processes=procs) as p: # Do alignment for each LTR pair
+				p.map(makecallMultiprocessing, ltrs_trimal_calls.values(), chunksize=chunk_size)
+			p.join()
+			paths[TrimalKey] = paths[AlnKey]
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('{0}\t{1}\n'.format(TrimalKey, paths[TrimalKey])) # Add LTRs FASTA path to status file (for resuming later)
+				statusFlAppend.write('{0}.LTR_divergence_complete\t{0}'.format(key_base))
+
+def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
+
+	global paths
+	global filenames
+
+	# Set up directory structure for output (LTRs GFF & FASTA)
+	if clustering_method == 'WickerFam':
+		WICKERCLUST = True
+		clustMethodTopDir = '{0}/WickerFamDir/{1}_pId_{2}_percAln_{3}_minLen'.format(paths['output_top_dir'], WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		ClusterSummaryFl = 'WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		ClusterMembershipFl = 'WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+	elif clustering_method == 'MCL':
+		MCLCLUST = True
+		clustMethodTopDir = '{0}/MCL/I{1}'.format(paths['output_top_dir'], I)
+		key_base = 'MCL_I{0}'.format(I)
+		ClusterSummaryFl = 'MCL_ClusterSummary_I{0}'.format(I)
+		ClusterMembershipFl = 'MCL_ClusterMembership_I{0}'.format(I)
+
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning SoloLTRsearch(): {0}'.format(key_base))
+	OutputDir = 'SoloLTRSearch.{0}'.format(key_base)
+	paths[OutputDir] = '{0}/SoloLTRsearch'.format(clustMethodTopDir)
+	MakeDir(OutputDir, paths[OutputDir])
+
+	LTRsGFF = '{0}.LTRs_GFF'.format(key_base)
+	paths[LTRsGFF] = '{0}/{1}.gff'.format(paths[OutputDir], LTRsGFF)
+	LTRsFASTA = '{0}.LTRs_FASTA'.format(key_base)
+	paths[LTRsFASTA] = '{0}/{1}.fasta'.format(paths[OutputDir], LTRsFASTA)
+	BLASToutput = '{0}.LTRs.blastn2ref'.format(key_base)
+	paths[BLASToutput] = '{0}.blastn.tsv'.format(paths[LTRsFASTA])
+
+	RepeatRegionsGFF = 'repeat_regions'
+	paths['RepeatRegionsGFF'] = '{0}/{1}.gff'.format(paths[OutputDir], RepeatRegionsGFF)
+
+	SoloLTRsummary = '{0}.SoloLTRsummary'.format(key_base)
+	paths[SoloLTRsummary] = '{0}/{1}.tsv'.format(paths[OutputDir],SoloLTRsummary)
+
+	if checkStatusFl(SoloLTRsummary):
+		append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch() already completed for {0}'.format(key_base))
+		return
+		
+
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Writing GFFs for SoloLTRsearch(): {0}'.format(key_base))
+	writeLTRretrotransposonGFF(paths['CurrentGFF'], paths['RepeatRegionsGFF'], elementSet=None, REPEATREGION=True, truncateParent=False) # Write repeat_region features for checking overlaps with LTR hits
+
+
+	lastEl = None
+	LTRlengths = {}
+	with open(paths[LTRsGFF], 'w') as outFl:
+		with open(paths['CurrentGFF'], 'r') as inFl: # Write LTRs GFF
+			for line in inFl:
+				if line.startswith('#'):
+					continue
+				gl = GFF3_line(line)
+				if gl.type == 'long_terminal_repeat':
+					el = gl.attributes['Parent']
+					if el != lastEl:
+						gl.attributes['ID'] = '{0}.1'.format(el)
+					else:
+						gl.attributes['ID'] = '{0}.2'.format(el)
+					LTRlengths[gl.attributes['ID']] = gl.end - gl.start + 1
+					gl.attributes_order.insert(0, 'ID')
+					gl.refreshAttrStr()
+					outFl.write(str(gl)+'\n')
+					lastEl = el
+
+	getfasta(paths[LTRsGFF], paths['inputFasta'], paths[LTRsFASTA], headerKey='ID') # Get LTRs FASTA
+
+	if not checkStatusFl(BLASToutput):
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Running blastn for SoloLTRsearch(): {0}'.format(key_base))
+		runblast(query=paths[LTRsFASTA], subject=paths['inputFasta'], out=paths[BLASToutput], evalue=soloLTRmaxEvalue, outfmt='7', percid=soloLTRminPid, blast='blastn', procs=procs) # Do blastn x input fasta
+		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+			statusFlAppend.write('{0}\t{1}\n'.format(BLASToutput, paths[BLASToutput]))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Finished blastn for SoloLTRsearch(): {0}'.format(key_base))
+
+	# parse results and assign LTRs to clusters and write GFF3 for each cluster
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Parsing repeat_regions GFF3 for SoloLTRsearch(): {0}'.format(key_base))
+	RR = {} # repeat_region features that hits shouldn't overlap
+	i = 0
+	with open(paths['RepeatRegionsGFF'], 'r') as inFl:
+		for line in inFl:
+			if not line.startswith('#'):
+				gl = GFF3_line(line)
+				if not gl.seqid in RR:
+					# convert coords from 0-based (GFF3) to 1-based for easier overlap comparison
+					RR[gl.seqid] = {i:{'coords':(gl.start+1, gl.end)}}
+				else:
+					RR[gl.seqid][i] = {'coords':(gl.start+1, gl.end)}
+				i+=1
+
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Parsing potential solo LTR hits from blastn output for SoloLTRsearch(): {0}'.format(key_base))
+	Hits = {} # hits from genomic blast of LTRs
+	i = 0
+	with open(paths[BLASToutput], 'r') as inFl:
+		for line in inFl:
+			if not line.startswith('#'):
+				c = line.strip().split()
+				query, subj, pid, alnLen = c[:4]
+				#alnLen = int(alnLen)
+				LTRlen = int(c[7]) - int(c[6]) + 1
+				#pLen = alnLen/LTRlengths[query]*100 # percent of LTR length in the alignment
+				pLen = LTRlen/LTRlengths[query]*100 # percent of LTR length in the alignment
+				if pLen < soloLTRminLen: # skip alignments shorter 
+					continue
+
+				bit = float(c[-1])
+				s, e = [int(x) for x in c[8:10]] # subject start and end
+				
+				if not subj in Hits:
+					# convert coords from 0-based (GFF3) to 1-based for easier overlap comparison
+					Hits[subj] = {i:{'coords':(s+1, e), 'bit':bit, 'pLen':pLen, 'LTR':query}}
+				else:
+					Hits[subj][i] = {'coords':(s+1, e), 'bit':bit, 'pLen':pLen, 'LTR':query}
+				i+=1
+
+				# Fields: query id, subject id, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score
+				#LTR_retrotransposon1000.1	Sacu_v1.1_s0020	100.00	268	0	0	1	268	246379	246112	3e-139	496
+
+	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\ndiscarding hits that overlap repeat_regions'.format(key_base))
+	# Discard hits that overlap a repeat region
+	HitsR1 = {}
+	for scaf in Hits:
+		if scaf not in RR:
+			HitsR1[scaf] = Hits[scaf]
+			continue
+		KEEP = True
+		for i in Hits[scaf]:
+			coordsLTR = Hits[scaf][i]['coords']
+			LTR = Hits[scaf][i]['LTR']
+			for j in RR[scaf]:
+				if not KEEP:
+					break
+				coordsLTRRT = RR[scaf][j]['coords']
+				if Overlaps(coordsLTR, coordsLTRRT):
+					KEEP = False
+			if KEEP:
+				if scaf in HitsR1:
+					HitsR1[scaf][i] = Hits[scaf][i]
+				else:
+					HitsR1[scaf] = {i:Hits[scaf][i]}
+
+	# If hits overlap, keep only the hit with the highest bit score
+	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nretaining highest scoring hits among hits that overlap'.format(key_base))
+	HitsR2 = {}
+	for scaf in HitsR1:
+		# Sort hits by bit score to allow not checking bit score if Overlaps()==True
+		sortedHits = sorted([(H,sorted(list(HitsR1[scaf][H].items()), key=lambda x:x[0])) for H in HitsR1[scaf]], key=lambda y:y[1][1][1], reverse=True)
+		Remaining = [ LTRinfo[0] for LTRinfo in sortedHits ] # Elements are discarded if they overlap or are added to HitsR2
+		#LTRinfo = (4482, [('LTR', 'LTR_retrotransposon1012.1'), ('bit', 300.0), ('coords', (133796, 133460)), ('pLen', 100.88757396449704)])
+		while Remaining != []:
+			LTR1 = Remaining[0]
+			Remove = set()
+			for LTR2 in Remaining:
+				if LTR1 == LTR2: # skip identities
+					continue
+				if Overlaps(HitsR1[scaf][LTR1]['coords'], HitsR1[scaf][LTR2]['coords']):
+					Remove.add(LTR2) # discard
+			
+			if scaf in HitsR2:
+				HitsR2[scaf][LTR1] = HitsR1[scaf][LTR1]
+			else:
+				HitsR2[scaf] = {LTR1:HitsR1[scaf][LTR1]}
+
+			Remove.add(LTR1) # kept, but remove from Remaining
+			Remaining = [LTR for LTR in Remaining if not LTR in Remove]
+			if Remaining == []:
+				break
+
+	#print(sum([len(Hits[val]) for val in Hits]))
+	#print(sum([len(HitsR1[val]) for val in HitsR1]))
+	#print(sum([len(HitsR2[val]) for val in HitsR2]))
+
+	# write table with cluster and # of solo LTRs
+	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nparsing cluster membership and summary files'.format(key_base))
+	ClusterMembership = {}
+	ClusterSizes = {}
+	with open(paths[ClusterMembershipFl], 'r') as inFl:
+		for line in inFl:
+			if not line.startswith('element'):
+				el, classif, clust = line.strip().split()
+				ClusterMembership[el] = (classif, clust)
+
+				if classif in ClusterSizes:
+
+					if clust in ClusterSizes[classif]:
+						ClusterSizes[classif][clust] += 1
+					else:
+						ClusterSizes[classif][clust] = 1
+				else:
+					ClusterSizes[classif] = {clust:1}
+					
+	
+	SoloLTRclusterMembership = {}
+	for scaf in HitsR2:
+		for LTRinfo in HitsR2[scaf]:
+			#LTRinfo = {'coords': (8851, 8469), 'bit': 507.0, 'LTR': 'LTR_retrotransposon1004.2', 'pLen': 100.0}
+			SoloLTR = HitsR2[scaf][LTRinfo]['LTR']
+			el = SoloLTR.split('.')[0].lstrip('LTR_retrotransposon')
+			try:
+				classif, clust = ClusterMembership[el]
+			except KeyError:
+				print('{0} not in ClusterMembership file'.format(el), file=sys.stderr)
+
+			if classif in SoloLTRclusterMembership:
+
+				if clust in SoloLTRclusterMembership[classif]:
+					SoloLTRclusterMembership[classif][clust] += 1
+				else:
+					SoloLTRclusterMembership[classif][clust] = 1
+			else:
+				SoloLTRclusterMembership[classif] = {clust:1}
+
+	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nwriting output'.format(key_base))
+	with open(paths[SoloLTRsummary], 'w') as outFl:
+		outFl.write('classif\tclust\tFullLengthElements\tNumberOfSoloLTRs\tSolo2FullRatio\n')
+		for classif in sorted(list(SoloLTRclusterMembership.keys())):
+			for clust in sorted(list(SoloLTRclusterMembership[classif]), key=int):
+				solos = SoloLTRclusterMembership[classif][clust]
+				fulls = ClusterSizes[classif][clust]
+				ratio = solos/fulls
+				outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format(classif, clust, fulls, solos, ratio))
+				
+	with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+		statusFlAppend.write('{0}\t{1}\n'.format(SoloLTRsummary, paths[SoloLTRsummary]))
+	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nFINISHED'.format(key_base))
+
+	#element	classification	cluster
+	#3657	Unknown	0
+	#2241	Unknown	0
+	#700	Unknown	0
+	#4633	Unknown	0
+	#2444	Unknown	0
+	#785	Unknown	0
+	#3766	Unknown	0
+	#1275	Unknown	0
+	#3495	Unknown	0
+
+	# Check that LTRs don't overlap anything
+
+
+def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
+	'''
+	g can be one of /g0, /g1, or /g2
+	g is proportional to the tolerance for mismatches in fragments by geneconv
+	trimal should be true if LTRs were aligned then trimmed with trimal
+	'''
+	# GENECONV output:
+	##   Names                                                                                                    Pvalue  Pvalue   Begin  End   Len  Poly Dif  Difs Pen.
+	#GI      LTR_retrotransposon4189;LTR_retrotransposon4189 0.0001  0.01017 26      100     75      75      0       10      None
+	##
+	global paths
+	global filenames
+
+	TRIMAL = trimal
+	WICKERCLUST = False
+	MCLCLUST = False
+	# And set up directory structure for output (LTR pairs GFFs, FASTAs, and alignments)
+	if clustering_method == 'WickerFam':
+		WICKERCLUST = True
+		key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		WickerDir = 'WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+
+		AlnKey = '{0}.LTRAlnDir'.format(key_base)
+		if not checkStatusFl(AlnKey):
+			sys.exit('LTR alignment not in status file: {0}'.format(AlnKey))
+
+		GENECONVTopDirKey = '{0}.GENECONV'.format(key_base)
+		paths[GENECONVTopDirKey] = '{0}/GENECONV'.format(paths[WickerDir])
+		MakeDir(GENECONVTopDirKey, paths[GENECONVTopDirKey])
+
+		GENECONVDirKey = '{0}.GENECONVLTRs'.format(key_base)
+		paths[GENECONVDirKey] = '{0}/LTRs'.format(paths[GENECONVTopDirKey])
+		MakeDir(GENECONVDirKey, paths[GENECONVDirKey])
+
+		GENECONVgDirKey = 'GENECONVgDir'
+		paths[GENECONVgDirKey] = '{0}/{1}'.format(paths[GENECONVDirKey], g[1:])
+		MakeDir(GENECONVgDirKey, paths[GENECONVgDirKey])
+
+		SummaryKey = '{0}.GENECONVLTRs.Summary'.format(key_base)
+		
+	elif clustering_method == 'MCL':
+
+		MCLCLUST = True
+		key_base = 'MCL_I{0}'.format(I)
+		MCLdir = 'MCL_I{0}'.format(I)
+
+		AlnKey = '{0}.LTRAlnDir'.format(key_base)
+		if not checkStatusFl(AlnKey):
+			sys.exit('LTR alignment not in status file: {0}'.format(AlnKey))
+
+		GENECONVTopDirKey = '{0}.GENECONV'.format(key_base)
+		paths[GENECONVTopDirKey] = '{0}/GENECONV'.format(paths[MCLdir])
+		MakeDir(GENECONVTopDirKey, paths[GENECONVTopDirKey])
+
+		GENECONVDirKey = '{0}.GENECONVLTRs'.format(key_base)
+		paths[GENECONVDirKey] = '{0}/LTRs'.format(paths[GENECONVTopDirKey])
+		MakeDir(GENECONVDirKey, paths[GENECONVDirKey])
+
+		GENECONVgDirKey = 'GENECONVgDir'
+		paths[GENECONVgDirKey] = '{0}/{1}'.format(paths[GENECONVDirKey], g[1:])
+		MakeDir(GENECONVgDirKey, paths[GENECONVgDirKey])
+
+		SummaryKey = '{0}.GENECONVLTRs.Summary'.format(key_base)
+
+	else:
+		sys.exit('modeltest() parameter clustering_method needs to be either WickerFam or MCL and it is: {0}'.format(clustering_method))
+
+	if checkStatusFl(SummaryKey):
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'ltr_divergence() already completed: {0}'.format(paths['{0}.GENECONVLTRs'.format(key_base)]))
+		return
+
+	if not checkStatusFl('{0}.GENECONVLTRs.{1}'.format(key_base, g[1:])):
+
+		geneconv_calls = []
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Checking directory structure for GENECONV using {0}'.format(g) )
+
+		if TRIMAL:
+			files = [ f for f in os.listdir(paths[AlnKey]) if f.endswith('trimmed') ]
+		else:
+			files = [ f for f in os.listdir(paths[AlnKey]) if f.endswith('aln') ]
+
+		num_elements = len(files)
+		alnLens = {}
+		show = False
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run GENECONV for finding intraelement gene conversion between LTRs')
+		for f in files:
+			flpth = '{0}/{1}'.format(paths[AlnKey], f)
+			call = [ executables['geneconv'], flpth, '/w123', g, '-include_monosites', '-nolog', '-Dumptab' ]
+			geneconv_calls.append((call, '/dev/null', None, None))
+			elementName = '_'.join(f.split('_')[:2])
+			seqs = list(SeqIO.parse(flpth, 'fasta'))
+
+			try:
+				alnLen = len(seqs[0].seq)
+			except IndexError:
+				continue
+
+			elementName = seqs[0].id
+			alnLens[elementName] = alnLen
+			show=False
+		# Make calls for each ltr pair
+		if not checkStatusFl('{0}.GENECONVLTRs.{1}'.format(key_base, g[1:])):
+			chunk_size = ceil(len(files)/procs)
+			with Pool(processes=procs) as p:
+				p.map(makecallMultiprocessing, geneconv_calls, chunksize=chunk_size)
+			p.join()
+
+			output = [ f for f in os.listdir(paths[AlnKey]) if f.endswith('tab') ]
+			# Move geneconv files to geneconv dir
+			for f in output:
+				os.rename('{0}/{1}'.format(paths[AlnKey], f), '{0}/{1}'.format(paths[GENECONVgDirKey], f))
+
+			paths['{0}.GENECONVLTRs.{1}'.format(key_base, g[1:])] = paths[GENECONVgDirKey]
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('{0}.GENECONVLTRs.{1}\t{2}\n'.format(key_base, g[1:], paths[GENECONVgDirKey])) 
+		
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Parsing GENECONV output')
+		# Parse geneconv files
+		sig = [] # sig is short for "significant". To contain significant global inner fragments identified by GENECONV
+		for f in os.listdir(paths[GENECONVgDirKey]):
+			if f.endswith('tab'):
+				with open('{0}/{1}'.format(paths[GENECONVgDirKey], f)) as fl:
+					sig += [ line for line in fl.read().split('\n') if line.startswith('GI') ]
+
+		sig = sorted(sig, key=lambda x:x[1]) # Sort by element name, which at sig[i][1] are as: LTR_retrotransposon1;LTR_retrotransposon1
+		
+		paths['GENECONVsummary'] = '{0}/GENECONV_summary'.format(paths[GENECONVDirKey])
+		paths['GENECONV_output'] = '{0}/GENECONVoutput_tab'.format(paths[GENECONVDirKey])
+		IAGCpositive = set()
+		with open(paths['GENECONV_output'], 'w') as outputFl:
+			with open(paths['GENECONVsummary'], 'w') as summaryFl:
+				summaryFl.write('# ratio is the ratio of the alignment length to the alignment length minus the gene conversion tract\n')
+				try:
+					summaryFl.write('# {0} elements out of {1}, or {2:.1f}% with possible evidence of gene conversion\n'.format(len(sig), num_elements, ((len(sig)/num_elements)*100)))
+				except ZeroDivisionError:
+					summaryFl.write('# {0} elements out of {1}, or 0% with possible evidence of gene conversion\n'.format(len(sig), num_elements))
+				summaryFl.write('# 5% are expected by chance\n')
+				summaryFl.write('#elementName\tsim_p-val\talnLen\tstart\tend\ttractLen\tratio_alnLen2alnLen-tractLen\tgScale\n')
+				for line in sig:
+					totDifs = int(line.strip().split()[9])
+					if totDifs < 3:
+						continue
+					outputFl.write(line + '\n')
+					contents = line.split('\t')
+					element = contents[1].split(';')[0]
+					IAGCpositive.add(element)
+					sim_p = float(contents[2])
+					#KA_p = float(contents[3])
+					start=int(contents[4])
+					end=int(contents[5])
+					tractLen = int(contents[6])
+					alnLen = alnLens[element]
+					ratio = alnLen / (alnLen-tractLen)
+					summaryFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\n'.format(element, sim_p, alnLen, start, end, tractLen, ratio, g[1:]))
+
+		append2logfile(paths['output_top_dir'], mainlogfile, 'GENECONV output and a summary written to:\n{0}\n{1}'.format(paths['GENECONV_output'], paths['GENECONVsummary'] ))
+		paths[SummaryKey] = paths['GENECONVsummary']
+		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+			statusFlAppend.write('{0}\t{1}\n'.format(SummaryKey, paths['GENECONVsummary']))
+
+def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, iters=1):
+	'''
+	Runs PAUP
+	iters used with modeltest(). deprecated pretty much
+	'''
+
+	global paths
+
+	WICKERCLUST = False
+	MCLCLUST = False
+	if clustering_method == 'WickerFam':
+		key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		WICKERCLUST = True
+		WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
+		WickerLTRdivDirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_LTRdivDir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		statusFlKey = '{0}_PAUP_divergence_dir'.format(WickerLTRdivDirkey)
+		paths[WickerLTRdivDirkey] = '{0}/LTR_divergence'.format(WickerDir)
+		paths['DivergenceTopDir'] = paths[WickerLTRdivDirkey]
+		SummaryKey = 'WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_LTR_divergence_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+		TrimalKey = '{0}.LTRs.aln.trimal'.format(key_base)
+	elif clustering_method == 'MCL':
+		key_base = 'MCL_I{0}'.format(I)
+		MCLCLUST = True
+		MCLdir = paths['MCL_I{0}'.format(I)]
+		MCL_LTRdivDirkey = 'MCL_I{0}_LTRdivDir'.format(I)
+		statusFlKey = '{0}_PAUP_divergence_dir'.format(MCL_LTRdivDirkey)
+		paths[MCL_LTRdivDirkey] = '{0}/LTR_divergence'.format(MCLdir)
+		paths['DivergenceTopDir'] = paths[MCL_LTRdivDirkey]
+		SummaryKey = 'MCL_I{0}_LTR_divergence_summary'.format(I)
+		TrimalKey = '{0}.LTRs.aln.trimal'.format(key_base)
+	else:
+		sys.exit('modeltest() parameter clustering_method needs to be either WickerFam or MCL and it is: {0}'.format(clustering_method))
+	MakeDir('PAUPdivergenceDir', '{0}/PAUP'.format(paths['DivergenceTopDir']))
+	MakeDir('PAUPNexusInputDir', '{0}/nexus'.format(paths['PAUPdivergenceDir'.format(I)]))
+	MakeDir('PAUPDivOutDir', '{0}/divergences'.format(paths['PAUPdivergenceDir'.format(I)]))
+	if checkStatusFl(SummaryKey):
+		scriptpath = os.path.realpath(__file__)
+		lineno = getframeinfo(currentframe()).lineno + 2
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'ltr_divergence() already completed: {0}'.format(paths[SummaryKey]))
+		return
+	if LTRDIVERGENCE:
+		paupCalls = []
+		modeltestResults = {}
+		if not checkStatusFl(statusFlKey):
+			for classif in classifs:
+				# Align only clusters from superfamilies with identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+				YESLTRS = False
+				for SF in LTR_SFs:
+					if classif.startswith(SF):
+						YESLTRS = True
+						break
+				if not YESLTRS:
+					continue
+				# parse model test results for paup block and summary for best model
+				if MCLCLUST:
+					ModeltestSummaryKey = 'MCLModelTestSummary_{0}_iters_I{1}_{2}'.format(iters,I, classif)
+				elif WICKERCLUST:
+					ModeltestSummaryKey = 'WickerModelTestSummary_{0}_iters_{1}_pId_{2}_percAln_{3}_minLen_{4}'.format(iters, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)
+				modeltestResults[classif] = {}
+				# Create PAUP calls for each cluster
+				if MCLCLUST:
+					clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
+				elif WICKERCLUST:
+					clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
+				clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
+
+				PhyLTRalnPths = { '_'.join(f.split('_')[:2]):'{0}/{1}'.format(paths[TrimalKey], f) for f in os.listdir(paths[TrimalKey]) if f.endswith('trimmed') } # LTR_retrotransposon148_LTRs.fasta.aln.trimmed 
+				if ModeltestSummaryKey in paths:
+					with open(paths[ModeltestSummaryKey]) as testOutputFl:
+						paupLines = ''
+						method = None
+						model = None
+						clust = None
+						for line in testOutputFl:
+							if line.startswith('BIC'):
+								if not method == None:
+									modeltestResults[classif][clust] = (paupLines, model)
+								if len(line.strip().split()) == 17:
+									method, model, pa, pc, pg, pt, kappa, titv, Ra, Rb, Rc, Rd, Re, Rf, pInv, gamma, clust = line.strip().split()
+								else:
+									method, model, pa, pc, pg, pt, kappa, titv, Ra, Rb, Rc, Rd, Re, Rf, pInv, gamma, clust, clustSize = line.strip().split()
+								paupLines = ''
+							else:
+								paupLines += line
+
+						if not method == None:
+							modeltestResults[classif][clust] = (paupLines, model)
+					for j in range(len(clusters)):
+						for el in clusters[j]:
+							paupBlock = ''
+							print('OK, WHAT IS IT?')
+							print('classif {0}, cluster {1}, element {2}'.format(classif, j, el))
+							seqRec = list(SeqIO.parse(PhyLTRalnPths[el], 'fasta'))
+							paupBlock = '''#NEXUS
+begin DATA;
+DIMENSIONS ntax=2 nchar={0};
+FORMAT datatype=dna missing=? gap=-;
+MATRIX
+'{1}' {3}
+'{2}' {4}
+;
+END;
+'''.format(len(seqRec[0].seq), seqRec[0].id+'_L', seqRec[1].id+'_R', str(seqRec[0].seq), str(seqRec[1].seq))
+
+							if str(j) in modeltestResults[classif]: # Have modeltest result for this cluster
+								model = modeltestResults[classif][str(j)][1]
+								for line in modeltestResults[classif][str(j)][0].split('\n'):
+									if line.startswith('SaveDist'):
+										paupBlock += 'SaveDist format=oneColumn file=../divergences/divergence.{0}.{1};\n'.format(model, el)
+									else:
+										paupBlock += line + '\n'
+							else: # No model test result, perhaps the cluster is too small (default may be no modeltesting for clusters <5 elements)
+								if len(set(str(seqRec[0].seq))) == 2 and len(set(str(seqRec[1].seq))) == 2: # HKY+85 does not work when there are only 2 character states
+									model = 'JC'
+									scriptpath = os.path.realpath(__file__)
+									lineno = getframeinfo(currentframe()).lineno + 2
+									append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+									append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}\tcluster:{1}. Using JC'.format(classif, j))
+									paupBlock += '''[!
+Likelihood settings from best-fit model (JC) selected by default
+Model testing not done for some reason, possibly the cluster size is
+less than the user specified threshold and there are only 2 character
+states.]
+
+BEGIN PAUP;
+Dset distance=jc;
+SaveDist format=oneColumn file=../divergences/divergence.{0}.{1};
+END;
+'''.format(model, el)
+								else:
+									model = 'HKY85'
+									scriptpath = os.path.realpath(__file__)
+									lineno = getframeinfo(currentframe()).lineno + 2
+									append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+									append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}\tcluster:{1}. Using HKY85'.format(classif, j))
+									paupBlock += '''[!
+Likelihood settings from best-fit model (HKY) selected by default
+Model testing not done for some reason, possibly the cluster size is
+less than the user specified threshold.]
+
+BEGIN PAUP;
+Dset distance=hky85;
+SaveDist format=oneColumn file=../divergences/divergence.{0}.{1};
+END;
+'''.format(model, el)
+							with open('{0}/{3}_{4}_{1}_divergence_{2}.nex'.format(paths['PAUPNexusInputDir'], seqRec[0].id, model, classif, j), 'w') as nexusFl:
+								nexusFl.write(paupBlock)
+							paup_call = [ executables['paup'], '-n', '{0}/{3}_{4}_{1}_divergence_{2}.nex'.format(paths['PAUPNexusInputDir'], seqRec[0].id, model, classif, j) ]
+							packet = (paup_call, None, None, None)
+							paupCalls.append(packet)
+
+				else:
+					for j in range(len(clusters)):
+						for el in clusters[j]:
+							paupBlock = ''
+							print('OK, WHAT IS IT?')
+							print('classif {0}, cluster {1}, element {2}'.format(classif, j, el))
+							seqRec = list(SeqIO.parse(PhyLTRalnPths[el], 'fasta'))
+							paupBlock = '''#NEXUS
+begin DATA;
+DIMENSIONS ntax=2 nchar={0};
+FORMAT datatype=dna missing=? gap=-;
+MATRIX
+'{1}' {3}
+'{2}' {4}
+;
+END;
+'''.format(len(seqRec[0].seq), seqRec[0].id+'_L', seqRec[1].id+'_R', str(seqRec[0].seq), str(seqRec[1].seq))
+							if len(set(str(seqRec[0].seq))) == 2 and len(set(str(seqRec[1].seq))) == 2: # HKY+85 does not work when there are only 2 character states
+								scriptpath = os.path.realpath(__file__)
+								lineno = getframeinfo(currentframe()).lineno + 2
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}\tcluster:{1}. Using JC'.format(classif, j))
+								model = 'JC'
+								paupBlock += '''[!
+Likelihood settings from best-fit model (JC) selected by default
+Model testing not done for some reason, possibly the cluster size is
+less than the user specified threshold and there are only 2 character
+states.]
+
+BEGIN PAUP;
+Dset distance=jc;
+SaveDist format=oneColumn file=../divergences/divergence.{0}.{1};
+END;
+'''.format(model, el)
+							else:
+								scriptpath = os.path.realpath(__file__)
+								lineno = getframeinfo(currentframe()).lineno + 2
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+								append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}\tcluster:{1}. Using HKY85'.format(classif, j))
+								model = 'HKY85'
+								paupBlock += '''[!
+Likelihood settings from best-fit model (HKY) selected by default
+Model testing not done for some reason, possibly the cluster size is
+less than the user specified threshold.]
+
+BEGIN PAUP;
+Dset distance=hky85;
+SaveDist format=oneColumn file=../divergences/divergence.{0}.{1};
+END;
+'''.format(model, el)
+							with open('{0}/{3}_{4}_{1}_divergence_{2}.nex'.format(paths['PAUPNexusInputDir'], seqRec[0].id, model, classif, j), 'w') as nexusFl:
+								nexusFl.write(paupBlock)
+							paup_call = [ executables['paup'], '-n', '{0}/{3}_{4}_{1}_divergence_{2}.nex'.format(paths['PAUPNexusInputDir'], seqRec[0].id, model, classif, j) ]
+							packet = (paup_call, None, None, None)
+							paupCalls.append(packet)
+
+			chunk_size = ceil(len(paupCalls)/procs)
+			with Pool(processes=procs) as p:
+				p.map(makecallMultiprocessing, paupCalls, chunksize=chunk_size)
+			p.join()
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('{0}\t{1}\n'.format(statusFlKey, paths['PAUPdivergenceDir']))
+	gcDct = {}
+	if GENECONVLTRS:
+		GENECONVSummaryKey = '{0}.GENECONVLTRs.Summary'.format(key_base)
+		with open(paths[GENECONVSummaryKey], 'r') as gcFl:
+			for line in gcFl:
+				if not line.startswith('#'):
+					el, p, alnLen, start, end, tractLen, ratio, gscale = line.strip().split()
+					ratio = float(ratio)
+					alnLen = int(alnLen)
+					start = int(start)
+					end = int(end)
+
+					if not el in gcDct:
+						gcDct[el] = [(start, end, alnLen, gscale)]
+					else:
+						gcDct[el].append((start, end, alnLen, gscale))
+
+		# Average ratio for those elements with multiple predicted GC tracts.
+		# Currently all LTR divergence estimates are scaled as if all GC tracts were g0 (no mismatches)
+		for el in gcDct:
+			if len(gcDct[el]) == 1: # If True there is only one GC tract for this element.
+				tractLen = gcDct[el][0][1] - gcDct[el][0][0]
+				alnLen = gcDct[el][0][2]
+				gcDct[el] = alnLen / (alnLen - tractLen)
+				#assert gcDct[el] != float(1), "GENECONV ratio of alnLen/(alnLen-tractLen) > 1. Shouldn't be the case since GENECONV found evidence of gene conversion. see ltr_divergece()"
+			else:
+				alnLen = gcDct[el][0][2]
+				coords = []
+				for tract in gcDct[el]:
+					coords.append(tract[:2])
+				coords = sorted(coords, key=lambda x:x[0])
+				c1 = coords[0]
+				tracts = []
+				for c2 in coords[1:]:
+					c3 = mergeCoords(c1, c2) 
+					if c3[0][0] == c3[0][1]:
+						c1 = c3[0][0]
+					else:
+						tracts.append(c3[0][0])
+						c1 = c3[0][1]
+				tracts.append(c1)
+				tractLen = 0
+				for t in tracts:
+					tractLen += t[1] - t[0] + 1
+				gcDct[el] = alnLen / (alnLen - tractLen)
+				#assert gcDct[el] != float(1), "GENECONV ratio of alnLen/(alnLen-tractLen) > 1. Shouldn't be the case since GENECONV found evidence of gene conversion. see ltr_divergece()"
+	# Read PAUP output
+	clustLenDcts = {}
+	clustDct = {}
+	for classif in classifs:
+		# Align only clusters from superfamilies with identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+		YESLTRS = False
+		for SF in LTR_SFs:
+			if classif.startswith(SF):
+				YESLTRS = True
+				break
+		if not YESLTRS:
+			continue
+		clustDct[classif] = {}
+		if MCLCLUST:
+			clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
+		elif WICKERCLUST:
+			clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
+		clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
+		for j in range(len(clusters)):
+			for el in clusters[j]:
+				clustDct[classif][el] = j
+
+		clustLenDct = {i:len(clusters[i]) for i in range(len(clusters))}
+		clustLenDcts[classif] = clustLenDct
+
+	if MCLCLUST:
+		paths['DivergenceSummary'] = '{0}/MCL_I{1}.LTR_divergences.tab'.format(paths['DivergenceTopDir'], I)
+	elif WICKERCLUST:
+		paths['DivergenceSummary'] = '{0}/WickerFamDir_{1}_pId_{2}_percAln_{3}_minLen.LTR_divergences.tab'.format(paths['DivergenceTopDir'], WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+
+	with open(paths['DivergenceSummary'.format(I)],'w') as divSummaryFl:
+		divSummaryFl.write('elementName\tclassification\tMCLinflationValue\tcluster\tclusterSize\tmodel\tdivergence\tcorrectedDivergence\tIntraelementGeneConversion\n')
+	for fname in os.listdir(paths['PAUPDivOutDir']):
+		fPth = '{0}/{1}'.format(paths['PAUPDivOutDir'], fname)
+		el1, el2, div = open(fPth, 'r').read().strip().split('\t')
+		el = el1[:-2]
+		div = float(div)
+		model = fname.split('.')[1]
+		if list(clustDct.keys()) == ['All']:
+			classif == 'All'
+		else:
+			classif = classifs_by_element[el]
+
+		if classif in clustDct:
+			if el in clustDct[classif]:
+				clust = clustDct[classif][el]
+			else:
+				continue
+		else:
+			continue
+		clustSize = clustLenDcts[classif][clust]
+		if el in gcDct:
+			divc = div*gcDct[el]
+			GC = 'Yes'
+		else:
+			divc = div
+			GC = 'No'
+	
+		# Possibly exclude proportion of invariable sites in model, it was part of the models that estimated too high
+		if div > 5 or divc > 5:
+			print('{0} LTRs have estimated substitutions per site of {1} and {2} (gene conversion-corrected) using {3}. It was excluded from the summary table at: {4}'.format(el, div, divc, model, paths['DivergenceSummary']), file=sys.stderr)
+			continue
+
+		# Combine as new output
+		with open(paths['DivergenceSummary'],'a') as divSummaryFl:
+			divSummaryFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n'.format(el, classif, I, clust, clustSize, model, div, divc, GC))
+							
+	if not SummaryKey in paths:
+		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+			statusFlAppend.write('{0}\t{1}\n'.format(SummaryKey, paths['DivergenceSummary']))
+
+
+def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomologouspair=True, part='entire', clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, auto_outgroup=False, bootstrap_reps=100, minClustSize=4, convert_to_ultrametric=False, bpflank=None, combine_and_do_small_clusters=True):
 	'''
 	align: one of cluster or classifs
 	I only applies to cluster
