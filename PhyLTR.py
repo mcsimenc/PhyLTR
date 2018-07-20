@@ -5293,7 +5293,7 @@ def help():
 	  --default_model		<str>	When model testing is not possible (i.e. cluster is too small) HKY85 or JC,
 	  					if HKY85 is not possible due to dinucleotide LTRs.
 	  					MULTIPLE CHOICES NOT YET IMPLEMENTED
-	  --remove_GC_from_modeltest_aln	Remove elements with suspected gene conversion tracts.
+	  --remove_GC_from_modeltest_aln	Remove elements with suspected intra-cluster inter-element gene conversion tracts.
 
 	  Finding pairs of elements within clusters that have homologous flanking regions
 	  -------------------------------------------------------------------------------
@@ -5766,22 +5766,22 @@ classifs_by_element = shortClassif(ElNames=True)
 classifs = set(list(clusters_by_classif.keys()))
 
 # TEMPTEMPTEMPTEMP
-if WICKER:
-	append2logfile(paths['output_top_dir'], mainlogfile, 'LTRdivergence wicker')
-	ltr_divergence(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+#if WICKER:
+#	append2logfile(paths['output_top_dir'], mainlogfile, 'LTRdivergence wicker')
+#	ltr_divergence(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+##
+##
+#if USEMCL:
+#	append2logfile(paths['output_top_dir'], mainlogfile, 'LTRdivergence mcl')
+#	ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None)
 #
-#
-if USEMCL:
-	append2logfile(paths['output_top_dir'], mainlogfile, 'LTRdivergence mcl')
-	ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None)
-
-if CIRCOS:
-	if WICKER:
-		Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-	if USEMCL:
-		Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
-#
-sys.exit()
+#if CIRCOS:
+#	if WICKER:
+#		Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+#	if USEMCL:
+#		Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
+##
+#sys.exit()
 # ^ TEMPTEMPTEMPTEMP
 
 #
