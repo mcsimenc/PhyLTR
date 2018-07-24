@@ -1965,6 +1965,23 @@ def elementsWithHomologousFlanks(ingff, infasta, outdir, bpflank=None, outfmt='7
 	reportfl = '{0}/LTR_element_pairs_with_homologous_flanks'.format(outdir)
 	reportpairswithhomologousflanks(blastqueryfasta=flankfasta, blastResults=blastout, outFlPth=reportfl, bpflank=bpflank, perc_len_cutoff=perc_len_cutoff)
 
+def CleanMafft(mafft_fasta):
+	'''
+	MAFFT outputs some non-FASTA text along with the FASTA alignment. The text is first, then the alignment.
+	Older versions of MAFFT didn't do this so this process is included as a precaution.
+	'''
+	if os.path.exists(mafft_fasta):
+		with open('{0}.fixingmafftdefaultoutput.tmp'.format(mafft_fasta), 'w') as outFl:
+			with open(mafft_fasta, 'r') as inFl:
+				STARTFASTA = False
+				for line in inFl:
+					if line.startswith('>'):
+						STARTFASTA = True
+					if STARTFASTA == True:
+						outFl.write(line)
+		copyfile('{0}.fixingmafftdefaultoutput.tmp'.format(mafft_fasta), mafft_fasta)
+		os.remove('{0}.fixingmafftdefaultoutput.tmp'.format(mafft_fasta))
+
 
 def aligner(elementList, OutDir, statusFlAlnKey, part):
 	'''
@@ -2035,18 +2052,20 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Aligning\n{0}'.format(mafft_call_string))
 		makecall(mafft_call, paths['AlnPth'], '{0}.stderr'.format(paths['AlnPth']))
-		# MAFFT outputs some non-FASTA text along with the FASTA alignment. The text is first, then the alignment.
-		if os.path.exists(paths['AlnPth']):
-			with open('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']), 'w') as outFl:
-				with open(paths['AlnPth'], 'r') as inFl:
-					STARTFASTA = False
-					for line in inFl:
-						if line.startswith('>'):
-							STARTFASTA = True
-						if STARTFASTA == True:
-							outFl.write(line)
-			copyfile('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']), paths['AlnPth'])
-			os.remove('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Cleaning MAFFT output\n{0}'.format(paths['AlnPth']))
+		CleanMafft(paths['AlnPth'])
+		## MAFFT outputs some non-FASTA text along with the FASTA alignment. The text is first, then the alignment.
+		#if os.path.exists(paths['AlnPth']):
+		#	with open('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']), 'w') as outFl:
+		#		with open(paths['AlnPth'], 'r') as inFl:
+		#			STARTFASTA = False
+		#			for line in inFl:
+		#				if line.startswith('>'):
+		#					STARTFASTA = True
+		#				if STARTFASTA == True:
+		#					outFl.write(line)
+		#	copyfile('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']), paths['AlnPth'])
+		#	os.remove('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']))
 
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Finished aligning')
 
@@ -2831,6 +2850,7 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 		ltrs_getfasta_calls = {}
 		ltrs_changefastaheaders_calls = {}
 		ltrs_mafft_calls = {}
+		ltrs_clean_mafft_output_calls = {}
 		ltrs_trimal_calls = {}
 		num_pairs = 0
 
@@ -2865,6 +2885,7 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 								ltrs_changefastaheaders_calls[elementName] = (LTRsFASTAfilepath, LTRsGFFfilepath, 'Parent')
 								mafft_LTRs_call = [ executables['mafft'], '--quiet', '--globalpair', '--maxiterate', '1000', LTRsFASTAfilepath ]
 								ltrs_mafft_calls[elementName] = (mafft_LTRs_call, LTRsAlignmentFilepath, None, None)
+								ltrs_clean_mafft_output_calls[elementName] = (CleanMafft(LTRsAlignmentFilepath))
 
 
 								if TRIMAL:
@@ -2919,6 +2940,9 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Making MAFFT alignments for each LTR pair:\n{0}'.format(list(ltrs_mafft_calls.values())[0]))
 			with Pool(processes=procs) as p: # Do alignment for each LTR pair
 				p.map(makecallMultiprocessing, ltrs_mafft_calls.values(), chunksize=chunk_size)
+			p.join()
+			with Pool(processes=procs) as p: # Remove non-fasta format text from alignment if present (some versions of MAFFT output aln method info with alignments
+				p.map(makecallMultiprocessing, ltrs_clean_mafft_output_calls.values(), chunksize=chunk_size)
 			p.join()
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('{0}\t{1}\n'.format(AlnKey, paths[AlnKey])) # Add LTRs FASTA path to status file (for resuming later)
