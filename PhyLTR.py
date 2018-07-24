@@ -3728,6 +3728,8 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
 	'''
 	global paths
 
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Start phylo() for {0}'.format(clustering_method))
+
 	AUTO_OUTGROUP = auto_outgroup
 	REMOVEHOMOLOGOUSFLANK = removehomologouspair
 	REMOVEGENECONV = removegeneconv
@@ -3813,12 +3815,15 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
 		OutPth= paths['OutgroupDir']
 
 		if WICKERCLUST:
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Start AutoAlign() in phylo() for {0}'.format(clustering_method))
 			AutoAlign(I=None, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='clusters', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'],'percAln':WickerParams['percAln'],'minLen':WickerParams['minLen']}, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
 
 		elif MCLCLUST:
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Start AutoAlign() in phylo() for {0}'.format(clustering_method))
 			AutoAlign(I=I, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='clusters', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
 
 	for classif in classifs:
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Start processing {0} clusters in phylo() for {1}'.format(classif, clustering_method))
 		# Read clusters
 		if MCLCLUST:
 			clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
@@ -3827,6 +3832,7 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
 		clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
 		# Read GENECONV output
 		if REMOVEGENECONV:
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Start processing gene conversion results phylo() for {0}'.format(clustering_method))
 			gc = 'GCfiltered'
 			scriptpath = os.path.realpath(__file__)
 			lineno = getframeinfo(currentframe()).lineno + 2
@@ -3911,6 +3917,8 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 
 	global paths
 
+	append2logfile(paths['output_top_dir'], mainlogfile, 'Start bootstrap()')
+
 	scriptpath = os.path.realpath(__file__)
 	lineno = getframeinfo(currentframe()).lineno + 2
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
@@ -3994,6 +4002,7 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 		runID = '{0}_{1}_Bootstrap_{2}_{3}'.format(clustMethod, settings, classif, clust)
 		# Run FastTree for main tree
 		if not 'mainTree_{0}'.format(runID) in paths:
+			append2logfile(paths['output_top_dir'], mainlogfile, 'Start inferring phylogeny in bootstrap()')
 			mainTree = '{0}/{1}.main_tree'.format(paths['clustDir'], paths[AlnFasta].split('/')[-1])
 			makecallMultiprocessing(([ executables['fasttree'], '-nt', '-gtr' ], mainTree, '{0}/fasttree.err'.format(pth), paths[AlnFasta] ))
 			paths['mainTree_{0}'.format(runID)] = mainTree
@@ -4036,6 +4045,7 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 
 			chunk_size = ceil(len(fasttreeCalls)/procs)
 			with Pool(processes=procs) as p:
+				append2logfile(paths['output_top_dir'], mainlogfile, 'Start FastTree bootstrapping for alignments:\n{0}'.format(AlnFasta))
 				p.map(makecallMultiprocessing, fasttreeCalls, chunksize=chunk_size)
 			p.join()
 			
@@ -4059,6 +4069,7 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 				statusFlAppend.write('{0}\t{1}\n'.format('Trees_{0}'.format(runID), paths['Trees_{0}'.format(runID)]))
 
 		# Get bootstrap values
+		append2logfile(paths['output_top_dir'], mainlogfile, 'Start CompareToBootstrap.pl for\n{0}'.format(AlnFasta))
 		compare2bootstrap_call = [ executables['perl'], '{0}/{1}'.format( paths['scriptsDir'], 'CompareToBootstrap.pl'), '-tree', paths['mainTree_{0}'.format(runID)], '-boot', paths['Trees_{0}'.format(runID)]]
 		makecall(compare2bootstrap_call, stdout = '{0}.bootstrapped'.format(paths['mainTree_{0}'.format(runID)]))
 
