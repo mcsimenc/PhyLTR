@@ -2278,8 +2278,9 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
 				outgroupFile = '{0}/Outgroups'.format(paths['AlnDir_{0}'.format(classif)])
 				paths[OutgroupSummaryKey] = outgroupFile
 
-				with open(outgroupFile, 'w') as outFl:
-					outFl.write('Alignment\toutgroup\toutgroup_cluster\n')
+				if not checkStatusFl(OutgroupSummaryKey):
+					with open(outgroupFile, 'w') as outFl:
+						outFl.write('Alignment\toutgroup\toutgroup_cluster\n')
 
 			for j in range(len(clusters)):
 				elementlist = clusters[j]
@@ -2330,32 +2331,38 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
 						statusFlKey = 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_{4}_{5}.{6}.{7}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, j, gc, strHomoflank, strOutgroup)
 					elif clustering_method == 'MCL':
 						statusFlKey = 'Aln_{0}_I{1}_cluster{2}_{3}.{4}.{5}'.format(classif, I, j, gc, strHomoflank, strOutgroup)
-					if AUTO_OUTGROUP:
-						# the outgroup shall be a random element from cluster k
-						# where cluster k is the largest of the clusters that is not j
-						# if j is the first cluster then the next smallest cluster is k
-						# if there is no other cluster, no outgroup is used
-						OUTGROUP_POSSIBLE = True
-						if j==0:
-							try:
-								clusters[j+1]
-								k = j+1
-							except KeyError:
-								OUTGROUP_POSSIBLE = False
-								print('statusFlKey: {0}\nj: {1}\nclusters: {2}\nclusters_len: {3}\n'.format(statusFlKey, j, clusters, len(clusters)))
-								print('KeyError, line 2178')
-								sys.exit()
-						elif j > 0:
-							k = 0
-
-						if OUTGROUP_POSSIBLE:
-							outgroup = random.choice(clusters[k])
-							clustAndOutgroup = clusters[j] + [outgroup]
-							with open(outgroupFile, 'a') as outFl:
-								outFl.write('{0}\t{1}\t{2}\n'.format(statusFlKey, outgroup, k))
-							elementlist = clustAndOutgroup
 					if not statusFlKey in paths:
+						if AUTO_OUTGROUP:
+							# the outgroup shall be a random element from cluster k
+							# where cluster k is the largest of the clusters that is not j
+							# if j is the first cluster then the next smallest cluster is k
+							# if there is no other cluster, no outgroup is used
+							OUTGROUP_POSSIBLE = True
+							if j==0:
+								try:
+									clusters[j+1]
+									k = j+1
+								except KeyError:
+									OUTGROUP_POSSIBLE = False
+									print('statusFlKey: {0}\nj: {1}\nclusters: {2}\nclusters_len: {3}\n'.format(statusFlKey, j, clusters, len(clusters)))
+									print('KeyError, line 2178')
+									sys.exit()
+							elif j > 0:
+								k = 0
+
+							if OUTGROUP_POSSIBLE:
+								outgroup = random.choice(clusters[k])
+								clustAndOutgroup = clusters[j] + [outgroup]
+								with open(outgroupFile, 'a') as outFl:
+									outFl.write('{0}\t{1}\t{2}\n'.format(statusFlKey, outgroup, k))
+								elementlist = clustAndOutgroup
+
 						aligner(elementlist, OutDir=outDir, statusFlAlnKey=statusFlKey, part=part)
+			if AUTO_OUTGROUP:
+				if not checkStatusFl(OutgroupSummaryKey):
+					with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+						if os.path.isfile(paths[OutgroupSummaryKey]):
+							statusFlAppend.write('{0}\t{1}\n'.format(OutgroupSummaryKey, paths[OutgroupSummaryKey]))
 
 			if combine_and_do_small_clusters:
 
@@ -5795,7 +5802,6 @@ classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLA
 #
 #		Global variables containg superfamily assignment for each element
 #
-append2logfile(paths['output_top_dir'], mainlogfile, 'before shortClassif()')
 clusters_by_classif = shortClassif()
 classifs_by_element = shortClassif(ElNames=True)
 classifs = set(list(clusters_by_classif.keys()))
