@@ -5000,52 +5000,58 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 		ClusterMembershipFl = 'WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
 		paths[ClusterSummaryFl] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.summary.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
 		paths[ClusterMembershipFl] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.membership.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-		with open(paths[ClusterSummaryFl], 'w') as outFl:
-			outFl.write('classification\tcluster\tsize\n')
-		with open(paths[ClusterMembershipFl], 'w') as outFl:
-			outFl.write('element\tclassification\tcluster\n')
-		for classif in clusters_by_classif:
-			with open(paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)], 'r') as inFl:
-				c = 0
-				for line in inFl:
-					clust_members = set([el.lstrip('LTR_retrotransposon') for el in line.strip().split()])
-					clust_size = len(clust_members)
-					# Write GFF3 for cluster
-					MakeDir('{0}_cluster_GFF3s'.format(classif), '{0}/{1}.{2}.{3}'.format(paths['GFFByClassification'], classif, clustering_method, settings))
-					with open(paths['CurrentGFF']) as gffFl:
-						with open('{0}/{1}.{2}.{3}.cluster_{4}.gff'.format(paths['{0}_cluster_GFF3s'.format(classif)], classif, clustering_method, settings, c), 'w') as outFl:
-							for line in gffFl:
-								if line.startswith('#'):
-									continue
-								gffLine = GFF3_line(line)
-								if 'Parent' in gffLine.attributes:
-									if 'LTR_retrotransposon' in gffLine.attributes['Parent']:
-										elNum = gffLine.attributes['Parent'].lstrip('LTR_retrotransposon')
-									elif 'repeat_region' in gffLine.attributes['Parent']:
-										elNum = gffLine.attributes['Parent'].lstrip('repeat_region')
+		if not checkStatusFl(ClusterSummaryFl) or not checkStatusFl(ClusterMembershipFl):
+			with open(paths[ClusterSummaryFl], 'w') as outFl:
+				outFl.write('classification\tcluster\tsize\n')
+			with open(paths[ClusterMembershipFl], 'w') as outFl:
+				outFl.write('element\tclassification\tcluster\n')
+			for classif in clusters_by_classif:
+				with open(paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)], 'r') as inFl:
+					c = 0
+					for line in inFl:
+						clust_members = set([el.lstrip('LTR_retrotransposon') for el in line.strip().split()])
+						clust_size = len(clust_members)
+						# Write GFF3 for cluster
+						MakeDir('{0}_cluster_GFF3s'.format(classif), '{0}/{1}.{2}.{3}'.format(paths['GFFByClassification'], classif, clustering_method, settings))
+						with open(paths['CurrentGFF']) as gffFl:
+							with open('{0}/{1}.{2}.{3}.cluster_{4}.gff'.format(paths['{0}_cluster_GFF3s'.format(classif)], classif, clustering_method, settings, c), 'w') as outFl:
+								for line in gffFl:
+									if line.startswith('#'):
+										continue
+									gffLine = GFF3_line(line)
+									if 'Parent' in gffLine.attributes:
+										if 'LTR_retrotransposon' in gffLine.attributes['Parent']:
+											elNum = gffLine.attributes['Parent'].lstrip('LTR_retrotransposon')
+										elif 'repeat_region' in gffLine.attributes['Parent']:
+											elNum = gffLine.attributes['Parent'].lstrip('repeat_region')
+										else:
+											sys.exit('PROBLEM WITH summarizeClusters() Parent attribute for \n{0}'.format(str(gffLine)))
+									elif 'ID' in gffLine.attributes:
+										if 'LTR_retrotransposon' in gffLine.attributes['ID']:
+											elNum = gffLine.attributes['ID'].lstrip('LTR_retrotransposon')
+										elif 'repeat_region' in gffLine.attributes['ID']:
+											elNum = gffLine.attributes['ID'].lstrip('repeat_region')
+										else:
+											sys.exit('PROBLEM WITH summarizeClusters() ID attribute for \n{0}'.format(str(gffLine)))
 									else:
-										sys.exit('PROBLEM WITH summarizeClusters() Parent attribute for \n{0}'.format(str(gffLine)))
-								elif 'ID' in gffLine.attributes:
-									if 'LTR_retrotransposon' in gffLine.attributes['ID']:
-										elNum = gffLine.attributes['ID'].lstrip('LTR_retrotransposon')
-									elif 'repeat_region' in gffLine.attributes['ID']:
-										elNum = gffLine.attributes['ID'].lstrip('repeat_region')
-									else:
-										sys.exit('PROBLEM WITH summarizeClusters() ID attribute for \n{0}'.format(str(gffLine)))
-								else:
-									sys.exit('sumarizeClusters(): No Parent or ID attribute for gff line: {0}'.format(str(gffLine)))
+										sys.exit('sumarizeClusters(): No Parent or ID attribute for gff line: {0}'.format(str(gffLine)))
 
-								if elNum in clust_members:
-									if gffLine.type == 'repeat_region':
-										outFl.write('###\n')
-									outFl.write(line)
-					# Write line to summary file
-					with open(paths[ClusterSummaryFl], 'a') as outFl:
-						outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
-					with open(paths[ClusterMembershipFl], 'a') as outFl:
-						for el in clust_members:
-							outFl.write('{0}\t{1}\t{2}\n'.format(el, classif, c))
-					c += 1
+									if elNum in clust_members:
+										if gffLine.type == 'repeat_region':
+											outFl.write('###\n')
+										outFl.write(line)
+						# Write line to summary file
+						with open(paths[ClusterSummaryFl], 'a') as outFl:
+							outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
+						with open(paths[ClusterMembershipFl], 'a') as outFl:
+							for el in clust_members:
+								outFl.write('{0}\t{1}\t{2}\n'.format(el, classif, c))
+						c += 1
+
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('{0}\t{1}\n'.format(ClusterSummaryFl, paths[ClusterSummaryFl]))
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('{0}\t{1}\n'.format(ClusterMembershipFl, paths[ClusterMembershipFl]))
 
 
 	elif clustering_method == 'MCL':
@@ -5055,60 +5061,62 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 		ClusterMembershipFl = 'MCL_ClusterMembership_I{0}'.format(I)
 		paths[ClusterSummaryFl] = '{0}/Clusters/MCL_I{1}.summary.tab'.format(mcl_top_dir, I)
 		paths[ClusterMembershipFl] = '{0}/Clusters/MCL_I{1}.membership.tab'.format(mcl_top_dir, I)
-		with open(paths[ClusterSummaryFl], 'w') as outFl:
-			outFl.write('superfamily\tcluster\tsize\n')
-		with open(paths[ClusterMembershipFl], 'w') as outFl:
-			outFl.write('element\tclassification\tcluster\n')
-		for classif in clusters_by_classif:
-			with open(paths['MCL_{0}_I{1}'.format(classif, I)], 'r') as inFl:
-				c = 0
-				for line in inFl:
-					clust_members = set([el.lstrip('LTR_retrotransposon') for el in line.strip().split()])
-					clust_size = len(clust_members)
-					# Write GFF3 for cluster
-					MakeDir('{0}_cluster_GFF3s'.format(classif), '{0}/{1}.{2}.{3}'.format(paths['GFFByClassification'], classif, clustering_method, settings))
-					with open(paths['CurrentGFF']) as gffFl:
-						with open('{0}/{1}.{2}.{3}.cluster_{4}.gff'.format(paths['{0}_cluster_GFF3s'.format(classif)], classif, clustering_method, settings, c), 'w') as outFl:
-							for line in gffFl:
-								if line.startswith('#'):
-									continue
-								gffLine = GFF3_line(line)
-								if 'Parent' in gffLine.attributes:
-									if 'LTR_retrotransposon' in gffLine.attributes['Parent']:
-										elNum = gffLine.attributes['Parent'].lstrip('LTR_retrotransposon')
-									elif 'repeat_region' in gffLine.attributes['Parent']:
-										elNum = gffLine.attributes['Parent'].lstrip('repeat_region')
-									else:
-										sys.exit('PROBLEM WITH summarizeClusters() Parent attribute for \n{0}'.format(str(gffLine)))
-								elif 'ID' in gffLine.attributes:
-									if 'LTR_retrotransposon' in gffLine.attributes['ID']:
-										elNum = gffLine.attributes['ID'].lstrip('LTR_retrotransposon')
-									elif 'repeat_region' in gffLine.attributes['ID']:
-										elNum = gffLine.attributes['ID'].lstrip('repeat_region')
-									else:
-										sys.exit('PROBLEM WITH summarizeClusters() ID attribute for \n{0}'.format(str(gffLine)))
-								else:
-									sys.exit('sumarizeClusters(): No Parent or ID attribute for gff line: {0}'.format(str(gffLine)))
 
-								if elNum in clust_members:
-									if gffLine.type == 'repeat_region':
-										outFl.write('###\n')
-									outFl.write(line)
+		if not checkStatusFl(ClusterSummaryFl) or not checkStatusFl(ClusterMembershipFl):
+			with open(paths[ClusterSummaryFl], 'w') as outFl:
+				outFl.write('superfamily\tcluster\tsize\n')
+			with open(paths[ClusterMembershipFl], 'w') as outFl:
+				outFl.write('element\tclassification\tcluster\n')
+			for classif in clusters_by_classif:
+				with open(paths['MCL_{0}_I{1}'.format(classif, I)], 'r') as inFl:
+					c = 0
+					for line in inFl:
+						clust_members = set([el.lstrip('LTR_retrotransposon') for el in line.strip().split()])
+						clust_size = len(clust_members)
+						# Write GFF3 for cluster
+						MakeDir('{0}_cluster_GFF3s'.format(classif), '{0}/{1}.{2}.{3}'.format(paths['GFFByClassification'], classif, clustering_method, settings))
+						with open(paths['CurrentGFF']) as gffFl:
+							with open('{0}/{1}.{2}.{3}.cluster_{4}.gff'.format(paths['{0}_cluster_GFF3s'.format(classif)], classif, clustering_method, settings, c), 'w') as outFl:
+								for line in gffFl:
+									if line.startswith('#'):
+										continue
+									gffLine = GFF3_line(line)
+									if 'Parent' in gffLine.attributes:
+										if 'LTR_retrotransposon' in gffLine.attributes['Parent']:
+											elNum = gffLine.attributes['Parent'].lstrip('LTR_retrotransposon')
+										elif 'repeat_region' in gffLine.attributes['Parent']:
+											elNum = gffLine.attributes['Parent'].lstrip('repeat_region')
+										else:
+											sys.exit('PROBLEM WITH summarizeClusters() Parent attribute for \n{0}'.format(str(gffLine)))
+									elif 'ID' in gffLine.attributes:
+										if 'LTR_retrotransposon' in gffLine.attributes['ID']:
+											elNum = gffLine.attributes['ID'].lstrip('LTR_retrotransposon')
+										elif 'repeat_region' in gffLine.attributes['ID']:
+											elNum = gffLine.attributes['ID'].lstrip('repeat_region')
+										else:
+											sys.exit('PROBLEM WITH summarizeClusters() ID attribute for \n{0}'.format(str(gffLine)))
+									else:
+										sys.exit('sumarizeClusters(): No Parent or ID attribute for gff line: {0}'.format(str(gffLine)))
+
+									if elNum in clust_members:
+										if gffLine.type == 'repeat_region':
+											outFl.write('###\n')
+										outFl.write(line)
+										
 									
-								
 
-					# Write line to summary file
-					with open(paths[ClusterSummaryFl], 'a') as outFl:
-						outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
-					with open(paths[ClusterMembershipFl], 'a') as outFl:
-						for el in clust_members:
-							outFl.write('{0}\t{1}\t{2}\n'.format(el, classif, c))
-					c += 1
+						# Write line to summary file
+						with open(paths[ClusterSummaryFl], 'a') as outFl:
+							outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
+						with open(paths[ClusterMembershipFl], 'a') as outFl:
+							for el in clust_members:
+								outFl.write('{0}\t{1}\t{2}\n'.format(el, classif, c))
+						c += 1
 
-	with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-		statusFlAppend.write('{0}\t{1}\n'.format(ClusterSummaryFl, paths[ClusterSummaryFl]))
-	with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-		statusFlAppend.write('{0}\t{1}\n'.format(ClusterMembershipFl, paths[ClusterMembershipFl]))
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('{0}\t{1}\n'.format(ClusterSummaryFl, paths[ClusterSummaryFl]))
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+				statusFlAppend.write('{0}\t{1}\n'.format(ClusterMembershipFl, paths[ClusterMembershipFl]))
 
 
 
