@@ -2366,7 +2366,7 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
 
 			if combine_and_do_small_clusters:
 
-				if len(smallClusters) > 0:
+				if len(smallClusters) > 1:
 					MakeDir('AlnDir_{0}_I{1}-cluster{2}_{3}'.format(classif, I, 'small', gc), '{0}/cluster_{1}'.format(paths['AlnDir_{0}'.format(classif)], 'small'))
 					outDir = paths['AlnDir_{0}_I{1}-cluster{2}_{3}'.format(classif, I, 'small', gc)]
 					if clustering_method == 'WickerFam':
