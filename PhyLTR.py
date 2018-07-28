@@ -2892,7 +2892,7 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 								ltrs_changefastaheaders_calls[elementName] = (LTRsFASTAfilepath, LTRsGFFfilepath, 'Parent')
 								mafft_LTRs_call = [ executables['mafft'], '--quiet', '--globalpair', '--maxiterate', '1000', LTRsFASTAfilepath ]
 								ltrs_mafft_calls[elementName] = (mafft_LTRs_call, LTRsAlignmentFilepath, None, None)
-								ltrs_clean_mafft_output_calls[elementName] = (CleanMafft(LTRsAlignmentFilepath))
+								ltrs_clean_mafft_output_calls[elementName] = (CleanMafft(LTRsAlignmentFilepath), None, None, None)
 
 
 								if TRIMAL:
@@ -2987,13 +2987,18 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 	OutputDir = 'SoloLTRSearch.{0}'.format(key_base)
 	paths[OutputDir] = '{0}/SoloLTRsearch'.format(clustMethodTopDir)
 	MakeDir(OutputDir, paths[OutputDir])
+	paths['SoloLTRsGFFsDir'] = '{0}/GFFs'.format(paths[OutputDir])
+	MakeDir(OutputDir, paths[OutputDir])
 
-	LTRsGFF = '{0}.LTRs_GFF'.format(key_base)
+	LTRsGFF = '{0}.LTRs'.format(key_base)
 	paths[LTRsGFF] = '{0}/{1}.gff'.format(paths[OutputDir], LTRsGFF)
 	LTRsFASTA = '{0}.LTRs_FASTA'.format(key_base)
 	paths[LTRsFASTA] = '{0}/{1}.fasta'.format(paths[OutputDir], LTRsFASTA)
 	BLASToutput = '{0}.LTRs.blastn2ref'.format(key_base)
 	paths[BLASToutput] = '{0}.blastn.tsv'.format(paths[LTRsFASTA])
+	SoloLTRsGFF = '{0}.SoloLTRsGFF'.format(key_base)
+	paths[SoloLTRsGFF] = '{0}/{1}.gff'.format(paths['SoloLTRsGFFsDir'], LTRsGFF)
+	
 
 	RepeatRegionsGFF = 'repeat_regions'
 	paths['RepeatRegionsGFF'] = '{0}/{1}.gff'.format(paths[OutputDir], RepeatRegionsGFF)
@@ -3001,7 +3006,7 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 	SoloLTRsummary = '{0}.SoloLTRsummary'.format(key_base)
 	paths[SoloLTRsummary] = '{0}/{1}.tsv'.format(paths[OutputDir],SoloLTRsummary)
 
-	if checkStatusFl(SoloLTRsummary):
+	if checkStatusFl(SoloLTRsummary) and checkStatusFl(SoloLTRsGFF):
 		append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch() already completed for {0}'.format(key_base))
 		return
 		
@@ -3157,15 +3162,24 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 					
 	
 	SoloLTRclusterMembership = {}
+	GFFoutput = {}
 	for scaf in HitsR2:
+		GFFoutput[scaf] = {}
 		for LTRinfo in HitsR2[scaf]:
-			#LTRinfo = {'coords': (8851, 8469), 'bit': 507.0, 'LTR': 'LTR_retrotransposon1004.2', 'pLen': 100.0}
-			SoloLTR = HitsR2[scaf][LTRinfo]['LTR']
-			el = SoloLTR.split('.')[0].lstrip('LTR_retrotransposon')
+			# LTRinfo = {'coords': (8851, 8469), 'bit': 507.0, 'LTR': 'LTR_retrotransposon1004.2', 'pLen': 100.0}
+			LTRname = HitsR2[scaf][LTRinfo]['LTR']
+			el = LTRname.split('.')[0].lstrip('LTR_retrotransposon')
 			try:
 				classif, clust = ClusterMembership[el]
 			except KeyError:
 				print('{0} not in ClusterMembership file'.format(el), file=sys.stderr)
+			if classif not in GFFoutput[scaf]:
+				GFFoutput[scaf][classif] = {clust:{LTRname:LTRinfo}}
+			else:
+				if clust not in GFFoutpu[scaf][classif]:
+					GFFoutput[scaf][classif][clust] = {LTRname:LTRinfo}
+				else:
+					GFFoutput[scaf][classif][clust][LTRname] = LTRinfo
 
 			if classif in SoloLTRclusterMembership:
 
@@ -3176,19 +3190,63 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 			else:
 				SoloLTRclusterMembership[classif] = {clust:1}
 
-	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nwriting output'.format(key_base))
-	with open(paths[SoloLTRsummary], 'w') as outFl:
-		outFl.write('classif\tclust\tFullLengthElements\tNumberOfSoloLTRs\tSolo2FullRatio\n')
-		for classif in sorted(list(SoloLTRclusterMembership.keys())):
-			for clust in sorted(list(SoloLTRclusterMembership[classif]), key=int):
-				solos = SoloLTRclusterMembership[classif][clust]
-				fulls = ClusterSizes[classif][clust]
-				ratio = solos/fulls
-				outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format(classif, clust, fulls, solos, ratio))
-				
-	with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-		statusFlAppend.write('{0}\t{1}\n'.format(SoloLTRsummary, paths[SoloLTRsummary]))
-	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nFINISHED'.format(key_base))
+	if not checkStatusFl(SoloLTRsummary):
+		append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nwriting summary output'.format(key_base))
+		with open(paths[SoloLTRsummary], 'w') as outFl:
+			outFl.write('classif\tclust\tFullLengthElements\tNumberOfSoloLTRs\tSolo2FullRatio\n')
+			for classif in sorted(list(SoloLTRclusterMembership.keys())):
+				for clust in sorted(list(SoloLTRclusterMembership[classif]), key=int):
+					solos = SoloLTRclusterMembership[classif][clust]
+					fulls = ClusterSizes[classif][clust]
+					ratio = solos/fulls
+					outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format(classif, clust, fulls, solos, ratio))
+					
+		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+			statusFlAppend.write('{0}\t{1}\n'.format(SoloLTRsummary, paths[SoloLTRsummary]))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nFINISHED'.format(key_base))
+
+	if not checkStatusFl(SoloLTRsGFF):
+		# remove any existing GFFs soas not to double-write when appending with write() below
+		for scaf in GFFoutput:
+			for classif in GFFoutput[scaf]:
+				if os.path.isfile('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif)):
+					os.remove('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif))
+				clustersOut = 'SoloLTRs{0}'.format(classif)
+				MakeDirs(clustersOut, '{1}/{0}_clusters'.format(paths['SoloLTRsGFFsDir'))
+				for clust in GFFoutput[scaf][classif]:
+					if os.path.isfile('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust)):
+						os.remove('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust))
+
+		# write GFF files with coordinates and store info for summary file
+		with open(paths[SoloLTRsGFF], 'w') as outFl:
+			outFl.write('##gff-version 3\n')
+			for scaf in GFFoutput:
+				append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nwriting GFF3 output to\n{1}'.format(key_base, paths[SoloLTRsGFF]))
+				for classif in GFFoutput[scaf]:
+					with open('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif), 'a') as outClassifFl:
+						for clust in GFFoutput[scaf][classif]:
+							with open('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif, clust), 'a') as outClusterFl:
+								for relatedLTR in GFFoutput[scaf][classif][clust]:
+									#Info = {'coords': (8851, 8469), 'bit': 507.0, 'LTR': 'LTR_retrotransposon1004.2', 'pLen': 100.0} (1-based coordinates)
+									Info = GFFoutput[scaf][classif][clust][relatedLTR]
+									closestLivingRelative = Info['LTR'].split('.')[0] + '-LTR-' + Info['LTR'].split('.')[1]
+									start, end = Info['coords']
+									score = Info['bit']
+									outFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR.{3}_cluster_{4};relative=closestLivingRelative\n'.format(scaf, start, end, score, classif, clust))
+									outClassifFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR.{3}_cluster_{4};relative=closestLivingRelative\n'.format(scaf, start, end, score, classif, clust))
+									outClusterFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR.{3}_cluster_{4};relative=closestLivingRelative\n'.format(scaf, start, end, score, classif, clust))
+
+#Sacu_v1.1_s0020	LTRharvest	repeat_region	246108	251250	.	-	.	ID=repeat_region1000
+#Sacu_v1.1_s0020	LTRharvest	repeat_region	258314	261115	.	+	.	ID=repeat_region1002
+#Sacu_v1.1_s0020	LTRharvest	repeat_region	307513	314010	.	-	.	ID=repeat_region1004
+#Sacu_v1.1_s0020	LTRharvest	repeat_region	798886	804636	.	+	.	ID=repeat_region1008
+#Sacu_v1.1_s0020	LTRharvest	repeat_region	851970	858922	.	+	.	ID=repeat_region1009
+#Sacu_v1.1_s0020	LTRharvest	repeat_region	920270	925761	.	-	.	ID=repeat_region1011
+#Sacu_v1.1_s0020	LTRharvest	repeat_region	945640	950865	.	-	.	ID=repeat_region1012
+#Sacu_v1.1_s0020	LTRharvest	repeat_region	1021229	1025210	.	-	.	ID=repeat_region1015
+#Sacu_v1.1_s0020	LTRharvest	repeat_region	1108500	1112289	.	+	.	ID=repeat_region1016
+#Sacu_v1.1_s0020	LTRharvest	repeat_region	1240169	1246565	.	+	.	ID=repeat_region1018
+
 
 	#element	classification	cluster
 	#3657	Unknown	0
@@ -4139,7 +4197,7 @@ mrca: {1}, {2}, fixage=1;
 				append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 				append2logfile(paths['output_top_dir'], mainlogfile, 'Finished PATHd8 for {0}'.format(runID))
 
-		bootstrappedLocation = '{0}/{1}_{2}.bootstrapped.newick'.format(paths['classifDir'], classif, clust)
+		bootstrappedLocation = '{0}/{1}_{2}.bootstrapped.outgroup_{3}.newick'.format(paths['classifDir'], classif, clust, classif)
 		copyfile(bootstrapped, bootstrappedLocation)
 		scriptpath = os.path.realpath(__file__)
 		lineno = getframeinfo(currentframe()).lineno + 2
