@@ -2988,7 +2988,7 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 	paths[OutputDir] = '{0}/SoloLTRsearch'.format(clustMethodTopDir)
 	MakeDir(OutputDir, paths[OutputDir])
 	paths['SoloLTRsGFFsDir'] = '{0}/GFFs'.format(paths[OutputDir])
-	MakeDir(OutputDir, paths[OutputDir])
+	MakeDir('SoloLTRsGFFsDir', paths['SoloLTRsGFFsDir'])
 
 	LTRsGFF = '{0}.LTRs'.format(key_base)
 	paths[LTRsGFF] = '{0}/{1}.gff'.format(paths[OutputDir], LTRsGFF)
@@ -3203,16 +3203,17 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 					
 		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 			statusFlAppend.write('{0}\t{1}\n'.format(SoloLTRsummary, paths[SoloLTRsummary]))
-		append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nFINISHED'.format(key_base))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nSummary file written'.format(key_base))
 
 	if not checkStatusFl(SoloLTRsGFF):
+		append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nWriting GFF3 output'.format(key_base))
 		# remove any existing GFFs soas not to double-write when appending with write() below
 		for scaf in GFFoutput:
 			for classif in GFFoutput[scaf]:
 				if os.path.isfile('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif)):
 					os.remove('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif))
 				clustersOut = 'SoloLTRs{0}'.format(classif)
-				MakeDirs(clustersOut, '{1}/{0}_clusters'.format(paths['SoloLTRsGFFsDir'))
+				MakeDirs(clustersOut, '{1}/{0}_clusters'.format(paths['SoloLTRsGFFsDir']))
 				for clust in GFFoutput[scaf][classif]:
 					if os.path.isfile('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust)):
 						os.remove('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust))
@@ -3235,6 +3236,10 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 									outFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR.{3}_cluster_{4};relative=closestLivingRelative\n'.format(scaf, start, end, score, classif, clust))
 									outClassifFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR.{3}_cluster_{4};relative=closestLivingRelative\n'.format(scaf, start, end, score, classif, clust))
 									outClusterFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR.{3}_cluster_{4};relative=closestLivingRelative\n'.format(scaf, start, end, score, classif, clust))
+
+		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+			statusFlAppend.write('{0}\t{1}\n'.format(SoloLTRsGFF, paths[SoloLTRsGFF]))
+		append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nGFFs written'.format(key_base))
 
 #Sacu_v1.1_s0020	LTRharvest	repeat_region	246108	251250	.	-	.	ID=repeat_region1000
 #Sacu_v1.1_s0020	LTRharvest	repeat_region	258314	261115	.	+	.	ID=repeat_region1002
