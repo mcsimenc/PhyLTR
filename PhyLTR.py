@@ -3174,12 +3174,12 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 			except KeyError:
 				print('{0} not in ClusterMembership file'.format(el), file=sys.stderr)
 			if classif not in GFFoutput[scaf]:
-				GFFoutput[scaf][classif] = {clust:{LTRname:LTRinfo}}
+				GFFoutput[scaf][classif] = {clust:{LTRname:HitsR2[scaf][LTRinfo]}}
 			else:
-				if clust not in GFFoutpu[scaf][classif]:
-					GFFoutput[scaf][classif][clust] = {LTRname:LTRinfo}
+				if clust not in GFFoutput[scaf][classif]:
+					GFFoutput[scaf][classif][clust] = {LTRname:HitsR2[scaf][LTRinfo]}
 				else:
-					GFFoutput[scaf][classif][clust][LTRname] = LTRinfo
+					GFFoutput[scaf][classif][clust][LTRname] = HitsR2[scaf][LTRinfo]
 
 			if classif in SoloLTRclusterMembership:
 
@@ -3213,29 +3213,33 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 				if os.path.isfile('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif)):
 					os.remove('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif))
 				clustersOut = 'SoloLTRs{0}'.format(classif)
-				MakeDirs(clustersOut, '{1}/{0}_clusters'.format(paths['SoloLTRsGFFsDir']))
+				MakeDir(clustersOut, '{1}/{0}_clusters'.format(paths['SoloLTRsGFFsDir'], classif))
 				for clust in GFFoutput[scaf][classif]:
 					if os.path.isfile('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust)):
 						os.remove('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust))
 
 		# write GFF files with coordinates and store info for summary file
 		with open(paths[SoloLTRsGFF], 'w') as outFl:
+			i=0
 			outFl.write('##gff-version 3\n')
 			for scaf in GFFoutput:
 				append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nwriting GFF3 output to\n{1}'.format(key_base, paths[SoloLTRsGFF]))
 				for classif in GFFoutput[scaf]:
 					with open('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif), 'a') as outClassifFl:
+						clustersOut = 'SoloLTRs{0}'.format(classif)
+						MakeDir(clustersOut, '{0}/{1}_clusters'.format(paths['SoloLTRsGFFsDir'], classif))
 						for clust in GFFoutput[scaf][classif]:
-							with open('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif, clust), 'a') as outClusterFl:
+							with open('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust), 'a') as outClusterFl:
 								for relatedLTR in GFFoutput[scaf][classif][clust]:
+									i+=1
 									#Info = {'coords': (8851, 8469), 'bit': 507.0, 'LTR': 'LTR_retrotransposon1004.2', 'pLen': 100.0} (1-based coordinates)
 									Info = GFFoutput[scaf][classif][clust][relatedLTR]
 									closestLivingRelative = Info['LTR'].split('.')[0] + '-LTR-' + Info['LTR'].split('.')[1]
-									start, end = Info['coords']
+									start, end = sorted([int(c) for c in Info['coords']])
 									score = Info['bit']
-									outFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR.{3}_cluster_{4};relative=closestLivingRelative\n'.format(scaf, start, end, score, classif, clust))
-									outClassifFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR.{3}_cluster_{4};relative=closestLivingRelative\n'.format(scaf, start, end, score, classif, clust))
-									outClusterFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR.{3}_cluster_{4};relative=closestLivingRelative\n'.format(scaf, start, end, score, classif, clust))
+									outFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR-{4}.{5}.cluster_{6};relative={7}\n'.format(scaf, start, end, score, i, classif, clust, closestLivingRelative))
+									outClassifFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR-{4}.{5}.cluster_{6};relative={7}\n'.format(scaf, start, end, score, i, classif, clust, closestLivingRelative))
+									outClusterFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR-{4}.{5}.cluster_{6};relative={7}\n'.format(scaf, start, end, score, i, classif, clust, closestLivingRelative))
 
 		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 			statusFlAppend.write('{0}\t{1}\n'.format(SoloLTRsGFF, paths[SoloLTRsGFF]))
