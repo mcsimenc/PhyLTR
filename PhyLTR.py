@@ -2892,7 +2892,8 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 								ltrs_changefastaheaders_calls[elementName] = (LTRsFASTAfilepath, LTRsGFFfilepath, 'Parent')
 								mafft_LTRs_call = [ executables['mafft'], '--quiet', '--globalpair', '--maxiterate', '1000', LTRsFASTAfilepath ]
 								ltrs_mafft_calls[elementName] = (mafft_LTRs_call, LTRsAlignmentFilepath, None, None)
-								ltrs_clean_mafft_output_calls[elementName] = (CleanMafft(LTRsAlignmentFilepath), None, None, None)
+								#ltrs_clean_mafft_output_calls[elementName] = (CleanMafft(LTRsAlignmentFilepath), None, None, None)
+								ltrs_clean_mafft_output_calls[elementName] = LTRsAlignmentFilepath
 
 
 								if TRIMAL:
@@ -2949,7 +2950,7 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 				p.map(makecallMultiprocessing, ltrs_mafft_calls.values(), chunksize=chunk_size)
 			p.join()
 			with Pool(processes=procs) as p: # Remove non-fasta format text from alignment if present (some versions of MAFFT output aln method info with alignments
-				p.map(makecallMultiprocessing, ltrs_clean_mafft_output_calls.values(), chunksize=chunk_size)
+				p.map(CleanMafft, ltrs_clean_mafft_output_calls.values(), chunksize=chunk_size)
 			p.join()
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('{0}\t{1}\n'.format(AlnKey, paths[AlnKey])) # Add LTRs FASTA path to status file (for resuming later)
