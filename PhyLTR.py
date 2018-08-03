@@ -5843,12 +5843,6 @@ elif 'LTRharvestGFF' in paths:
 # They'll also be skipped if the are not supposed to run for the requested procedure
 # If they run they will append to the log
 
-
-#clusters_by_classif = shortClassif()
-#classifs_by_element = shortClassif(ElNames=True)
-#classifs = set(list(clusters_by_classif.keys()))
-
-#clusterSummary()
 sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
 
 #  I. Identification and classification of elements
@@ -5881,26 +5875,6 @@ classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLA
 clusters_by_classif = shortClassif()
 classifs_by_element = shortClassif(ElNames=True)
 classifs = set(list(clusters_by_classif.keys()))
-
-# TEMPTEMPTEMPTEMP
-#if WICKER:
-#	append2logfile(paths['output_top_dir'], mainlogfile, 'LTRdivergence wicker')
-#	ltr_divergence(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-##
-##
-#if USEMCL:
-#	append2logfile(paths['output_top_dir'], mainlogfile, 'LTRdivergence mcl')
-#	ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None)
-#
-#if CIRCOS:
-#	if WICKER:
-#		Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-#	if USEMCL:
-#		Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
-##
-#sys.exit()
-# ^ TEMPTEMPTEMPTEMP
-
 #
 #  II. Clustering, divergence, gene conversion, and phylogenetic analysis
 #
@@ -5927,7 +5901,8 @@ if WICKER:
 
 if USEMCL:
 	# 1. Perform clustering
-	MCL(I=MCL_I, minClustSize=MinClustSize, CombineIfTooFew=False)	# Run MCL. I is the inflation paramater that controls granularity. Default is 6. MCL docs recommend 1.4, 2, 4, and 6, and between 1.1 and 10 for most cases.
+	# Run MCL. I is the inflation paramater that controls granularity. Default is 6. MCL docs recommend 1.4, 2, 4, and 6, and between 1.1 and 10 for most cases.
+	MCL(I=MCL_I, minClustSize=MinClustSize, CombineIfTooFew=False)	
 	summarizeClusters(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
 
 	if GENECONVCLUSTERS or LTRDIVERGENCE:
@@ -5964,8 +5939,6 @@ if WICKER:
 if MCL:
 	SoloLTRsearch(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
 
-print('FINISHED SOLO LTR SEARCH')
-
 if CIRCOS:
 	if WICKER:
 		Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
@@ -5977,20 +5950,20 @@ if WICKER:
 	align_ltrs(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})	# Runs if need to use geneconvLTRs or estimate divergences
 #
 	if GENECONV_G0:
-		geneconvLTRs(g='/g0', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})	# Identify LTR RTs with gene conversion. Most stringent - no mismatches in fragments
+		geneconvLTRs(g='/g0', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
 	if GENECONV_G1:
-		geneconvLTRs(g='/g1', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})	# Identify LTR RTs with gene conversion. Most relaxed - mismatches in fragments
+		geneconvLTRs(g='/g1', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
 	if GENECONV_G2:
-		geneconvLTRs(g='/g2', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})	# Identify LTR RTs with gene conversion. Medium relaxed
+		geneconvLTRs(g='/g2', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
 if USEMCL:
 	align_ltrs(I=MCL_I, clustering_method='MCL', WickerParams=None)	# Runs if need to use geneconvLTRs or estimate divergences
 	#
 	if GENECONV_G0:
-		geneconvLTRs(g='/g0', I=MCL_I, clustering_method='MCL', WickerParams=None)	# Identify LTR RTs with gene conversion. Most stringent - no mismatches in fragments
+		geneconvLTRs(g='/g0', I=MCL_I, clustering_method='MCL', WickerParams=None)
 	if GENECONV_G1:
-		geneconvLTRs(g='/g1', I=MCL_I, clustering_method='MCL', WickerParams=None)	# Identify LTR RTs with gene conversion. Most relaxed - mismatches in fragments
+		geneconvLTRs(g='/g1', I=MCL_I, clustering_method='MCL', WickerParams=None)
 	if GENECONV_G2:
-		geneconvLTRs(g='/g2', I=MCL_I, clustering_method='MCL', WickerParams=None)	# Identify LTR RTs with gene conversion. Medium relaxed
+		geneconvLTRs(g='/g2', I=MCL_I, clustering_method='MCL', WickerParams=None)
 #
 #
 if WICKER:
@@ -6005,5 +5978,5 @@ if USEMCL:
 #div2Rplots(I=MCL_I)
 #
 #
-print('Fin!')
+print('fin!')
 sys.exit()
