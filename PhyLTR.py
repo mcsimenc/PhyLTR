@@ -4027,8 +4027,8 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Finished running SEQBOOT')
 
-	fasttreeCalls = []
 	for AlnFasta in alnPthsLst:
+		fasttreeCalls = []
 		if os.path.isfile(paths[AlnFasta]):
 			if os.stat(paths[AlnFasta]).st_size == 0: # if alignment file is empty
 				continue
