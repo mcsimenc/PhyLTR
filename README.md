@@ -25,11 +25,11 @@ phyltr --fasta <input> --procs <int> \
 	--phylo \
 	--DTT
 ```
-### 1. Identifying candidate LTR-R loci with LTRharvest
-##### Turn on with `--ltrharvest`
+## 1. Identifying candidate LTR-R loci with LTRharvest
+##### **Turn on with `--ltrharvest`**
 ###### External dependencies
 * GenomeTools
-###### Available options; explained in the LTRharvest documentation.
+###### Available options (explained in the LTRharvest documentation).
 ```
 --minlenltr (100)
 --maxlenltr (1000)
@@ -45,28 +45,28 @@ phyltr --fasta <input> --procs <int> \
 --insi (-3)
 --del (-3)
 ```
-### 2. Identifying putatve protein-coding domains in LTR-R internal regions.
-##### A. Turn on with `--ltridgest`
+## 2. Identifying putatve protein-coding domains in LTR-R internal regions.
+##### **A. Turn on with `--ltridgest`**
 ###### External dependencies
 * GenomeTools
 * HMMER3
 * pHMMs (database)
-###### PhyLTR output dependencies
+###### Required PhyLTR output
 * --ltrharvest
 ###### Available options
---ltrdigest_hmms path to pHMMs (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)
-##### B. Turn on with --findORFs
+--ltrdigest_hmms (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)	path to pHMMs
+##### **B. Turn on with --findORFs**
 ###### External dependencies
 * GenomeTools
 * EMBOSS
-###### PhyLTR output dependencies
+###### Required PhyLTR output
 * --ltrharvest
 ###### Available options
 ```
 --min_orf_len (300)	The minimum length (bp) of ORF to find
 ```
-### 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
-##### A. Turn on both Repbase and Dfam classification with `--classify`
+## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
+##### **A. Turn on both Repbase and Dfam classification with `--classify`**
 ###### Possible external dependencies
 * GenomeTools
 * BEDtools
@@ -74,28 +74,33 @@ phyltr --fasta <input> --procs <int> \
 * HMMER3
 * Repbase (database)
 * Dfam (database)
-###### PhyLTR output dependencies
+###### Required PhyLTR output
 * --ltrharvest
 ###### Available options (both Dfam and Repbase classification)
 ```
 --keep_no_classifications Retain elements without homology to known LTR-Rs
 ```
-##### B. Turn on Dfam classification with `--classify_dfam`
+##### **B. Turn on Dfam classification with `--classify_dfam`**
 ###### Available options (explained in the HMMER3 documentation)
 ```
 --nhmmer_reporting_evalue (10)
 --nhmmer_inclusion_evalue (1e-2)
 ```
-##### C. Turn on Repbase classification with `--classify_repbase`
+##### **C. Turn on Repbase classification with `--classify_repbase`**
 ###### Available options (explained in the tblastx documentation)
 ```
 --repbase_tblastx_evalue (1e-5)
 ```
-### 3. Cluster LTR-Rs
+## 4. Cluster LTR-Rs
 ###### Possible external dependencies
 * NCBI Blast+
 * BEDtools
 * MCL
+###### Required PhyLTR output
+* --ltrharvest
+##### **A. Turn on WickerFam clustering**
+
+##### **B. Turn on MCL clustering**
 
 
 
