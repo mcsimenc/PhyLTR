@@ -25,9 +25,27 @@ phyltr --fasta <input> --procs <int> \
 	--ltrdivergence \
 	--phylo \
 	--DTT
-	
 
-## Main
+## All settings. Defaults are in parentheses
+
+#### 1. Identifying candidate LTR-R loci with LTRharvest
+
+###### Turn on using `--ltrharvest`
+
+###### The following options are available and explained in the LTRharvest documentation.
+*--minlenltr (100)
+*--maxlenltr (1000)
+*--mindistltr (1000)
+*--maxdistltr (15000)
+*--similar (85.0)
+*--vic (60)
+*--mintsd (4)
+*--maxtsd (20)
+*--xdrop	(5)
+*--mat (2)
+*--mis (-2)
+*--insi (-3)
+*--del (-3)
 
 	  Option			    ArgType	       Default
 	----------------------------------------------------------------
