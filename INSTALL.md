@@ -3,6 +3,7 @@
 1. Clone repository
 2. Install dependencies
 3. Download databases
+4. Optionally add to Pfam HMM set
 
 ## Clone Repository
 
@@ -92,3 +93,7 @@ PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta
 PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF
 PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.list
 ```
+
+## (Optional) Add pHMMs to Pfam set for domain annotation
+* Included in repository. Contains pHMMs from Pfam and from gydb.org downloaded Summer 2018
+`PhyLTR/LTRdigest_HMMs/hmm`
