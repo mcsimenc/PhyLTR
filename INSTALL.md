@@ -3,7 +3,7 @@
 1. Clone repository
 2. Install dependencies
 3. Download databases
-4. Optionally add to Pfam HMM set
+4. Optionally add pHMMs for domain annotation
 
 ## Clone Repository
 
@@ -94,6 +94,6 @@ PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF
 PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.list
 ```
 
-## Add pHMMs to Pfam set for domain annotation (optional)
+## Add pHMMs for domain annotation (optional)
 ##### Append any HMMs you want to include to `PhyLTR/LTRdigest_HMMs/hmm`
 The version included in repository contains pHMMs for TE-related domains from Pfam and from gydb.org, downloaded Summer 2018.
