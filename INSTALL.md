@@ -75,7 +75,7 @@ PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.list
 
 ### Repbase
 
-##### 1. Get an account with [GIRI](https://www.girinst.org/accountservices/register.php)
+##### 1. Get an [account with GIRI](https://www.girinst.org/accountservices/register.php)
 1. Go to http://www.girinst.org/repbase/update/browse.php
 2. Select LTR Retrotransposon from the Repeat class dropdown list.
 3. Select FASTA from the Output format drop down list.
