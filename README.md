@@ -24,7 +24,7 @@ phyltr --fasta <input> --procs <int> \
 	--DTT
 ```
 ## 1. Identifying candidate LTR-R loci with LTRharvest
-#### Turn on `--ltrharvest`
+#### Turn on LTRharvest: `--ltrharvest`
 ###### External dependencies
 * GenomeTools
 ###### Available options (explained in the LTRharvest documentation).
@@ -44,7 +44,7 @@ phyltr --fasta <input> --procs <int> \
 --del (-3)
 ```
 ## 2. Identifying putatve protein-coding domains in LTR-R internal regions.
-#### A. Turn on `--ltridgest`
+#### A. Turn on LTRdigest: `--ltridgest`
 ###### External dependencies
 * GenomeTools
 * HMMER3
@@ -53,7 +53,7 @@ phyltr --fasta <input> --procs <int> \
 * --ltrharvest
 ###### Available options
 --ltrdigest_hmms (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)	path to pHMMs
-#### B. Turn on --findORFs
+#### B. Turn on ORF annotation: `--findORFs`
 ###### External dependencies
 * GenomeTools
 * EMBOSS
@@ -64,7 +64,7 @@ phyltr --fasta <input> --procs <int> \
 --min_orf_len (300)	The minimum length (bp) of ORF to find
 ```
 ## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
-#### A. Turn on both Repbase and Dfam classification `--classify`
+#### A. Turn on both Repbase and Dfam classification: `--classify`
 ###### Possible external dependencies
 * GenomeTools
 * BEDtools
@@ -78,13 +78,13 @@ phyltr --fasta <input> --procs <int> \
 ```
 --keep_no_classifications Retain elements without homology to known LTR-Rs
 ```
-#### B. Turn on Dfam classification `--classify_dfam`
+#### B. Turn on Dfam classification: `--classify_dfam`
 ###### Available options (explained in the HMMER3 documentation)
 ```
 --nhmmer_reporting_evalue (10)
 --nhmmer_inclusion_evalue (1e-2)
 ```
-#### C. Turn on Repbase classification `--classify_repbase`
+#### C. Turn on Repbase classification: `--classify_repbase`
 ###### Available options (explained in the tblastx documentation)
 ```
 --repbase_tblastx_evalue (1e-5)
@@ -96,16 +96,20 @@ phyltr --fasta <input> --procs <int> \
 * MCL
 ###### Required PhyLTR output
 * --ltrharvest
-#### Turn on WickerFam clustering `--wicker`
+#### Turn on WickerFam clustering: `--wicker`
 ###### Available options
+```
 --wicker_minLen (80)	Minimum length of blastn alignment
 --wicker_pAln (80)	Minimum percent of LTR or internal region required in alignment
 --wicker_pId (80)	Minimum %identity in alignment
 --wicker_no_internals	Turns off use of internal region alignments for clustering
 --wicker_no_ltrs	Turns off use of LTR alignments for clustering
-#### B. Turn on MCL clustering `--mcl`
+```
+#### B. Turn on MCL clustering: `--mcl`
 ###### Available options
+```
 --I (6)
+```
 ## 5. LTR divergence estimation
 ###### Possible external dependencies
 * MAFFT
@@ -114,7 +118,7 @@ phyltr --fasta <input> --procs <int> \
 * PAUP\*
 * jModelTest2
 * GENECONV
-#### A. Turn on GENECONV for intra-element LTR assessment `--geneconvltrs`
+#### A. Turn on GENECONV for intra-element LTR assessment: `--geneconvltrs`
 ###### See options for MAFFT below
 ###### Available options (explained in GENECONV documentation)
 --geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3
@@ -123,14 +127,14 @@ phyltr --fasta <input> --procs <int> \
 ## 6. "Solo LTR" search
 ###### External dependencies
 * NCBI BLAST+
-#### Turn on "solo LTR" search `--soloLTRsearch`
+#### Turn on "solo LTR" search: `--soloLTRsearch`
 ## 7. Gene conversion between LTR-Rs in a cluster
 ###### Possible external dependencies
 * GENECONV
 * BLAST?
 * Circos
-#### Turn on GENECONV `--geneconvclusters`
-#### Turn on Circos `--circos`
+#### Turn on GENECONV: `--geneconvclusters`
+#### Turn on Circos: `--circos`
 
 ## 8. Phylogenetics
 ###### Possible external dependencies
@@ -191,6 +195,7 @@ Phylogenetic analysis
 This step has been the limiting process in my experience. It can be sped up by reducing the number of iterations performed for each alignment and by reducing the maximum number of elements for classiying elements as medium and small clusters. MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. Depending on resources available to you, you may need to cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. Default is to not align clusters with >1000 elements. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1 for large clusters, which is much more inaccurate.
 
 ###### Available options
+```
 --maxiterate_small_clusters (30)	MAFFT iterations. More will improve alignment quality.
 --maxiterate_medium_clusters (3)	MAFFT iterations. More will improve alignment quality.
 --mafft_smallAln_maxclustsize (50)	Max elements to consider a cluster small.
@@ -198,8 +203,11 @@ This step has been the limiting process in my experience. It can be sped up by r
 --mafft_largeAln_maxclustsize (1000)	Max elements to consider a cluster large. Clusters larger than this will not be aligned.
 --min_clust_size (7)			Do not align clusters smaller than this.
 --nosmalls				Do not combine and assemble all clusters smaller than --min_clust_size
+```
 
 ## APPENDIX B. Other global options
+```
 --keep_files				Default=no. Removes some large intermediate files, including raw
 --output_dir		<path>	Output directory. Default is "PhyLTR.output
 --logfile			<path>  Path to where log file is written (default <output_dir>/log.txt)
+```
