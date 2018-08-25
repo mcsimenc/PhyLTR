@@ -4,6 +4,35 @@ PhyLTR is a software pipeline built from open source software. The main program 
 
 As the pipeline runs, paths to intermediate results like alignments are stored in the file PhyLTR/status. If the execution is interrupted, this file is used to allow PhyLTR to resume more or less where it left off.
 
+#### Output
+PhyLTR populates a directory structure (default=PhyLTR.output/) keeping results for different clusterings separate. The results obtained prior to clutering are used for any post-clustering analysis. Within PhyLTR.output (default):
+```
+LTRharvest/		LTRharvest results
+suffixerator/		suffix array used by LTRharvest
+LTRdigest/		LTRdigest results
+AnnotateORFs/		intermediate files for ORF annotation
+Circos/			Circos intermediate files and plots
+DfamClassification/	nhmmer search of Dfam for LTR-R homologs
+RepbaseClassification/	tblastx search of Repbase for LTR-R homologs
+FASTA_output/		some intermediate FASTA files
+GFF_output/		various intermediate and final GFF3 files
+MCL/			MCL clusterings and downstream analyses
+WickerFamDir/		WickerFam clusterings and downstream analyses
+```
+Within each clustering directory, e.g: MCL/I6/
+```
+Alignments/		All alignments
+Clusters/		Results of clustering
+FASTAs/			Intermediate FASTA files
+GENECONV/		Gene conversion analyses
+GFFs/			Intermediate GFF3 files
+LTR_divergence/		LTR divergence estimation analyis
+Modeltest/		Model testing files
+SoloLTRsearch/		"Solo LTR" search files
+Trees/			Phylogenetic analyses
+```
+
+
 ## Default settings
 If phyltr is run without any flags specifying a task, all tasks are run. The following two calls are equivalent. The processes specified by the flags in the second call are explained below with additional optional flags. Some of the processes modify the GFF3 file that is used for downstream analyses.
 ```
