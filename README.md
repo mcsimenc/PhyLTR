@@ -7,11 +7,8 @@ PhyLTR is a software pipeline built from open source software. The main program 
 As the pipeline runs, paths to intermediate results like alignments are stored in the file PhyLTR/status. If the execution is interrupted, this file is used to allow PhyLTR to resume more or less where it left off.
 
 ## Default settings
-
 If phyltr is run without any flags specifying a task, all tasks are run. The following two calls are equivalent. The processes specified by the flags in the second call are explained below with additional optional flags.
-
 phyltr --fasta <input> --procs <int>
-
 phyltr --fasta <input> --procs <int> \
 	--ltrharvest \
 	--ltrdigest \
@@ -25,10 +22,9 @@ phyltr --fasta <input> --procs <int> \
 	--ltrdivergence \
 	--phylo \
 	--DTT
-
 ## All settings. Defaults are in parentheses
 #### 1. Identifying candidate LTR-R loci with LTRharvest
-##### Turn on using `--ltrharvest`
+##### Turn on LTRharvest using `--ltrharvest`
 ###### The following options for constraints on the LTR-R search are available and explained in the LTRharvest documentation.
 ```
 --minlenltr (100)
@@ -45,16 +41,35 @@ phyltr --fasta <input> --procs <int> \
 --insi (-3)
 --del (-3)
 ```
-
 #### 2. Identifying putatve protein-coding domains in LTR-R internal regions.
-##### A. Turn on using `--ltridgest`
+##### A. Turn on LTRdigest using `--ltridgest`
 ###### The following options are available
 ```
 --ltrdigest_hmms	path to pHMMs (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)
 ```
-##### B. Turn on using `--findORFs`
+##### B. Turn on ORF-finding using `--findORFs`
 ###### The following options are available
-
+```
+--min_orf_len (300)	The minimum length (bp) of ORF to find
+```
+#### 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
+##### A. Turn on both Repbase and Dfam classification using `--classify`
+######  The following options apply to both Dfam and Repbase classification
+```
+--keep_conflicting_classificaitons
+--keep_no_classifications
+```
+##### A. Turn on Dfam classification using `--classify_dram`
+###### The following options are available
+```
+--nhmmer_reporting_evalue (10)
+--nhmmer_inclusion_evalue (1e-2)
+```
+##### A. Turn on Repbase classification using `--classify_repbase`
+###### The following options are available
+```
+--repbase_tblastx_evalue (1e-5)
+```
 	  Option			    ArgType	       Default
 	----------------------------------------------------------------
 	--fasta				    <path>		NONE
@@ -77,13 +92,6 @@ phyltr --fasta <input> --procs <int> \
 	--del				    <int>		-3
 	--ltrdigest			    BINARY		OFF
 	--classify			    BINARY		OFF
-	--classify_dfam			    BINARY		OFF
-	--classify_repbase		    BINARY		OFF
-	--nhmmer_reporting_evalue	    <num>		10
-	--nhmmer_inclusion_evalue	    <num>		1e-2
-	--repbase_tblastx_evalue	    <num>		1e-5
-	--keep_conflicting_classificaitons  BINARY		OFF
-	--keep_no_classifications	    BINARY		OFF
 	--min_clust_size		    <int>		7
 	--wicker			    BINARY		OFF
 	--wicker_pId			    <num>		80
