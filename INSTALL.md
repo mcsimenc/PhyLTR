@@ -11,7 +11,8 @@
 
 #### 1. Install [Python 3](https://www.python.org/) and [Biopython](https://biopython.org/)
 
-#### 2. Install these however you can, then add the program paths to the CONFIG file in the PhyLTR root directory. Parts of PhyLTR require only certain dependencies. See README.md for an explanation of dependency requirements for each process.
+#### 2. Install these however you can, then add the program paths to the CONFIG file in the PhyLTR root directory.
+Parts of PhyLTR require only certain dependencies. See README.md for an explanation of dependency requirements for each process.
 
 * [BEDtools](https://bedtools.readthedocs.io/en/latest/)
 * [MAFFT](https://mafft.cbrc.jp/alignment/software/)
