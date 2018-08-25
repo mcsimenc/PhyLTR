@@ -5210,7 +5210,7 @@ def shortHelp():
 	  [ --mafft_mediumAln_maxclustsize <int> ] [ --mafft_largeAln_maxclustsize <int> ]
 	  [--geneconvclusters] [--DTT] [--phylo] [--bootstrap_reps] [--bpflank <int>]
 	  [--flank_evalue <int|float>] [--flank_pId <int|float>][--flank_plencutoff <int|float>]
-	  [--min_orf_len <int>]
+	  [--min_orf_len <int>] Solo LTR
 	  ''', file=sys.stderr)
 
 def help2():
@@ -5226,7 +5226,7 @@ def help2():
 	--maxlenltr			    <int>		1000
 	--mindistltr			    <int>		1000
 	--maxdistltr			    <int>		15000
-	--similar			    <int|float>		85.0
+	--similar			    <num>		85.0
 	--vic				    <int>		60
 	--mintsd			    <int>		4
 	--maxtsd			    <int>		20
@@ -5240,20 +5240,20 @@ def help2():
 	--classify			    BINARY		OFF
 	--classify_dfam			    BINARY		OFF
 	--classify_repbase		    BINARY		OFF
-	--nhmmer_reporting_evalue	    <int|float>		10
-	--nhmmer_inclusion_evalue	    <int|float>		1e-2
-	--repbase_tblastx_evalue	    <int|float>		1e-5
+	--nhmmer_reporting_evalue	    <num>		10
+	--nhmmer_inclusion_evalue	    <num>		1e-2
+	--repbase_tblastx_evalue	    <num>		1e-5
 	--keep_conflicting_classificaitons  BINARY		OFF
 	--keep_no_classifications	    BINARY		OFF
 	--min_clust_size		    <int>		7
 	--wicker			    BINARY		OFF
-	--wicker_pId			    <int|float>		80
+	--wicker_pId			    <num>		80
 	--wicker_minLen			    <int>		80
-	--wicker_pAln			    <int|float>		80
+	--wicker_pAln			    <num>		80
 	--wicker_no_internals		    BINARY		OFF
 	--wicker_no_ltrs		    BINARY		OFF
 	--mcl				    BINARY		MCL
-	--I				    <int|float>		6
+	--I				    <num>		6
 	--nosmalls			    BINARY		OFF
 	--geneconvltrs			    BINARY		OFF
 	--geneconv_g			    <str>		g0,g1,g2
@@ -5271,10 +5271,14 @@ def help2():
 	--phylo				    BINARY		OFF
 	--bootstrap_reps		    <int>		100
 	--bpflank			    <int>		500
-	--flank_evalue			    <int|float>		1e-5
-	--flank_pId			    <int|float>		70
-	--flank_plencutoff		    <int|float>		70
+	--flank_evalue			    <num>		1e-5
+	--flank_pId			    <num>		70
+	--flank_plencutoff		    <num>		70
 	--min_orf_len			    <int>		300
+	--soloLTRsearch			    BINARY		OFF
+	--soloLTRminPid			    <num>		80.0
+	--soloLTRminLen			    <num>		80.0
+	--soloLTRmaxEvalue		    <num>		1e-3
 
 	'''.format('{0}/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
 
@@ -5412,6 +5416,15 @@ def help():
 	  					if HKY85 is not possible due to dinucleotide LTRs.
 	  					MULTIPLE CHOICES NOT YET IMPLEMENTED
 	  --remove_GC_from_modeltest_aln	Remove elements with suspected intra-cluster inter-element gene conversion tracts.
+
+	  Solo LTR search
+	  -------------------
+	--soloLTRsearch				Turn on solo LTR search.
+	--soloLTRminPid			<num>	Minimum percent identity for inclusion of a solo LTR in a cluster (80.0)
+	--soloLTRminLen			<num>	Minimum percent of LTR length participating in alignment for inclusion of LTR in a cluster (80.0)
+	--soloLTRmaxEvalue		<num>	Maximum evalue allowed for blastn
+	
+	
 
 	  Finding pairs of elements within clusters that have homologous flanking regions
 	  -------------------------------------------------------------------------------
