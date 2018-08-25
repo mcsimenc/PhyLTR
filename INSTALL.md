@@ -12,21 +12,21 @@
 
 #### 2. Install these however you can, then add the program paths to the CONFIG file in the PhyLTR root directory.
 
-###### BEDtools	https://bedtools.readthedocs.io/en/latest/
-###### MAFFT		https://mafft.cbrc.jp/alignment/software/
-###### FastTree2	http://www.microbesonline.org/fasttree/
-###### trimAl		http://trimal.cgenomics.org/
-###### jModelTest2	https://github.com/ddarriba/jmodeltest2/
-###### GenomeTools	http://genometools.org/
-###### GENECONV	https://www.math.wustl.edu/~sawyer/geneconv/
-###### PAUP*		https://paup.phylosolutions.com/
-###### Circos		http://circos.ca/
-###### PATHd8		https://www2.math.su.se/PATHd8/
-###### EMBOSS		http://emboss.sourceforge.net/
-###### PHYLIP		http://evolution.genetics.washington.edu/phylip.html
-###### HMMER3		http://www.hmmer.org/
-###### NCBI BLAST+	https://www.ncbi.nlm.nih.gov/books/NBK52640/
-###### MCL		https://micans.org/mcl/
+* BEDtools	https://bedtools.readthedocs.io/en/latest/
+* MAFFT		https://mafft.cbrc.jp/alignment/software/
+* FastTree2	http://www.microbesonline.org/fasttree/
+* trimAl		http://trimal.cgenomics.org/
+* jModelTest2	https://github.com/ddarriba/jmodeltest2/
+* GenomeTools	http://genometools.org/
+* GENECONV	https://www.math.wustl.edu/~sawyer/geneconv/
+* PAUP*		https://paup.phylosolutions.com/
+* Circos		http://circos.ca/
+* PATHd8		https://www2.math.su.se/PATHd8/
+* EMBOSS		http://emboss.sourceforge.net/
+* PHYLIP		http://evolution.genetics.washington.edu/phylip.html
+* HMMER3		http://www.hmmer.org/
+* NCBI BLAST+	https://www.ncbi.nlm.nih.gov/books/NBK52640/
+* MCL		https://micans.org/mcl/
 
 #### 3. Edit CONFIG file and add dependency paths
 
@@ -54,7 +54,7 @@ mcl=directory # the bin/ directory in the MCL installation
 
 ## Download databases: Dfam and Repbase
 
-#### 1. Dfam: download then run scripts
+### 1. Dfam
 
 ##### A.Download http://dfam.org/web_download/Release/Dfam_2.0/Dfam.hmm.gz and unpack it
 
@@ -71,7 +71,7 @@ PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF
 PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.list
 ```
 
-#### 2. Repbase: get a GIRI account, download, and run scripts
+### 2. Repbase
 
 ##### A. Get an account with GIRI
 1. Go to http://www.girinst.org/repbase/update/browse.php
