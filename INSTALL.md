@@ -26,7 +26,7 @@
 * [EMBOSS](http://emboss.sourceforge.net/)
 * [PHYLIP](http://evolution.genetics.washington.edu/phylip.html)
 * [HMMER3](http://www.hmmer.org/)
-* [NCBI BLAST+]	(https://www.ncbi.nlm.nih.gov/books/NBK52640/)
+* [NCBI BLAST+](https://www.ncbi.nlm.nih.gov/books/NBK52640/)
 * [MCL](https://micans.org/mcl/)
 
 #### 3. Edit CONFIG file and add dependency paths
