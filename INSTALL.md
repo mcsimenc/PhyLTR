@@ -13,7 +13,7 @@
 
 #### 2. Install these however you can, then add the program paths to the CONFIG file in the PhyLTR root directory.
 
-* BEDtools	https://bedtools.readthedocs.io/en/latest/
+* [BEDtools](https://bedtools.readthedocs.io/en/latest/)
 * MAFFT		https://mafft.cbrc.jp/alignment/software/
 * FastTree2	http://www.microbesonline.org/fasttree/
 * trimAl		http://trimal.cgenomics.org/
