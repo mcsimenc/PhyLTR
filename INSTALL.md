@@ -14,20 +14,20 @@
 #### 2. Install these however you can, then add the program paths to the CONFIG file in the PhyLTR root directory.
 
 * [BEDtools](https://bedtools.readthedocs.io/en/latest/)
-* [MAFFT]	(	https://mafft.cbrc.jp/alignment/software/)
-* [FastTree2]	(http://www.microbesonline.org/fasttree/)
-* [trimAl]	(	http://trimal.cgenomics.org/)
-* [jModelTest2]	(https://github.com/ddarriba/jmodeltest2/)
-* [GenomeTools]	(http://genometools.org/)
-* [GENECONV]	(https://www.math.wustl.edu/~sawyer/geneconv/)
-* [PAUP*]	(	https://paup.phylosolutions.com/)
-* [Circos]	(	http://circos.ca/)
-* [PATHd8]	(	https://www2.math.su.se/PATHd8/)
-* [EMBOSS]	(	http://emboss.sourceforge.net/)
-* [PHYLIP]	(	http://evolution.genetics.washington.edu/phylip.html)
-* [HMMER3]	(	http://www.hmmer.org/)
+* [MAFFT](https://mafft.cbrc.jp/alignment/software/)
+* [FastTree2](http://www.microbesonline.org/fasttree/)
+* [trimAl](http://trimal.cgenomics.org/)
+* [jModelTest2](https://github.com/ddarriba/jmodeltest2/)
+* [GenomeTools](http://genometools.org/)
+* [GENECONV](https://www.math.wustl.edu/~sawyer/geneconv/)
+* [PAUP*](https://paup.phylosolutions.com/)
+* [Circos](http://circos.ca/)
+* [PATHd8](https://www2.math.su.se/PATHd8/)
+* [EMBOSS](http://emboss.sourceforge.net/)
+* [PHYLIP](http://evolution.genetics.washington.edu/phylip.html)
+* [HMMER3](http://www.hmmer.org/)
 * [NCBI BLAST+]	(https://www.ncbi.nlm.nih.gov/books/NBK52640/)
-* [MCL](	https://micans.org/mcl/)
+* [MCL](https://micans.org/mcl/)
 
 #### 3. Edit CONFIG file and add dependency paths
 
