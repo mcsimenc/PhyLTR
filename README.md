@@ -5,7 +5,7 @@ PhyLTR is a software pipeline built from open source software. The main program 
 As the pipeline runs, paths to intermediate results like alignments are stored in the file PhyLTR/status. If the execution is interrupted, this file is used to allow PhyLTR to resume more or less where it left off.
 
 #### Output
-PhyLTR populates a directory structure (default=PhyLTR.output/) keeping results for different clusterings separate. The results obtained prior to clutering are used for any post-clustering analysis. Within PhyLTR.output (default):
+PhyLTR populates a directory structure (default=PhyLTR.output/) keeping results for different clusterings separate. The results obtained prior to clutering are used for any post-clustering analysis. Within `PhyLTR.output` (default):
 ```
 LTRharvest/		LTRharvest results
 suffixerator/		suffix array used by LTRharvest
@@ -19,7 +19,7 @@ GFF_output/		various intermediate and final GFF3 files
 MCL/			MCL clusterings and downstream analyses
 WickerFamDir/		WickerFam clusterings and downstream analyses
 ```
-Within each clustering directory, e.g: MCL/I6/
+Within each clustering directory, e.g: `MCL/I6/`
 ```
 Alignments/		All alignments
 Clusters/		Results of clustering
