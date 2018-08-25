@@ -27,25 +27,33 @@ phyltr --fasta <input> --procs <int> \
 	--DTT
 
 ## All settings. Defaults are in parentheses
-
 #### 1. Identifying candidate LTR-R loci with LTRharvest
+##### Turn on using `--ltrharvest`
+###### The following options for constraints on the LTR-R search are available and explained in the LTRharvest documentation.
+```
+--minlenltr (100)
+--maxlenltr (1000)
+--mindistltr (1000)
+--maxdistltr (15000)
+--similar (85.0)
+--vic (60)
+--mintsd (4)
+--maxtsd (20)
+--xdrop	(5)
+--mat (2)
+--mis (-2)
+--insi (-3)
+--del (-3)
+```
 
-###### Turn on using `--ltrharvest`
-
-###### The following options are available and explained in the LTRharvest documentation.
-* --minlenltr (100)
-* --maxlenltr (1000)
-* --mindistltr (1000)
-* --maxdistltr (15000)
-* --similar (85.0)
-* --vic (60)
-* --mintsd (4)
-* --maxtsd (20)
-* --xdrop	(5)
-* --mat (2)
-* --mis (-2)
-* --insi (-3)
-* --del (-3)
+#### 2. Identifying putatve protein-coding domains in LTR-R internal regions.
+##### A. Turn on using `--ltridgest`
+###### The following options are available
+```
+--ltrdigest_hmms	path to pHMMs (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)
+```
+##### B. Turn on using `--findORFs`
+###### The following options are available
 
 	  Option			    ArgType	       Default
 	----------------------------------------------------------------
@@ -68,7 +76,6 @@ phyltr --fasta <input> --procs <int> \
 	--ins				    <int>		-3
 	--del				    <int>		-3
 	--ltrdigest			    BINARY		OFF
-	--ltrdigest_hmms		    <path>		/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms
 	--classify			    BINARY		OFF
 	--classify_dfam			    BINARY		OFF
 	--classify_repbase		    BINARY		OFF
