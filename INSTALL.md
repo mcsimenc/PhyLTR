@@ -9,7 +9,7 @@
 
 ## Install dependencies
 
-#### 1. Install Python 3 (https://www.python.org/) and Biopython (https://biopython.org/)
+#### 1. Install [Python 3](https://www.python.org/) and [Biopython](https://biopython.org/)
 
 #### 2. Install these however you can, then add the program paths to the CONFIG file in the PhyLTR root directory.
 
@@ -79,8 +79,8 @@ PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.list
 2. Select LTR Retrotransposon from the Repeat class dropdown list.
 3. Select FASTA from the Output format drop down list.
 4. Click the Download button, sign in, and download the text page that opens.
-5. Repeat steps 3-5 but select Endogenous Retrovirus from the Repeat class dropdown list.
-6. Run: `cat <LTR.fa> <ERV>.fa > Repbase_ERV_LTR.fasta`
+5. Repeat steps 2-4 but select Endogenous Retrovirus from the Repeat class dropdown list.
+6. Run: `cat <LTR.fa> <ERV.fa> >> Repbase_ERV_LTR.fasta`
 7. Move the new file from 6 to: `PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta`
 
 ##### 2. Run: `PhyLTR/scripts/RepbaseIG2superfamilies.py < Repbase.LTR-ERV-concatenated.IG > Repbase_ERV_LTR.SF`
