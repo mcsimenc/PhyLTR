@@ -50,13 +50,12 @@ phyltr --fasta <input> --procs <int> \
 ###### External dependencies
 * GenomeTools
 * HMMER3
-* pHMMs (DB)
+* pHMMs (database)
 ###### PhyLTR output dependencies
 * --ltrharvest
 ###### Available options
---ltrdigest_hmms	path to pHMMs (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)
-```
-##### B. Turn on with `--findORFs`
+--ltrdigest_hmms path to pHMMs (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)
+##### B. Turn on with --findORFs
 ###### External dependencies
 * GenomeTools
 * EMBOSS
@@ -73,8 +72,8 @@ phyltr --fasta <input> --procs <int> \
 * BEDtools
 * NCBI BLAST+
 * HMMER3
-* Repbase (DB)
-* Dfam (DB)
+* Repbase (database)
+* Dfam (database)
 ###### PhyLTR output dependencies
 * --ltrharvest
 ###### Available options (both Dfam and Repbase classification)
