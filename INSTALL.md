@@ -8,7 +8,7 @@
 
 ## Install dependencies
 
-#### 1. Install Python 3 and Biopython (https://biopython.org/)
+#### 1. Install Python 3 (https://www.python.org/downloads/) and Biopython (https://biopython.org/)
 
 #### 2. Install these however you can, then add the program paths to the CONFIG file in the PhyLTR root directory.
 
