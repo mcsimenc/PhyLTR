@@ -7,8 +7,10 @@ PhyLTR is a software pipeline built from open source software. The main program 
 As the pipeline runs, paths to intermediate results like alignments are stored in the file PhyLTR/status. If the execution is interrupted, this file is used to allow PhyLTR to resume more or less where it left off.
 
 ## Default settings
-If phyltr is run without any flags specifying a task, all tasks are run. The following two calls are equivalent. The processes specified by the flags in the second call are explained below with additional optional flags.
+If phyltr is run without any flags specifying a task, all tasks are run. The following two calls are equivalent. The processes specified by the flags in the second call are explained below with additional optional flags. Some of the processes modify the GFF3 file that is used for downstream analyses.
+```
 phyltr --fasta <input> --procs <int>
+
 phyltr --fasta <input> --procs <int> \
 	--ltrharvest \
 	--ltrdigest \
@@ -22,10 +24,12 @@ phyltr --fasta <input> --procs <int> \
 	--ltrdivergence \
 	--phylo \
 	--DTT
-## All settings. Defaults are in parentheses
-#### 1. Identifying candidate LTR-R loci with LTRharvest
-##### Turn on LTRharvest using `--ltrharvest`
-###### The following options for constraints on the LTR-R search are available and explained in the LTRharvest documentation.
+```
+### 1. Identifying candidate LTR-R loci with LTRharvest
+##### Turn on with `--ltrharvest`
+###### External dependencies
+* GenomeTools
+###### Available options; explained in the LTRharvest documentation.
 ```
 --minlenltr (100)
 --maxlenltr (1000)
@@ -41,35 +45,61 @@ phyltr --fasta <input> --procs <int> \
 --insi (-3)
 --del (-3)
 ```
-#### 2. Identifying putatve protein-coding domains in LTR-R internal regions.
-##### A. Turn on LTRdigest using `--ltridgest`
-###### The following options are available
-```
+### 2. Identifying putatve protein-coding domains in LTR-R internal regions.
+##### A. Turn on with `--ltridgest`
+###### External dependencies
+* GenomeTools
+* HMMER3
+* pHMMs (DB)
+###### PhyLTR output dependencies
+* --ltrharvest
+###### Available options
 --ltrdigest_hmms	path to pHMMs (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)
 ```
-##### B. Turn on ORF-finding using `--findORFs`
-###### The following options are available
+##### B. Turn on with `--findORFs`
+###### External dependencies
+* GenomeTools
+* EMBOSS
+###### PhyLTR output dependencies
+* --ltrharvest
+###### Available options
 ```
 --min_orf_len (300)	The minimum length (bp) of ORF to find
 ```
-#### 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
-##### A. Turn on both Repbase and Dfam classification using `--classify`
-######  The following options apply to both Dfam and Repbase classification
+### 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
+##### A. Turn on both Repbase and Dfam classification with `--classify`
+###### Possible external dependencies
+* GenomeTools
+* BEDtools
+* NCBI BLAST+
+* HMMER3
+* Repbase (DB)
+* Dfam (DB)
+###### PhyLTR output dependencies
+* --ltrharvest
+###### Available options (both Dfam and Repbase classification)
 ```
---keep_conflicting_classificaitons
---keep_no_classifications
+--keep_no_classifications Retain elements without homology to known LTR-Rs
 ```
-##### A. Turn on Dfam classification using `--classify_dram`
-###### The following options are available
+##### B. Turn on Dfam classification with `--classify_dfam`
+###### Available options (explained in the HMMER3 documentation)
 ```
 --nhmmer_reporting_evalue (10)
 --nhmmer_inclusion_evalue (1e-2)
 ```
-##### A. Turn on Repbase classification using `--classify_repbase`
-###### The following options are available
+##### C. Turn on Repbase classification with `--classify_repbase`
+###### Available options (explained in the tblastx documentation)
 ```
 --repbase_tblastx_evalue (1e-5)
 ```
+### 3. Cluster LTR-Rs
+###### Possible external dependencies
+* NCBI Blast+
+* BEDtools
+* MCL
+
+
+
 	  Option			    ArgType	       Default
 	----------------------------------------------------------------
 	--fasta				    <path>		NONE
