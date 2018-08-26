@@ -219,61 +219,61 @@ phyltr --fasta <input> --procs <int> \
 * ETE3 (Python 3 package)
 #### Documentation
 ```
-	Usage:
-		ete3_tree.py -t <newick_tree> -d <divergences> -g <gff> [options] 
+Usage:
+	ete3_tree.py -t <newick_tree> -d <divergences> -g <gff> [options] 
 
-	Description:
+Description:
 
-		renders phylogenies for long terminal repeat retrotransposon phylogenies with diagrams of LTR elements' domain
-		architecture and optionally additional annotations (-lflabel, -classif, -geneconv, -transcribed, -orfhits)
+	renders phylogenies for long terminal repeat retrotransposon phylogenies with diagrams of LTR elements' domain
+	architecture and optionally additional annotations (-lflabel, -classif, -geneconv, -transcribed, -orfhits)
 
-	-lflabel
-		Show element IDs (integers) as leaf labels.
+-lflabel
+	Show element IDs (integers) as leaf labels.
 
-	-classif
-		Add the superfamily classification for each element (which is obtained from the LTR divergence file) 
-		above each LTR RT diagram.
+-classif
+	Add the superfamily classification for each element (which is obtained from the LTR divergence file) 
+	above each LTR RT diagram.
 
-	-geneconv
-		Add the word 'Yes' or 'No' to the immediately to the right of each leaf depending on whether intra-element
-		gene conversion tracts were detected between the LTRs of that element.
+-geneconv
+	Add the word 'Yes' or 'No' to the immediately to the right of each leaf depending on whether intra-element
+	gene conversion tracts were detected between the LTRs of that element.
 
-	-reroot <int>|auto
-		Two options are possible for -reroot: 'auto', or an <int> corresponding to the element name (i.e.
-		LTR_retrotransposon<int>) to position as the earliest diverging lineage. Only use -reroot auto if
-		the newick filename contains the outgroup in the format output by PhyLTR. 
+-reroot <int>|auto
+	Two options are possible for -reroot: 'auto', or an <int> corresponding to the element name (i.e.
+	LTR_retrotransposon<int>) to position as the earliest diverging lineage. Only use -reroot auto if
+	the newick filename contains the outgroup in the format output by PhyLTR. 
 
-	-ultrametric
-		Draw tree after applying ete3's convert_to_ultrametric() function. In my experience using this option, I
-		have always seen terminal taxa drawn at different horizontal positions making the tree not look ultrametric.
+-ultrametric
+	Draw tree after applying ete3's convert_to_ultrametric() function. In my experience using this option, I
+	have always seen terminal taxa drawn at different horizontal positions making the tree not look ultrametric.
 
-	-1, 2, ..., -n  <path> <str>
-		Coloring ORFs. <path> is list of ORF IDs, str is ETE3 color
-
-
-	-transcribed <path>
-		A file containing a list of element IDs (e.g. LTR_retrotransposon123) to mark with a green asterix.
-		Instead of an asterix, a 'T' is shown as if -classif is used.
-
-	-round
-		Draw ORFs with rounded corners.
-
-	-outfmt <str>
-		One of (pdf, png, svg). Default=pdf
+-1, 2, ..., -n  <path> <str>
+	Coloring ORFs. <path> is list of ORF IDs, str is ETE3 color
 
 
-	Colors
-		protease	yellow
-		gag		deepskyblue
-		copia gag	mediumblue
-		DUF4219		lime
-		rt		red
-		rnaseh		darkviolet
-		int		magenta
-		zf-h2c2		pink
-		other		silver w/black text
-		orf		dimgray
-		annotated orf	custom
+-transcribed <path>
+	A file containing a list of element IDs (e.g. LTR_retrotransposon123) to mark with a green asterix.
+	Instead of an asterix, a 'T' is shown as if -classif is used.
+
+-round
+	Draw ORFs with rounded corners.
+
+-outfmt <str>
+	One of (pdf, png, svg). Default=pdf
+
+
+Colors
+	protease	yellow
+	gag		deepskyblue
+	copia gag	mediumblue
+	DUF4219		lime
+	rt		red
+	rnaseh		darkviolet
+	int		magenta
+	zf-h2c2		pink
+	other		silver w/black text
+	orf		dimgray
+	annotated orf	custom
 ```
 ---
 #### Visualize insertion ages (R)
