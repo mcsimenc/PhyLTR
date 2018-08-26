@@ -85,7 +85,6 @@ phyltr --fasta <input> --procs <int> \
 ```
 #### B. ORF annotation: `--findORFs`
 ###### External dependencies
-* GenomeTools
 * EMBOSS
 ###### Options
 ```
@@ -94,33 +93,33 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
 #### A. Both Repbase and Dfam classification: `--classify`
-###### External dependencies
-* GenomeTools
-* BEDtools
-* NCBI BLAST+
-* HMMER3
-* Repbase (database)
-* Dfam (database)
 #### B. Dfam classification: `--classify_dfam`
-###### Options (explained in the HMMER3 documentation)
+###### External dependencies
+* BEDtools
+* HMMER3
+* Dfam (database)
+###### Options
 ```
---keep_no_classifications Retain elements without homology to known LTR-Rs
---nhmmer_reporting_evalue (10)
---nhmmer_inclusion_evalue (1e-2)
+--keep_no_classifications 		Retain elements without homology to known LTR-Rs
+--nhmmer_reporting_evalue (10)		See HMMER3 documentation: nhmmer -E
+--nhmmer_inclusion_evalue (1e-2)	See HMMER3 documentation: nhmmer -incE
 ```
 #### C. Repbase classification: `--classify_repbase`
-###### Options (explained in the tblastx documentation)
+###### External dependencies
+* BEDtools
+* NCBI BLAST+
+* Repbase (database)
+###### Options
 ```
---keep_no_classifications Retain elements without homology to known LTR-Rs
---repbase_tblastx_evalue (1e-5)
+--keep_no_classifications	Retain elements without homology to known LTR-Rs
+--repbase_tblastx_evalue (1e-5)	Maximum E-value for tblastx hits
 ```
 ---
 ## 4. Cluster LTR-Rs
-###### External dependencies
-* NCBI Blast+
-* BEDtools
-* MCL
 #### A. WickerFam clustering: `--wicker`
+###### External dependencies
+* BEDtools
+* NCBI Blast+
 ###### Options
 ```
 --wicker_minLen (80)	Minimum length of blastn alignment
@@ -130,26 +129,33 @@ phyltr --fasta <input> --procs <int> \
 --wicker_no_ltrs	Turns off use of LTR alignments for clustering
 ```
 #### B. MCL clustering: `--mcl`
+###### External dependencies
+* BEDtools
+* NCBI Blast+
+* MCL
 ###### Options
 ```
 --I (6)
 ```
 ---
 ## 5. LTR divergence estimation (aka insertion age)
+#### A. GENECONV for intra-element LTR assessment: `--geneconvltrs`
 ###### External dependencies
+* BEDtools
 * MAFFT
 * trimAl
-* BEDtools
-* PAUP\*
-* jModelTest2
 * GENECONV
-#### A. GENECONV for intra-element LTR assessment: `--geneconvltrs`
-###### See options for MAFFT below
-###### Options (explained in GENECONV documentation)
+###### Options
 ```
---geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3
+--geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3. Stringency for mismatch-free gene conversion tracts: g0 > g2 > g1
 ```
 #### B. Estimate LTR divergences `--ltr_divergence`
+###### External dependencies
+* BEDtools
+* MAFFT
+* trimAl
+* jModelTest2
+* PAUP\*
 ###### Options
 ```
 --remove_GC_from_modeltest_aln	Remove elements with gene conversion (--geneconvclusters)
@@ -158,6 +164,7 @@ phyltr --fasta <input> --procs <int> \
 ## 6. "Solo LTR" search
 #### "Solo LTR" search: `--soloLTRsearch`
 ###### External dependencies
+* BEDtools
 * NCBI BLAST+
 ###### Options
 ```
@@ -206,7 +213,68 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 9. External scripts
 ---
-#### Render graphical trees annotated with LTR-R diagrams with colored ORFs (Python 3)
+#### Render graphical trees annotated with LTR-R diagrams with colored ORFs (Python 3 + ETE3 tree)
+###### External dependencies
+* Python 3
+* ETE3 (Python 3 package)
+#### Documentation
+```
+	Usage:
+		ete3_tree.py -t <newick_tree> -d <divergences> -g <gff> [options] 
+
+	Description:
+
+		renders phylogenies for long terminal repeat retrotransposon phylogenies with diagrams of LTR elements' domain
+		architecture and optionally additional annotations (-lflabel, -classif, -geneconv, -transcribed, -orfhits)
+
+	-lflabel
+		Show element IDs (integers) as leaf labels.
+
+	-classif
+		Add the superfamily classification for each element (which is obtained from the LTR divergence file) 
+		above each LTR RT diagram.
+
+	-geneconv
+		Add the word 'Yes' or 'No' to the immediately to the right of each leaf depending on whether intra-element
+		gene conversion tracts were detected between the LTRs of that element.
+
+	-reroot <int>|auto
+		Two options are possible for -reroot: 'auto', or an <int> corresponding to the element name (i.e.
+		LTR_retrotransposon<int>) to position as the earliest diverging lineage. Only use -reroot auto if
+		the newick filename contains the outgroup in the format output by PhyLTR. 
+
+	-ultrametric
+		Draw tree after applying ete3's convert_to_ultrametric() function. In my experience using this option, I
+		have always seen terminal taxa drawn at different horizontal positions making the tree not look ultrametric.
+
+	-1, 2, ..., -n  <path> <str>
+		Coloring ORFs. <path> is list of ORF IDs, str is ETE3 color
+
+
+	-transcribed <path>
+		A file containing a list of element IDs (e.g. LTR_retrotransposon123) to mark with a green asterix.
+		Instead of an asterix, a 'T' is shown as if -classif is used.
+
+	-round
+		Draw ORFs with rounded corners.
+
+	-outfmt <str>
+		One of (pdf, png, svg). Default=pdf
+
+
+	Colors
+		protease	yellow
+		gag		deepskyblue
+		copia gag	mediumblue
+		DUF4219		lime
+		rt		red
+		rnaseh		darkviolet
+		int		magenta
+		zf-h2c2		pink
+		other		silver w/black text
+		orf		dimgray
+		annotated orf	custom
+```
 ---
 #### Visualize insertion ages (R)
 ---
