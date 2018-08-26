@@ -3,7 +3,7 @@
 PhyLTR is a software pipeline built from open source software. The main program is written in Python 3. Many of the routines in PhyLTR are parallelized, but it is not written for MPI so parallel components can only run on CPUs that share memory, i.e. on a single node.
 
 As the pipeline runs, paths to intermediate results like alignments are stored in the file PhyLTR/status. If the execution is interrupted, this file is used to allow PhyLTR to resume more or less where it left off.
-
+---
 #### Output
 PhyLTR populates a directory structure (default=PhyLTR.output/) keeping results for different clusterings separate. The results obtained prior to clutering are used for any post-clustering analysis. Within `PhyLTR.output` (default):
 ```
@@ -31,8 +31,7 @@ Modeltest/		Model testing files
 SoloLTRsearch/		"Solo LTR" search files
 Trees/			Phylogenetic analyses
 ```
-
-
+---
 ## Default settings
 If phyltr is run without any flags specifying a task, all tasks are run. The following two calls are equivalent. The processes specified by the flags in the second call are explained below with additional optional flags. Some of the processes modify the GFF3 file that is used for downstream analyses.
 ```
@@ -52,6 +51,7 @@ phyltr --fasta <input> --procs <int> \
 	--phylo \
 	--DTT
 ```
+---
 ## 1. Identifying candidate LTR-R loci with LTRharvest
 #### Turn on LTRharvest: `--ltrharvest`
 ###### External dependencies
@@ -72,6 +72,7 @@ phyltr --fasta <input> --procs <int> \
 --insi (-3)
 --del (-3)
 ```
+---
 ## 2. Identifying putatve protein-coding domains in LTR-R internal regions.
 #### A. Turn on LTRdigest: `--ltridgest`
 ###### External dependencies
@@ -90,6 +91,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 --min_orf_len (300)	The minimum length (bp) of ORF to find
 ```
+---
 ## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
 #### A. Turn on both Repbase and Dfam classification: `--classify`
 ###### Possible external dependencies
@@ -114,6 +116,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 --repbase_tblastx_evalue (1e-5)
 ```
+---
 ## 4. Cluster LTR-Rs
 ###### Possible external dependencies
 * NCBI Blast+
@@ -133,6 +136,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 --I (6)
 ```
+---
 ## 5. LTR divergence estimation (aka insertion age)
 ###### Possible external dependencies
 * MAFFT
@@ -152,7 +156,9 @@ phyltr --fasta <input> --procs <int> \
 ```
 --remove_GC_from_modeltest_aln	Remove elements with gene conversion (--geneconvclusters)
 ```
+---
 ## 6. "Solo LTR" search
+#### Turn on "solo LTR" search: `--soloLTRsearch`
 ###### External dependencies
 * NCBI BLAST+
 ###### Available options
@@ -161,9 +167,7 @@ phyltr --fasta <input> --procs <int> \
 --soloLTRminLen	(80.0)		Minimum % of length of LTR required in alignment to associate LTR with a cluster
 --soloLTRmaxEvalue (1e-3)	Maximum E-value for blastn
 ```
-###### External dependencies
-* NCBI BLAST+
-#### Turn on "solo LTR" search: `--soloLTRsearch`
+---
 ## 7. Gene conversion between LTR-Rs in a cluster
 ###### Possible external dependencies
 * BEDtools
@@ -177,6 +181,7 @@ phyltr --fasta <input> --procs <int> \
 --geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3
 ```
 #### Turn on Circos: `--circos`
+---
 ## 8. Phylogenetics
 ###### Possible external dependencies
 * BEDtools
@@ -200,23 +205,21 @@ phyltr --fasta <input> --procs <int> \
 --bootstrap_reps (100)		Number of bootstrap replicates to perform
 --LTT				Turns on --rmhomoflank, --convert_to_ultrametric, and --auto_outgroup.
 ```
-
+---
 ## 9. External scripts
-
+---
 #### Render graphical trees annotated with LTR-R diagrams with colored ORFs (Python 3)
-
+---
 #### Visualizing insertion ages (R)
-
+---
 #### Lineage through time plots (R)
-
+---
 #### Transposition rate analyses (R)
-
+---
 #### Other scripts
-
-
+---
 ## APPENDIX A. Global MAFFT options
 This step has been the limiting process in my experience. It can be sped up by reducing the number of iterations performed for each alignment and by reducing the maximum number of elements for classiying elements as medium and small clusters. MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. Depending on resources available to you, you may need to cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. Default is to not align clusters with >1000 elements. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1 for large clusters, which is much more inaccurate.
-
 ###### Available options
 ```
 --maxiterate_small_clusters (30)	MAFFT iterations. More will improve alignment quality.
@@ -227,14 +230,15 @@ This step has been the limiting process in my experience. It can be sped up by r
 --min_clust_size (7)			Do not align clusters smaller than this.
 --nosmalls				Do not combine and assemble all clusters smaller than --min_clust_size
 ```
-
+---
 ## APPENDIX B. Other global options
 ```
 --keep_files				Default=no. Removes some large intermediate files, including raw
 --output_dir		<path>	Output directory. Default is "PhyLTR.output
 --logfile			<path>  Path to where log file is written (default <output_dir>/log.txt)
 ```
-
+---
 ## APPENDIX C. All options
-
+---
 ## APPENDIX D. Example output
+---
