@@ -136,7 +136,7 @@ phyltr --fasta <input> --procs <int> \
 * MCL
 ---
 ## 5. Estimate LTR divergences (aka insertion age)
-#### A. Run gene conversion assessment for intra-element LTR assessment: `--geneconvltrs`
+#### A. Run gene conversion assessment on LTR pairs for each element: `--geneconvltrs`
 ###### Options
 ```
 --geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3. Stringency for mismatch-free gene conversion tracts: g0 > g2 > g1
