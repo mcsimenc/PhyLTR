@@ -1,5 +1,5 @@
 # PhyLTR: de novo LTR retrotransposon annotation, classification, and phylogenetic analysis
-The main program is written in Python 3 for UNIX-like systems, and tested on Scientific Linux and Ubuntu. Many of the routines in PhyLTR are parallelized, but it is not written for MPI so parallel components can only run on CPUs that share memory, i.e. on a single node. As the pipeline runs, paths to intermediate results like alignments are stored in the file PhyLTR/status. If the execution is interrupted, this file is used to allow PhyLTR to resume more or less where it left off.
+The main program is written in Python 3 for UNIX-like systems and tested on Scientific Linux and Ubuntu. Many of the routines in PhyLTR are parallelized, but it is not written for MPI so parallel components can only run on CPUs that share memory, i.e. on a single node. As the pipeline runs, paths to intermediate results like alignments are stored in the file PhyLTR/status. If the execution is interrupted, this file is used to allow PhyLTR to resume more or less where it left off.
 
 ## Input
 A FASTA file containing nucleotide sequences
