@@ -78,16 +78,14 @@ phyltr --fasta <input> --procs <int> \
 * GenomeTools
 * HMMER3
 * pHMMs (database)
-###### Required PhyLTR output
-* --ltrharvest
 ###### Available options
+```
 --ltrdigest_hmms (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)	path to pHMMs
+```
 #### B. Turn on ORF annotation: `--findORFs`
 ###### External dependencies
 * GenomeTools
 * EMBOSS
-###### Required PhyLTR output
-* --ltrharvest
 ###### Available options
 ```
 --min_orf_len (300)	The minimum length (bp) of ORF to find
@@ -101,8 +99,6 @@ phyltr --fasta <input> --procs <int> \
 * HMMER3
 * Repbase (database)
 * Dfam (database)
-###### Required PhyLTR output
-* --ltrharvest
 ###### Available global options
 ```
 --keep_no_classifications Retain elements without homology to known LTR-Rs
@@ -123,8 +119,6 @@ phyltr --fasta <input> --procs <int> \
 * NCBI Blast+
 * BEDtools
 * MCL
-###### Required PhyLTR output
-* --ltrharvest
 #### Turn on WickerFam clustering: `--wicker`
 ###### Available options
 ```
@@ -240,3 +234,7 @@ This step has been the limiting process in my experience. It can be sped up by r
 --output_dir		<path>	Output directory. Default is "PhyLTR.output
 --logfile			<path>  Path to where log file is written (default <output_dir>/log.txt)
 ```
+
+## APPENDIX C. All options
+
+## APPENDIX D. Example output
