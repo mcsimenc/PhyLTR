@@ -52,18 +52,18 @@ phyltr --fasta <input> --procs <int> \
 	--DTT
 ```
 ---
-## 1. Identifying candidate LTR-R loci with LTRharvest
+## 1. Identifying candidate LTR-R loci
 #### LTRharvest: `--ltrharvest`
 ###### External dependencies
 * GenomeTools
-###### Available options (explained in the LTRharvest documentation).
+###### Options
 ```
---minlenltr (100)
---maxlenltr (1000)
---mindistltr (1000)
---maxdistltr (15000)
---similar (85.0)
---vic (60)
+--minlenltr (100)	Minimum LTR length (bp)
+--maxlenltr (1000)	Maximum LTR length (bp)
+--mindistltr (1000)	Minimum distance between LTRs (bp)
+--maxdistltr (15000)	Maximum distance between LTRs (bp)
+--similar (85.0)	Minimum % similarity between LTRs
+--vic (60)		
 --mintsd (4)
 --maxtsd (20)
 --xdrop	(5)
@@ -79,7 +79,7 @@ phyltr --fasta <input> --procs <int> \
 * GenomeTools
 * HMMER3
 * pHMMs (database)
-###### Available options
+###### Options
 ```
 --ltrdigest_hmms (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)	path to pHMMs
 ```
@@ -87,43 +87,41 @@ phyltr --fasta <input> --procs <int> \
 ###### External dependencies
 * GenomeTools
 * EMBOSS
-###### Available options
+###### Options
 ```
 --min_orf_len (300)	The minimum length (bp) of ORF to find
 ```
 ---
 ## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
 #### A. Both Repbase and Dfam classification: `--classify`
-###### Possible external dependencies
+###### External dependencies
 * GenomeTools
 * BEDtools
 * NCBI BLAST+
 * HMMER3
 * Repbase (database)
 * Dfam (database)
-###### Available global options
+#### B. Dfam classification: `--classify_dfam`
+###### Options (explained in the HMMER3 documentation)
 ```
 --keep_no_classifications Retain elements without homology to known LTR-Rs
-```
-#### B. Dfam classification: `--classify_dfam`
-###### Available options (explained in the HMMER3 documentation)
-```
 --nhmmer_reporting_evalue (10)
 --nhmmer_inclusion_evalue (1e-2)
 ```
 #### C. Repbase classification: `--classify_repbase`
-###### Available options (explained in the tblastx documentation)
+###### Options (explained in the tblastx documentation)
 ```
+--keep_no_classifications Retain elements without homology to known LTR-Rs
 --repbase_tblastx_evalue (1e-5)
 ```
 ---
 ## 4. Cluster LTR-Rs
-###### Possible external dependencies
+###### External dependencies
 * NCBI Blast+
 * BEDtools
 * MCL
 #### WickerFam clustering: `--wicker`
-###### Available options
+###### Options
 ```
 --wicker_minLen (80)	Minimum length of blastn alignment
 --wicker_pAln (80)	Minimum percent of LTR or internal region required in alignment
@@ -132,13 +130,13 @@ phyltr --fasta <input> --procs <int> \
 --wicker_no_ltrs	Turns off use of LTR alignments for clustering
 ```
 #### B. MCL clustering: `--mcl`
-###### Available options
+###### Options
 ```
 --I (6)
 ```
 ---
 ## 5. LTR divergence estimation (aka insertion age)
-###### Possible external dependencies
+###### External dependencies
 * MAFFT
 * trimAl
 * BEDtools
@@ -147,12 +145,12 @@ phyltr --fasta <input> --procs <int> \
 * GENECONV
 #### A. GENECONV for intra-element LTR assessment: `--geneconvltrs`
 ###### See options for MAFFT below
-###### Available options (explained in GENECONV documentation)
+###### Options (explained in GENECONV documentation)
 ```
 --geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3
 ```
 #### B. Estimate LTR divergences `--ltr_divergence`
-###### Available options
+###### Options
 ```
 --remove_GC_from_modeltest_aln	Remove elements with gene conversion (--geneconvclusters)
 ```
@@ -161,7 +159,7 @@ phyltr --fasta <input> --procs <int> \
 #### "Solo LTR" search: `--soloLTRsearch`
 ###### External dependencies
 * NCBI BLAST+
-###### Available options
+###### Options
 ```
 --soloLTRminPid (80.0)		Minimum %identity in blastn alignment to associate LTR with a cluster
 --soloLTRminLen	(80.0)		Minimum % of length of LTR required in alignment to associate LTR with a cluster
@@ -169,21 +167,21 @@ phyltr --fasta <input> --procs <int> \
 ```
 ---
 ## 7. Gene conversion between LTR-Rs in a cluster
-###### Possible external dependencies
+###### External dependencies
 * BEDtools
 * MAFFT
 * trimAl
 * GENECONV
 * Circos
 #### GENECONV: `--geneconvclusters`
-###### Available options (explained in GENECONV documentation)
+###### Options (explained in GENECONV documentation)
 ```
 --geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3
 ```
 #### Circos: `--circos`
 ---
 ## 8. Phylogenetics
-###### Possible external dependencies
+###### External dependencies
 * BEDtools
 * MAFFT
 * trimAl
@@ -191,7 +189,7 @@ phyltr --fasta <input> --procs <int> \
 * PATHd8
 * PHYLIP
 #### Phylogenetic inference: `--phylo`
-###### Available options
+###### Options
 ```
 --min_clust_size (7)		Do not align clusters smaller than this.
 --nosmalls			Do not analyze clusters smaller than --min_clust_size
@@ -220,7 +218,7 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## APPENDIX A. Global MAFFT options
 This step has been the limiting process in my experience. It can be sped up by reducing the number of iterations performed for each alignment and by reducing the maximum number of elements for classiying elements as medium and small clusters. MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. Depending on resources available to you, you may need to cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. Default is to not align clusters with >1000 elements. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1 for large clusters, which is much more inaccurate.
-###### Available options
+###### Options
 ```
 --maxiterate_small_clusters (30)	MAFFT iterations. More will improve alignment quality.
 --maxiterate_medium_clusters (3)	MAFFT iterations. More will improve alignment quality.
