@@ -175,9 +175,9 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 7. Rene conversion assessment for between elements in clusters
 #### Run GENECONV: `--geneconvclusters`
-###### Options (explained in GENECONV documentation)
+###### Options
 ```
---geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3
+--geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3. Stringency for mismatch-free gene conversion tracts: g0 > g2 > g1
 ```
 ###### External dependencies
 * BEDtools
