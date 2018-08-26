@@ -74,7 +74,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 ---
 ## 2. Identify putatve protein-coding domains in LTR-R internal regions.
-#### A. LTRdigest: `--ltridgest`
+#### A. Run LTRdigest: `--ltridgest`
 ###### External dependencies
 * GenomeTools
 * HMMER3
@@ -83,7 +83,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 --ltrdigest_hmms (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)	path to pHMMs
 ```
-#### B. ORF annotation: `--findORFs`
+#### B. Run ORF annotation: `--findORFs`
 ###### External dependencies
 * EMBOSS
 ###### Options
@@ -92,8 +92,8 @@ phyltr --fasta <input> --procs <int> \
 ```
 ---
 ## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
-#### A. Both Repbase and Dfam classification: `--classify`
-#### B. Dfam classification: `--classify_dfam`
+#### A. Run both Repbase and Dfam classification: `--classify`
+#### B. Run Dfam classification: `--classify_dfam`
 ###### External dependencies
 * BEDtools
 * HMMER3
@@ -104,7 +104,7 @@ phyltr --fasta <input> --procs <int> \
 --nhmmer_reporting_evalue (10)		See HMMER3 documentation: nhmmer -E
 --nhmmer_inclusion_evalue (1e-2)	See HMMER3 documentation: nhmmer -incE
 ```
-#### C. Repbase classification: `--classify_repbase`
+#### C. Run Repbase classification: `--classify_repbase`
 ###### External dependencies
 * BEDtools
 * NCBI BLAST+
@@ -116,10 +116,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 ---
 ## 4. Cluster LTR-Rs
-#### A. WickerFam clustering: `--wicker`
-###### External dependencies
-* BEDtools
-* NCBI Blast+
+#### A. Run WickerFam clustering: `--wicker`
 ###### Options
 ```
 --wicker_minLen (80)	Minimum length of blastn alignment
@@ -128,74 +125,72 @@ phyltr --fasta <input> --procs <int> \
 --wicker_no_internals	Turns off use of internal region alignments for clustering
 --wicker_no_ltrs	Turns off use of LTR alignments for clustering
 ```
-#### B. MCL clustering: `--mcl`
+###### External dependencies
+* BEDtools
+* NCBI Blast+
+#### B. Run MCL clustering: `--mcl`
+###### Options
+```
+--I (6)		MCL inflation paramter. Larger values result in smaller clusters.
+```
 ###### External dependencies
 * BEDtools
 * NCBI Blast+
 * MCL
+---
+## 5. Estimate LTR divergences (aka insertion age)
+#### A. Run gene conversion assessment for intra-element LTR assessment: `--geneconvltrs`
 ###### Options
 ```
---I (6)
+--geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3. Stringency for mismatch-free gene conversion tracts: g0 > g2 > g1
 ```
----
-## 5. LTR divergence estimation (aka insertion age)
-#### A. GENECONV for intra-element LTR assessment: `--geneconvltrs`
 ###### External dependencies
 * BEDtools
 * MAFFT
 * trimAl
 * GENECONV
+#### B. Run LTR divergence estimation: `--ltr_divergence`
 ###### Options
 ```
---geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3. Stringency for mismatch-free gene conversion tracts: g0 > g2 > g1
+--remove_GC_from_modeltest_aln	Remove elements with gene conversion (--geneconvclusters)
 ```
-#### B. Estimate LTR divergences `--ltr_divergence`
 ###### External dependencies
 * BEDtools
 * MAFFT
 * trimAl
 * jModelTest2
 * PAUP\*
-###### Options
-```
---remove_GC_from_modeltest_aln	Remove elements with gene conversion (--geneconvclusters)
-```
 ---
 ## 6. "Solo LTR" search
-#### "Solo LTR" search: `--soloLTRsearch`
-###### External dependencies
-* BEDtools
-* NCBI BLAST+
+#### Run "Solo LTR" search: `--soloLTRsearch`
 ###### Options
 ```
 --soloLTRminPid (80.0)		Minimum %identity in blastn alignment to associate LTR with a cluster
 --soloLTRminLen	(80.0)		Minimum % of length of LTR required in alignment to associate LTR with a cluster
 --soloLTRmaxEvalue (1e-3)	Maximum E-value for blastn
 ```
+###### External dependencies
+* BEDtools
+* NCBI BLAST+
 ---
-## 7. Gene conversion between LTR-Rs in a cluster
+## 7. Rene conversion assessment for between elements in clusters
+#### Run GENECONV: `--geneconvclusters`
+###### Options (explained in GENECONV documentation)
+```
+--geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3
+```
 ###### External dependencies
 * BEDtools
 * MAFFT
 * trimAl
 * GENECONV
-* Circos
-#### GENECONV: `--geneconvclusters`
-###### Options (explained in GENECONV documentation)
-```
---geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3
-```
-#### Circos: `--circos`
----
-## 8. Phylogenetics
+#### Make Circos plots: `--circos`
 ###### External dependencies
 * BEDtools
-* MAFFT
-* trimAl
-* FastTree2
-* PATHd8
-* PHYLIP
-#### Phylogenetic inference: `--phylo`
+* Circos
+---
+## 8. Phylogenetics
+#### Run phylogenetic inference: `--phylo`
 ###### Options
 ```
 --min_clust_size (7)		Do not align clusters smaller than this.
@@ -210,6 +205,13 @@ phyltr --fasta <input> --procs <int> \
 --bootstrap_reps (100)		Number of bootstrap replicates to perform
 --LTT				Turns on --rmhomoflank, --convert_to_ultrametric, and --auto_outgroup.
 ```
+###### External dependencies
+* BEDtools
+* MAFFT
+* trimAl
+* FastTree2
+* PATHd8
+* PHYLIP
 ---
 ## 9. External scripts
 ---
