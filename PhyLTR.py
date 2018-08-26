@@ -315,7 +315,9 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl, annotAttr2DbDict, outputFlName,
 	with open(outputFlName, 'w') as outFl:
 		for element in sorted(list(LTR_retrotransposon_GFF_lines.keys())):
 			if LTR_retrotransposon_GFF_lines[element] != []:
-				outFl.write('###\n'.join(LTR_retrotransposon_GFF_lines[element])+'\n')
+				for line in LTR_retrotransposon_GFF_lines[element]:
+					outFl.write(line.strip()+'\n')
+				outFl.write('###\n')
 
 	logfile.close()
 
