@@ -52,7 +52,7 @@ phyltr --fasta <input> --procs <int> \
 	--DTT
 ```
 ---
-## 1. Identifying candidate LTR-R loci
+## 1. Identify candidate LTR-R loci
 #### LTRharvest: `--ltrharvest`
 ###### External dependencies
 * GenomeTools
@@ -73,7 +73,7 @@ phyltr --fasta <input> --procs <int> \
 --del (-3)
 ```
 ---
-## 2. Identifying putatve protein-coding domains in LTR-R internal regions.
+## 2. Identify putatve protein-coding domains in LTR-R internal regions.
 #### A. LTRdigest: `--ltridgest`
 ###### External dependencies
 * GenomeTools
@@ -120,7 +120,7 @@ phyltr --fasta <input> --procs <int> \
 * NCBI Blast+
 * BEDtools
 * MCL
-#### WickerFam clustering: `--wicker`
+#### A. WickerFam clustering: `--wicker`
 ###### Options
 ```
 --wicker_minLen (80)	Minimum length of blastn alignment
@@ -208,7 +208,7 @@ phyltr --fasta <input> --procs <int> \
 ---
 #### Render graphical trees annotated with LTR-R diagrams with colored ORFs (Python 3)
 ---
-#### Visualizing insertion ages (R)
+#### Visualize insertion ages (R)
 ---
 #### Lineage through time plots (R)
 ---
