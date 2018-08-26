@@ -41,7 +41,7 @@ def help():
 
  Optional flags:
  -----------
- -evalue <int>	max E-value for blastp. Default 1e-2
+ -evalue <num>	max E-value for blastp. Default 1e-2
  
  ''')
 

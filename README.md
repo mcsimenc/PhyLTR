@@ -240,7 +240,7 @@ Mandatory flags:
 -----------
 -gff	 <path>	GFF3 file with LTRdigest-format LTR retrotransposon features
 
--ref    <path>	Nucleotide FASTA file that is the reference associated with -gff
+-ref	 <path>	Nucleotide FASTA file that is the reference associated with -gff
 
 -prot	 <path>	Protein FASTA file to convert to a blast database and
 
@@ -250,7 +250,7 @@ Mandatory flags:
 
 Optional flags:
 -----------
--evalue <int>	max E-value for blastp. Default 1e-2
+-evalue <num>	max E-value for blastp. Default 1e-2
 ```
 ###### External dependencies
 * Python 3
