@@ -81,7 +81,7 @@ phyltr --fasta <input> --procs <int> \
 ###### External dependencies
 * GenomeTools
 * HMMER3
-* pHMMs (database)
+* pHMMs
 #### B. Run ORF annotation: `--findORFs`
 ###### Options
 ```
@@ -102,7 +102,7 @@ phyltr --fasta <input> --procs <int> \
 ###### External dependencies
 * BEDtools
 * HMMER3
-* Dfam (database)
+* Dfam
 #### C. Run Repbase classification: `--classify_repbase`
 ###### Options
 ```
@@ -112,7 +112,7 @@ phyltr --fasta <input> --procs <int> \
 ###### External dependencies
 * BEDtools
 * NCBI BLAST+
-* Repbase (database)
+* Repbase
 ---
 ## 4. Cluster LTR-Rs
 #### A. Run WickerFam clustering: `--wicker`
