@@ -52,7 +52,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 ---
 ## 1. Identify candidate LTR-R loci
-#### LTRharvest: `--ltrharvest`
+#### Run LTRharvest: `--ltrharvest`
 ###### Options
 ```
 --minlenltr (100)	Minimum LTR length (bp)
