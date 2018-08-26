@@ -60,14 +60,14 @@ phyltr --fasta <input> --procs <int> \
 --mindistltr (1000)	Minimum distance between LTRs (bp)
 --maxdistltr (15000)	Maximum distance between LTRs (bp)
 --similar (85.0)	Minimum % similarity between LTRs
---vic (60)		
---mintsd (4)
---maxtsd (20)
---xdrop	(5)
---mat (2)
---mis (-2)
---insi (-3)
---del (-3)
+--vic (60)		Distance (bp) beyond LTRs to search for TSDs
+--mintsd (4)		Minimum length for each TSD
+--maxtsd (20)		Maximum length for each TSD
+--xdrop	(5)		xdropbelow score for extension-alignment
+--mat (2)		Match score for extension-alignment
+--mis (-2)		Mismatch score for extension-alignment
+--insi (-3)		Insertion score for extension-alignment
+--del (-3)		Deletion score for extension-alignment
 ```
 ###### External dependencies
 * GenomeTools
