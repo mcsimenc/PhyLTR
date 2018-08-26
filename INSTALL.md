@@ -1,4 +1,4 @@
-# How to install PhyLTR: Three steps,
+# How to install PhyLTR: Three steps
 
 1. Clone repository
 2. Install dependencies

@@ -170,7 +170,7 @@ phyltr --fasta <input> --procs <int> \
 * BEDtools
 * NCBI BLAST+
 ---
-## 7. Rene conversion assessment for between elements in clusters
+## 7. Gene conversion assessment for between elements in clusters
 #### Run GENECONV: `--geneconvclusters`
 ###### Options
 ```
