@@ -213,10 +213,14 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 9. External scripts
 ---
+#### Search genes for LTR-R ORF homologs
+###### External dependencies
+* Python 3
+* NCBI BLAST+
 #### Render graphical trees annotated with LTR-R diagrams with colored ORFs
 ###### External dependencies
 * Python 3
-* ETE3 (Python 3 package)
+* Python 3 modules: ETE3
 #### Documentation
 ```
 Usage:
@@ -224,8 +228,8 @@ Usage:
 
 Description:
 
-	renders phylogenies for long terminal repeat retrotransposon phylogenies with diagrams of LTR elements' domain
-	architecture and optionally additional annotations (-lflabel, -classif, -geneconv, -transcribed, -orfhits)
+	Draws trees for long terminal repeat retrotransposon phylogenies with diagrams of LTR elements' domain
+	architecture.
 
 -lflabel
 	Show element IDs (integers) as leaf labels.
