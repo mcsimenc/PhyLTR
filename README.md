@@ -212,12 +212,12 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 9. External scripts
 ---
-#### Search genes for LTR-R ORF homologs
+#### A. Search genes for LTR-R ORF homologs
 ###### External dependencies
 * Python 3
 * NCBI BLAST+
-#### Render graphical trees annotated with LTR-R diagrams with colored ORFs
-#### Documentation
+#### B. Render graphical trees annotated with LTR-R diagrams with colored ORFs
+###### Documentation
 ```
 Usage:
 	ete3_tree.py -t <newick_tree> -d <divergences> -g <gff> [options] 
@@ -279,32 +279,32 @@ Colors
 * Python 3
 * Python 3 modules: ETE3
 ---
-#### Visualize insertion ages
+#### C. Visualize insertion ages
 ###### External dependencies
 * R
 * R packages:  hash, ggplot2
 ---
-#### Lineage through time plots
+#### D. Lineage through time plots
 ###### External dependencies
 * R
 * R packages: ape, hash, ggplot2
 ---
-#### Transposition rate analyses
+#### E. Transposition rate analyses
 ###### External dependencies
 * R
 * R packages: ape, hash, ggplot2
 ---
-#### Tree shape analyses
+#### F. Tree shape analyses
 ###### External dependencies
 * R
 * R packages: ape, apTreeshape, hash, ggplot2
 ---
-#### Transposition/deletion rate modeling
+#### G. Transposition/deletion rate modeling
 ###### External dependencies
 * R
 * R packages: ape, phangorn, hash, ggplot2, LASER (functions included as LASER is deprecated)
 ---
-#### Other scripts
+#### H. Other scripts
 ---
 ## APPENDIX A. Global MAFFT options
 This step has been the limiting process in my experience. It can be sped up by reducing the number of iterations performed for each alignment and by reducing the maximum number of elements for classiying elements as medium and small clusters. MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. Depending on resources available to you, you may need to cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. Default is to not align clusters with >1000 elements. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1 for large clusters, which is much more inaccurate.
