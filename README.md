@@ -254,6 +254,7 @@ Optional flags:
 ```
 ###### External dependencies
 * Python 3
+* BEDtools
 * NCBI BLAST+
 #### B. Render graphical trees annotated with LTR-R diagrams with colored ORFs
 ###### Documentation
