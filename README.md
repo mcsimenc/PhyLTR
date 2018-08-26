@@ -13,8 +13,8 @@ DfamClassification/	nhmmer search of Dfam for LTR-R homologs
 RepbaseClassification/	tblastx search of Repbase for LTR-R homologs
 FASTA_output/		some intermediate FASTA files
 GFF_output/		various intermediate and final GFF3 files
-MCL/			MCL clusterings and downstream analyses
 WickerFamDir/		WickerFam clusterings and downstream analyses
+MCL/			MCL clusterings and downstream analyses
 ```
 Within each clustering directory, e.g: `MCL/I6/`
 ```
@@ -46,7 +46,7 @@ phyltr --fasta <input> --procs <int> \
 	--geneconvltrs \
 	--ltrdivergence \
 	--phylo \
-	--DTT
+	--LTT
 ```
 ---
 ## 1. Identify candidate LTR-R loci
