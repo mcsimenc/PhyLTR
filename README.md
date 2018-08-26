@@ -53,7 +53,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 ---
 ## 1. Identifying candidate LTR-R loci with LTRharvest
-#### Turn on LTRharvest: `--ltrharvest`
+#### LTRharvest: `--ltrharvest`
 ###### External dependencies
 * GenomeTools
 ###### Available options (explained in the LTRharvest documentation).
@@ -74,7 +74,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 ---
 ## 2. Identifying putatve protein-coding domains in LTR-R internal regions.
-#### A. Turn on LTRdigest: `--ltridgest`
+#### A. LTRdigest: `--ltridgest`
 ###### External dependencies
 * GenomeTools
 * HMMER3
@@ -83,7 +83,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 --ltrdigest_hmms (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)	path to pHMMs
 ```
-#### B. Turn on ORF annotation: `--findORFs`
+#### B. ORF annotation: `--findORFs`
 ###### External dependencies
 * GenomeTools
 * EMBOSS
@@ -93,7 +93,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 ---
 ## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
-#### A. Turn on both Repbase and Dfam classification: `--classify`
+#### A. Both Repbase and Dfam classification: `--classify`
 ###### Possible external dependencies
 * GenomeTools
 * BEDtools
@@ -105,13 +105,13 @@ phyltr --fasta <input> --procs <int> \
 ```
 --keep_no_classifications Retain elements without homology to known LTR-Rs
 ```
-#### B. Turn on Dfam classification: `--classify_dfam`
+#### B. Dfam classification: `--classify_dfam`
 ###### Available options (explained in the HMMER3 documentation)
 ```
 --nhmmer_reporting_evalue (10)
 --nhmmer_inclusion_evalue (1e-2)
 ```
-#### C. Turn on Repbase classification: `--classify_repbase`
+#### C. Repbase classification: `--classify_repbase`
 ###### Available options (explained in the tblastx documentation)
 ```
 --repbase_tblastx_evalue (1e-5)
@@ -122,7 +122,7 @@ phyltr --fasta <input> --procs <int> \
 * NCBI Blast+
 * BEDtools
 * MCL
-#### Turn on WickerFam clustering: `--wicker`
+#### WickerFam clustering: `--wicker`
 ###### Available options
 ```
 --wicker_minLen (80)	Minimum length of blastn alignment
@@ -131,7 +131,7 @@ phyltr --fasta <input> --procs <int> \
 --wicker_no_internals	Turns off use of internal region alignments for clustering
 --wicker_no_ltrs	Turns off use of LTR alignments for clustering
 ```
-#### B. Turn on MCL clustering: `--mcl`
+#### B. MCL clustering: `--mcl`
 ###### Available options
 ```
 --I (6)
@@ -145,7 +145,7 @@ phyltr --fasta <input> --procs <int> \
 * PAUP\*
 * jModelTest2
 * GENECONV
-#### A. Turn on GENECONV for intra-element LTR assessment: `--geneconvltrs`
+#### A. GENECONV for intra-element LTR assessment: `--geneconvltrs`
 ###### See options for MAFFT below
 ###### Available options (explained in GENECONV documentation)
 ```
@@ -158,7 +158,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 ---
 ## 6. "Solo LTR" search
-#### Turn on "solo LTR" search: `--soloLTRsearch`
+#### "Solo LTR" search: `--soloLTRsearch`
 ###### External dependencies
 * NCBI BLAST+
 ###### Available options
@@ -175,12 +175,12 @@ phyltr --fasta <input> --procs <int> \
 * trimAl
 * GENECONV
 * Circos
-#### Turn on GENECONV: `--geneconvclusters`
+#### GENECONV: `--geneconvclusters`
 ###### Available options (explained in GENECONV documentation)
 ```
 --geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3
 ```
-#### Turn on Circos: `--circos`
+#### Circos: `--circos`
 ---
 ## 8. Phylogenetics
 ###### Possible external dependencies
@@ -190,7 +190,7 @@ phyltr --fasta <input> --procs <int> \
 * FastTree2
 * PATHd8
 * PHYLIP
-#### Turn on phylogenetic inference: `--phylo`
+#### Phylogenetic inference: `--phylo`
 ###### Available options
 ```
 --min_clust_size (7)		Do not align clusters smaller than this.
