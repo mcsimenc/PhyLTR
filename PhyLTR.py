@@ -3953,7 +3953,7 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
 				if  alnPth in paths:
 					alnPthKeys.append(alnPth)
 
-			# clustersmall will be left out of OUTGROUP. No DTT for clustersmall
+			# clustersmall will be left out of OUTGROUP. No LTT for clustersmall
 			if combine_and_do_small_clusters:
 				if WICKERCLUST:
 					alnPth = 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_clustersmall_{4}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc)
@@ -5208,7 +5208,7 @@ def shortHelp():
 	  [--gc_ltr_div_scaling <int>] [ --maxiterate_small_clusters <int> ]
 	  [ --maxiterate_medium_clusters <int> ] [ --mafft_smallAln_maxclustsize <int> ]
 	  [ --mafft_mediumAln_maxclustsize <int> ] [ --mafft_largeAln_maxclustsize <int> ]
-	  [--geneconvclusters] [--DTT] [--phylo] [--bootstrap_reps] [--bpflank <int>]
+	  [--geneconvclusters] [--LTT] [--phylo] [--bootstrap_reps] [--bpflank <int>]
 	  [--flank_evalue <int|float>] [--flank_pId <int|float>][--flank_plencutoff <int|float>]
 	  [--min_orf_len <int>] Solo LTR
 	  ''', file=sys.stderr)
@@ -5267,13 +5267,14 @@ def help2():
 	--mafft_mediumAln_maxclustsize	    <int>		500
 	--mafft_largeAln_maxclustsize  	    <int>		1000
 	--geneconvclusters		    BINARY		OFF
-	--DTT				    BINARY		OFF
+	--LTT				    BINARY		OFF
 	--phylo				    BINARY		OFF
 	--bootstrap_reps		    <int>		100
 	--bpflank			    <int>		500
 	--flank_evalue			    <num>		1e-5
 	--flank_pId			    <num>		70
 	--flank_plencutoff		    <num>		70
+	--findORFs			    BINARY		on
 	--min_orf_len			    <int>		300
 	--soloLTRsearch			    BINARY		OFF
 	--soloLTRminPid			    <num>		80.0
@@ -5303,7 +5304,7 @@ def help():
 		 --geneconvltrs \\
 		 --geneconvclusters \\
 		 --ltrdivergence \\
-		 --DTT
+		 --LTT
 
 	  ------------------------------
 	  Global Options:
@@ -5340,6 +5341,7 @@ def help():
 
 	  ORF annotation
 	  --------------
+	  --findORFs			Turns on ORF annotation
 	  --min_orf_len			<int>	(default 300)
 
 	  LTRdigest
@@ -5365,7 +5367,7 @@ def help():
 	  Clustering
 	  -----------
 	  --min_clust_size			Minimum allowed cluster size. Clusters with < minclustsize elements get assembled together
-	  					but no model testing, gene conversion, or outgroup/DTT analysis is done.
+	  					but no model testing, gene conversion, or outgroup/LTT analysis is done.
   	  --mcl					Cluster using MCL
 	  --I					Inflation/granularity parameter for MCL (default 6)
   	  --wicker				Cluster using '80-80-80' rule, or custom values specified below.
@@ -5429,7 +5431,7 @@ def help():
 	  Finding pairs of elements within clusters that have homologous flanking regions
 	  -------------------------------------------------------------------------------
 	  --rmhomoflank				Remove one of each pair of elements within each alignment (and therefore, each tree).
-	  					(default OFF; Fixed ON when using --DTT)
+	  					(default OFF; Fixed ON when using --LTT)
 	  --bpflank		<int>		Number of bases on either side of each element to search for homology. (default 500 bp)
 	  --flank_evalue	<int|float>	E-value ceiling for considering blastn hits as evidence of homology. (default 1e-5)
 	  --flank_pId		<int|float>	Minimum percent identity in blastn alignment to consider hit as evidence of homology. (default 70)
@@ -5439,10 +5441,10 @@ def help():
 	  ---------------------
 	  --phylo				##### not implemented yet
 	  --nosmalls				Do not combine and perform phylogentic analyses on clusters smaller than --min_clust_size.
-	  --DTT					Turns on --rmhomoflank, --convert_to_ultrametric, and --auto_outgroup. Generates and attempts to run
-	  					Rscript that generates a DTT (LTT) plot for each cluster for which rooting is possible.
+	  --LTT					Turns on --rmhomoflank, --convert_to_ultrametric, and --auto_outgroup. Generates and attempts to run
+	  					Rscript that generates a LTT plot for each cluster for which rooting is possible.
 	  --bootstrap_reps		<int>	Number of replicates to generate for bootstrapping (default 100)
-	  --convert_to_ultrametric		Convert trees to ultrametric using PATHd8. (default OFF; ON when using --DTT)
+	  --convert_to_ultrametric		Convert trees to ultrametric using PATHd8. (default OFF; ON when using --LTT)
 	  --auto_outgroup			Pick an outgroup automatically:
 						 -The outgroup shall be a random element from cluster k where cluster k is the largest of the clusters
 						  that is not j if j is the first cluster then the next smallest cluster is k if there is no other
@@ -5591,6 +5593,10 @@ if '--ltrdigest_hmms' in args: # Check for user-supplied location of HMMs for LT
 	paths['LTRdigestHMMs'] = args[args.index('--ltrdigest_hmms') + 1]
 else:
 	paths['LTRdigestHMMs'] = '{0}/LTRdigest_HMMs/hmms'.format(paths['selfDir'])
+if '--findORFs' in args:
+	FINDORFS = True
+else:
+	FINDORFS = False
 if '--min_orf_len' in args:
 	min_orf_len = int(args[args.index('--min_orf_len')+1])
 else:
@@ -5723,15 +5729,15 @@ if '--auto_outgroup' in args:
 	AUTO_OUTGROUP = True
 else:
 	AUTO_OUTGROUP = False
-if '--DTT' in args:
+if '--LTT' in args:
 	AUTO_OUTGROUP = True
 	RMHOMOFLANK = True
-	DTT = True
+	LTT = True
 	ULTRAMETRIC = True
 else:
 	AUTO_OUTGROUP = False
 	RMHOMOFLANK = False
-	DTT = False
+	LTT = False
 	ULTRAMETRIC = False
 
 # MAFFT parameters
@@ -5872,7 +5878,8 @@ ltrdigest()	# Identify parts of element internal regions with evidence of homolo
 #		# Input: Sequences (FASTA), LTRharvest GFF3, pHMMs
 #		# Output: LTRdigest GFF3
 #
-AnnotateORFs(minLen=min_orf_len)
+if FINDORFS:
+	AnnotateORFs(minLen=min_orf_len)
 #
 #	3. Classify elements to superfamily using homology evidence in Dfam and/or Repbase
 #

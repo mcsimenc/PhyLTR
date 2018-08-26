@@ -139,7 +139,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 --I (6)
 ```
-## 5. LTR divergence estimation
+## 5. LTR divergence estimation (aka insertion age)
 ###### Possible external dependencies
 * MAFFT
 * trimAl
@@ -150,75 +150,75 @@ phyltr --fasta <input> --procs <int> \
 #### A. Turn on GENECONV for intra-element LTR assessment: `--geneconvltrs`
 ###### See options for MAFFT below
 ###### Available options (explained in GENECONV documentation)
+```
 --geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3
+```
 #### B. Estimate LTR divergences `--ltr_divergence`
 ###### Available options
+```
+--remove_GC_from_modeltest_aln	Remove elements with gene conversion (--geneconvclusters)
+```
 ## 6. "Solo LTR" search
+###### External dependencies
+* NCBI BLAST+
+###### Available options
+```
+--soloLTRminPid (80.0)		Minimum %identity in blastn alignment to associate LTR with a cluster
+--soloLTRminLen	(80.0)		Minimum % of length of LTR required in alignment to associate LTR with a cluster
+--soloLTRmaxEvalue (1e-3)	Maximum E-value for blastn
+```
 ###### External dependencies
 * NCBI BLAST+
 #### Turn on "solo LTR" search: `--soloLTRsearch`
 ## 7. Gene conversion between LTR-Rs in a cluster
 ###### Possible external dependencies
-* GENECONV
-* BLAST?
-* Circos
-#### Turn on GENECONV: `--geneconvclusters`
-#### Turn on Circos: `--circos`
-
-## 8. Phylogenetics
-###### Possible external dependencies
+* BEDtools
 * MAFFT
 * trimAl
-* FastTree2 + scripts
+* GENECONV
+* Circos
+#### Turn on GENECONV: `--geneconvclusters`
+###### Available options (explained in GENECONV documentation)
+```
+--geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3
+```
+#### Turn on Circos: `--circos`
+## 8. Phylogenetics
+###### Possible external dependencies
+* BEDtools
+* MAFFT
+* trimAl
+* FastTree2
 * PATHd8
 * PHYLIP
+#### Turn on phylogenetic inference: `--phylo`
+###### Available options
+```
+--min_clust_size (7)		Do not align clusters smaller than this.
+--nosmalls			Do not analyze clusters smaller than --min_clust_size
+--rmhomoflank			Exclude elements with non-unique flanking sequences from alignments.
+--bpflank (500)			Length (bp) of flank searched
+--flank_evalue (1e-5)		Maximum E-value for blastn for flank search
+--flank_pId (70.0) 		Minimum %identity in blastn alignment for flank search
+--flank_plencutoff (70.0)	Minimum % of length of flank required in alignment
+--convert_to_ultrametric	Convert tree to ultrametric (can be used for LTT plots)
+--auto_outgroup			Include as an outgroup a random element from the largest available other cluster in classification (e.g. gypsy)
+--bootstrap_reps (100)		Number of bootstrap replicates to perform
+--LTT				Turns on --rmhomoflank, --convert_to_ultrametric, and --auto_outgroup.
+```
 
+## 9. External scripts
 
+#### Render graphical trees annotated with LTR-R diagrams with colored ORFs (Python 3)
 
-LTR divergence estimation
--------------------------
---ltrdivergence			Find statistially best supported (BIC) substitution model for each cluster (default ON)
-					and estimate substitutions per site between LTRs for each element. 
---modeltest_criterion		<str>	AIC, AICc, or BIC. (default BIC)
-      				MULTIPLE CHOICES NOT YET IMPLEMENTED
---gc_ltr_div_scaling		<int>	For reporting scaled divergence estimates to account for effects of gene conversion, if observed. (default 1)
-      				MULTIPLE CHOICES NOT YET IMPLEMENTED
-					1. divC = div * len(aln)/(len(aln)-len(gc_trac))
---default_model		<str>	When model testing is not possible (i.e. cluster is too small) HKY85 or JC,
-					if HKY85 is not possible due to dinucleotide LTRs.
-					MULTIPLE CHOICES NOT YET IMPLEMENTED
---remove_GC_from_modeltest_aln	Remove elements with suspected intra-cluster inter-element gene conversion tracts.
+#### Visualizing insertion ages (R)
 
-Solo LTR search
--------------------
-soloLTRsearch				Turn on solo LTR search.
-soloLTRminPid			<num>	Minimum percent identity for inclusion of a solo LTR in a cluster (80.0)
-soloLTRminLen			<num>	Minimum percent of LTR length participating in alignment for inclusion of LTR in a cluster (80.0)
-soloLTRmaxEvalue		<num>	Maximum evalue allowed for blastn
+#### Lineage through time plots (R)
 
+#### Transposition rate analyses (R)
 
+#### Other scripts
 
-Finding pairs of elements within clusters that have homologous flanking regions
--------------------------------------------------------------------------------
---rmhomoflank				Remove one of each pair of elements within each alignment (and therefore, each tree).
-					(default OFF; Fixed ON when using --DTT)
---bpflank		<int>		Number of bases on either side of each element to search for homology. (default 500 bp)
---flank_evalue	<int|float>	E-value ceiling for considering blastn hits as evidence of homology. (default 1e-5)
---flank_pId		<int|float>	Minimum percent identity in blastn alignment to consider hit as evidence of homology. (default 70)
---flank_plencutoff	<int|float>	Minimum percentage of flanking region required to participate in alignment to consider
-					blastn hit as evidence of homology. (default 70)
-Phylogenetic analysis
----------------------
---phylo				##### not implemented yet
---nosmalls				Do not combine and perform phylogentic analyses on clusters smaller than --min_clust_size.
---DTT					Turns on --rmhomoflank, --convert_to_ultrametric, and --auto_outgroup. Generates and attempts to run
-					Rscript that generates a DTT (LTT) plot for each cluster for which rooting is possible.
---bootstrap_reps		<int>	Number of replicates to generate for bootstrapping (default 100)
---convert_to_ultrametric		Convert trees to ultrametric using PATHd8. (default OFF; ON when using --DTT)
---auto_outgroup			Pick an outgroup automatically:
-      				 -The outgroup shall be a random element from cluster k where cluster k is the largest of the clusters
-      				  that is not j if j is the first cluster then the next smallest cluster is k if there is no other
-      				  cluster, no outgroup is used.
 
 ## APPENDIX A. Global MAFFT options
 This step has been the limiting process in my experience. It can be sped up by reducing the number of iterations performed for each alignment and by reducing the maximum number of elements for classiying elements as medium and small clusters. MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. Depending on resources available to you, you may need to cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. Default is to not align clusters with >1000 elements. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1 for large clusters, which is much more inaccurate.
