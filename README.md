@@ -213,7 +213,7 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 9. External scripts
 ---
-#### Render graphical trees annotated with LTR-R diagrams with colored ORFs (Python 3 + ETE3 tree)
+#### Render graphical trees annotated with LTR-R diagrams with colored ORFs
 ###### External dependencies
 * Python 3
 * ETE3 (Python 3 package)
@@ -276,11 +276,25 @@ Colors
 	annotated orf	custom
 ```
 ---
-#### Visualize insertion ages (R)
+#### Visualize insertion ages
+###### External dependencies
+* R
+* R packages:  hash, ggplot2
 ---
-#### Lineage through time plots (R)
+#### Lineage through time plots
+###### External dependencies
+* R
+* R packages: ape, hash, ggplot2
 ---
-#### Transposition rate analyses (R)
+#### Transposition rate analyses
+###### External dependencies
+* R
+* R packages: ape, hash, ggplot2
+---
+#### Tree shape analyses
+###### External dependencies
+* R
+* R packages: ape, apTreeshape, hash, ggplot2
 ---
 #### Other scripts
 ---
