@@ -215,6 +215,43 @@ phyltr --fasta <input> --procs <int> \
 ## 9. External scripts
 ---
 #### A. Search genes for LTR-R ORF homologs
+###### Documentation
+```
+ Usage:
+------------
+domainSearch.py -gff <gff3> -ref <fasta> -prot <fasta> -procs <int>
+
+Description:
+------------
+This script was written for comparing putative protein-coding domains
+and ORFs in a GFF3 as output from PhyLTR (LTRharvest+LTRdigest+AnnotateORFs).
+The required programs are bedtools getfasta, and makeblastdb and blastp from
+BLAST+. Their paths should be in a text file named CONFIG file located in the
+same directory as this script using the same format used for PhyLTR.
+
+Process:
+-----------
+1. Putative domain sequences encoded in -gff are extracted from -ref and
+   translated
+2. Translated sequences are compared to protein sequences in -prot, which could
+   be, for example, the protein sequences for a
+
+Mandatory flags:
+-----------
+-gff	 <path>	GFF3 file with LTRdigest-format LTR retrotransposon features
+
+-ref    <path>	Nucleotide FASTA file that is the reference associated with -gff
+
+-prot	 <path>	Protein FASTA file to convert to a blast database and
+
+-procs	 <int>	Number of processors to use for blastp
+
+-out	 <path> Output file path - you may need to give full path
+
+Optional flags:
+-----------
+-evalue <int>	max E-value for blastp. Default 1e-2
+```
 ###### External dependencies
 * Python 3
 * NCBI BLAST+
@@ -317,8 +354,6 @@ This step has been the limiting process in my experience. It can be sped up by r
 --mafft_smallAln_maxclustsize (50)	Max elements to consider a cluster small.
 --mafft_mediumAln_maxclustsize (500)	Max elements to consider a cluster medium.
 --mafft_largeAln_maxclustsize (1000)	Max elements to consider a cluster large. Clusters larger than this will not be aligned.
---min_clust_size (7)			Do not align clusters smaller than this.
---nosmalls				Do not combine and assemble all clusters smaller than --min_clust_size
 ```
 ---
 ## APPENDIX B. Other global options
@@ -326,6 +361,8 @@ This step has been the limiting process in my experience. It can be sped up by r
 --keep_files				Keeps intermediate files that are otherwise removed.
 --output_dir (PhyLTR.output)		Output directory. Default is "PhyLTR.output
 --logfile (<output_dir>/log.txt)	Path to where log file is written 
+--min_clust_size (7)			Do not align clusters smaller than this.
+--nosmalls				Do not combine and assemble all clusters smaller than --min_clust_size
 ```
 ---
 ## APPENDIX C. All options
