@@ -51,8 +51,6 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 1. Identify candidate LTR-R loci
 #### LTRharvest: `--ltrharvest`
-###### External dependencies
-* GenomeTools
 ###### Options
 ```
 --minlenltr (100)	Minimum LTR length (bp)
@@ -69,48 +67,50 @@ phyltr --fasta <input> --procs <int> \
 --insi (-3)
 --del (-3)
 ```
+###### External dependencies
+* GenomeTools
 ---
 ## 2. Identify putatve protein-coding domains in LTR-R internal regions.
 #### A. Run LTRdigest: `--ltridgest`
-###### External dependencies
-* GenomeTools
-* HMMER3
-* pHMMs (database)
 ###### Options
 ```
 --ltrdigest_hmms (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)	path to pHMMs
 ```
-#### B. Run ORF annotation: `--findORFs`
 ###### External dependencies
-* EMBOSS
+* GenomeTools
+* HMMER3
+* pHMMs (database)
+#### B. Run ORF annotation: `--findORFs`
 ###### Options
 ```
 --min_orf_len (300)	The minimum length (bp) of ORF to find
 ```
+###### External dependencies
+* EMBOSS
 ---
 ## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
 #### A. Run both Repbase and Dfam classification: `--classify`
 #### B. Run Dfam classification: `--classify_dfam`
-###### External dependencies
-* BEDtools
-* HMMER3
-* Dfam (database)
 ###### Options
 ```
 --keep_no_classifications 		Retain elements without homology to known LTR-Rs
 --nhmmer_reporting_evalue (10)		See HMMER3 documentation: nhmmer -E
 --nhmmer_inclusion_evalue (1e-2)	See HMMER3 documentation: nhmmer -incE
 ```
-#### C. Run Repbase classification: `--classify_repbase`
 ###### External dependencies
 * BEDtools
-* NCBI BLAST+
-* Repbase (database)
+* HMMER3
+* Dfam (database)
+#### C. Run Repbase classification: `--classify_repbase`
 ###### Options
 ```
 --keep_no_classifications	Retain elements without homology to known LTR-Rs
 --repbase_tblastx_evalue (1e-5)	Maximum E-value for tblastx hits
 ```
+###### External dependencies
+* BEDtools
+* NCBI BLAST+
+* Repbase (database)
 ---
 ## 4. Cluster LTR-Rs
 #### A. Run WickerFam clustering: `--wicker`
@@ -217,9 +217,6 @@ phyltr --fasta <input> --procs <int> \
 * Python 3
 * NCBI BLAST+
 #### Render graphical trees annotated with LTR-R diagrams with colored ORFs
-###### External dependencies
-* Python 3
-* Python 3 modules: ETE3
 #### Documentation
 ```
 Usage:
@@ -278,6 +275,9 @@ Colors
 	orf		dimgray
 	annotated orf	custom
 ```
+###### External dependencies
+* Python 3
+* Python 3 modules: ETE3
 ---
 #### Visualize insertion ages
 ###### External dependencies
@@ -321,9 +321,9 @@ This step has been the limiting process in my experience. It can be sped up by r
 ---
 ## APPENDIX B. Other global options
 ```
---keep_files				Default=no. Removes some large intermediate files, including raw
---output_dir		<path>	Output directory. Default is "PhyLTR.output
---logfile			<path>  Path to where log file is written (default <output_dir>/log.txt)
+--keep_files				Keeps intermediate files that are otherwise removed.
+--output_dir (PhyLTR.output)		Output directory. Default is "PhyLTR.output
+--logfile (<output_dir>/log.txt)	Path to where log file is written 
 ```
 ---
 ## APPENDIX C. All options
