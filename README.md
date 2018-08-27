@@ -109,13 +109,15 @@ Internal regions are searched for ORFs that don't overlap any preexisting annota
 ## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase and remove false positives
 #### A. Run both Repbase and Dfam classification: `--classify`
 ###### Description
-Both methods use homology-based evidence for classifying elements as one of the classifications obtained from the database records: BEL, Copia, DIRS, Endogenous Retrovirus, ERV1, ERV2, ERV3, ERV4, Gypsy, Lentivirus (Repbase) and Copia, DIRS, ERV?, ERV1, ERV1?, ERV-Foamy, ERVK, ERVK?, ERVL, ERVL?, ERVL-MaLR, Gypsy, Gypsy?, Ngaro, Pao, Undefined, Unknown (Dfam Superfamily). As currently implemented, Dfam hits trump Repbase because they are expected to be longer.
+Both methods use homology-based evidence for classifying elements as one of the classifications obtained from the database records: BEL, Copia, DIRS, Endogenous Retrovirus, ERV1, ERV2, ERV3, ERV4, Gypsy, Lentivirus (Repbase) and Copia, DIRS, ERV?, ERV1, ERV1?, ERV-Foamy, ERVK, ERVK?, ERVL, ERVL?, ERVL-MaLR, Gypsy, Gypsy?, Ngaro, Pao, Undefined, Unknown (Dfam Superfamily). As currently implemented, Dfam hits trump Repbase because they are expected to be longer, and only the highest scoring hits are considered. This worked well for our test genomes and classifications matched domain annotations (e.g. gypsy elements always and only had gypsy domains).
 ###### Output
+* LTR-R annotations with false positives removed and Dfam and/or Repbase annotations (GFF3)
 * LTR-R annotations separated by classification (GFF3s)
 #### B. Run Dfam classification: `--classify_dfam`
 ###### Description
-Finds homologous sequences between LTR-Rs 
+Finds homologs in Dfam using nhmmer
 ###### Output
+* LTR-R annotations with best Dfam hit in attributes (GFF3)
 ###### Options
 ```
 --keep_no_classifications 		Retain elements without homology to known LTR-Rs
@@ -128,7 +130,9 @@ Finds homologous sequences between LTR-Rs
 * Dfam
 #### C. Run Repbase classification: `--classify_repbase`
 ###### Description
+Finds homologs in Repbase using tblastx
 ###### Output
+* LTR-R annotations with best Repbase hit in attributes (GFF3)
 ###### Options
 ```
 --keep_no_classifications	Retain elements without homology to known LTR-Rs
@@ -142,6 +146,7 @@ Finds homologous sequences between LTR-Rs
 ## 4. Cluster LTR-Rs
 #### A. Run WickerFam clustering: `--wicker`
 ###### Description
+An implementation of the method suggested in Wicker et al. (2007) for circumscribing putative LTR-R families. Elements are clustered if . All-by-all blastn is performed for LTRs and/or internal regions and used to construct a graph, subject to constraings (e.g. --wicker_minLen). Clusters are assigned the elements in the connected components in the graph which are discovered using depth first search.
 ###### Output
 ###### Options
 ```
