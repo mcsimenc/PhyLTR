@@ -56,7 +56,7 @@ phyltr --fasta <input> --procs <int> \
 ###### Description
 LTRharvest finds loci with the expected structure of full-length LTR-Rs, TSD-LTR-LTR-TSD (TSD = targest site duplication). LTRharvest searches a suffix array to make things fast, which PhyLTR creates from the FASTA input with the GenomeTools program suffixerator.
 ###### Output
-GFF3 file containing candidate LTR-R subfeatures (LTRs, TSDs, PBSs)
+* Annotations of possible LTR-Rs, including the subfeatures TSDs, LTRs, primer-binding sites (GFF3)
 ###### Options
 ```
 --minlenltr (100)	Minimum LTR length (bp)
@@ -87,28 +87,34 @@ LTRdigest coordinates HMMER3 searches for transposable element protein coding se
 * TSD motifs and domain orders for each element (TSV)
 ###### Options
 ```
---ltrdigest_hmms (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)	path to pHMMs
+--ltrdigest_hmms (PhyLTR/RepeatDatabases/LTRdigest_HMMs/hmms)	path to pHMMs
 ```
 ###### External dependencies
 * GenomeTools
 * HMMER3
 * pHMMs
-#### B. Run ORF annotation: `--findORFs`
+#### B. Run Open reading frame (ORF) annotation: `--findORFs`
 ###### Description
+Internal regions are searched for ORFs that don't overlap any preexisting annotation from step 2A and are longer than a user-defined threshold.
 ###### Output
+* Modified version of step 2A or 1 output with ORF annotations + translated sequences (GFF3)
 ###### Options
 ```
 --min_orf_len (300)	The minimum length (bp) of ORF to find
 ```
 ###### External dependencies
+* BEDtools
 * EMBOSS
 ---
-## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
+## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase and remove false positives
 #### A. Run both Repbase and Dfam classification: `--classify`
 ###### Description
+Both methods use homology-based evidence for classifying elements as one of the classifications obtained from the database records: BEL, Copia, DIRS, Endogenous Retrovirus, ERV1, ERV2, ERV3, ERV4, Gypsy, Lentivirus (Repbase) and Copia, DIRS, ERV?, ERV1, ERV1?, ERV-Foamy, ERVK, ERVK?, ERVL, ERVL?, ERVL-MaLR, Gypsy, Gypsy?, Ngaro, Pao, Undefined, Unknown (Dfam Superfamily). As currently implemented, Dfam hits trump Repbase because they are expected to be longer.
 ###### Output
+* LTR-R annotations separated by classification (GFF3s)
 #### B. Run Dfam classification: `--classify_dfam`
 ###### Description
+Finds homologous sequences between LTR-Rs 
 ###### Output
 ###### Options
 ```
