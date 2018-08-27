@@ -5215,7 +5215,7 @@ def help2():
 	--soloLTRminLen			    <num>		80.0
 	--soloLTRmaxEvalue		    <num>		1e-3
 
-	'''.format('{0}/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
+	'''.format('{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
 
 def help():
 
@@ -5383,7 +5383,7 @@ def help():
 						 -The outgroup shall be a random element from cluster k where cluster k is the largest of the clusters
 						  that is not j if j is the first cluster then the next smallest cluster is k if there is no other
 						  cluster, no outgroup is used.
-'''.format('{0}/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
+'''.format('{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
 args=sys.argv
 
 # get executable paths from CONFIG file, which should be in the same directory as this script
@@ -5526,7 +5526,7 @@ else:
 if '--ltrdigest_hmms' in args: # Check for user-supplied location of HMMs for LTRdigest, set default otherwise (comes with package)
 	paths['LTRdigestHMMs'] = args[args.index('--ltrdigest_hmms') + 1]
 else:
-	paths['LTRdigestHMMs'] = '{0}/LTRdigest_HMMs/hmms'.format(paths['selfDir'])
+	paths['LTRdigestHMMs'] = '{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir'])
 if '--findORFs' in args:
 	FINDORFS = True
 else:
