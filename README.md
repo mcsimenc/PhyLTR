@@ -54,7 +54,7 @@ phyltr --fasta <input> --procs <int> \
 ## 1. Identify candidate long terminal repeat retrotransposon (LTR-R) loci
 #### Run LTRharvest: `--ltrharvest`
 ###### Description
-LTRharvest finds loci with the expected TSD-LTR-LTR-TSD structure of full-length LTR-Rs. LTRharvest searches a suffix array to make things fast, which PhyLTR creates from the FASTA input with the GenomeTools program suffixerator.
+LTRharvest finds loci with the expected structure of full-length LTR-Rs, TSD-LTR-LTR-TSD (TSD = targest site duplication). LTRharvest searches a suffix array to make things fast, which PhyLTR creates from the FASTA input with the GenomeTools program suffixerator.
 ###### Output
 GFF3 file containing candidate LTR-R subfeatures (LTRs, TSDs, PBSs)
 ###### Options
@@ -77,9 +77,14 @@ GFF3 file containing candidate LTR-R subfeatures (LTRs, TSDs, PBSs)
 * GenomeTools
 ---
 ## 2. Identify putatve protein-coding domains in LTR-R internal regions.
+If both are run, LTRdigest runs first, then the ORF-finding routine.
 #### A. Run LTRdigest: `--ltridgest`
 ###### Description
+LTRdigest coordinates HMMER3 searches for transposable element protein coding sequence homologs in the internal regions (between the LTRs) of the putative LTR-Rs from step 1. A set of TE-related pHMMs is included with PhyLTR.
 ###### Output
+* Modified version of step 1 GFF3 that also has protein-coding domain annotations (GFF3)
+* Nucleotide sequences for each domain (FASTA)
+* TSD motifs and domain orders for each element (TSV)
 ###### Options
 ```
 --ltrdigest_hmms (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)	path to pHMMs
