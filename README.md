@@ -51,8 +51,12 @@ phyltr --fasta <input> --procs <int> \
 	--LTT
 ```
 ---
-## 1. Identify candidate LTR-R loci
+## 1. Identify candidate long terminal repeat retrotransposon (LTR-R) loci
 #### Run LTRharvest: `--ltrharvest`
+###### Description
+LTRharvest finds loci with the expected TSD-LTR-LTR-TSD structure of full-length LTR-Rs. LTRharvest searches a suffix array to make things fast, which PhyLTR creates from the FASTA input with the GenomeTools program suffixerator.
+###### Output
+GFF3 file containing candidate LTR-R subfeatures (LTRs, TSDs, PBSs)
 ###### Options
 ```
 --minlenltr (100)	Minimum LTR length (bp)
@@ -74,6 +78,8 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 2. Identify putatve protein-coding domains in LTR-R internal regions.
 #### A. Run LTRdigest: `--ltridgest`
+###### Description
+###### Output
 ###### Options
 ```
 --ltrdigest_hmms (/home/joshd/scripts/PhyLTR/LTRdigest_HMMs/hmms)	path to pHMMs
@@ -83,6 +89,8 @@ phyltr --fasta <input> --procs <int> \
 * HMMER3
 * pHMMs
 #### B. Run ORF annotation: `--findORFs`
+###### Description
+###### Output
 ###### Options
 ```
 --min_orf_len (300)	The minimum length (bp) of ORF to find
@@ -92,7 +100,11 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase
 #### A. Run both Repbase and Dfam classification: `--classify`
+###### Description
+###### Output
 #### B. Run Dfam classification: `--classify_dfam`
+###### Description
+###### Output
 ###### Options
 ```
 --keep_no_classifications 		Retain elements without homology to known LTR-Rs
@@ -104,6 +116,8 @@ phyltr --fasta <input> --procs <int> \
 * HMMER3
 * Dfam
 #### C. Run Repbase classification: `--classify_repbase`
+###### Description
+###### Output
 ###### Options
 ```
 --keep_no_classifications	Retain elements without homology to known LTR-Rs
@@ -116,6 +130,8 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 4. Cluster LTR-Rs
 #### A. Run WickerFam clustering: `--wicker`
+###### Description
+###### Output
 ###### Options
 ```
 --wicker_minLen (80)	Minimum length of blastn alignment
@@ -128,6 +144,8 @@ phyltr --fasta <input> --procs <int> \
 * BEDtools
 * NCBI Blast+
 #### B. Run MCL clustering: `--mcl`
+###### Description
+###### Output
 ###### Options
 ```
 --I (6)		MCL inflation paramter. Larger values result in smaller clusters.
@@ -139,6 +157,8 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 5. Estimate LTR divergences
 #### A. Run gene conversion assessment on LTR pairs for each element: `--geneconvltrs`
+###### Description
+###### Output
 ###### Options
 ```
 --geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3. Stringency for mismatch-free gene conversion tracts: g0 > g2 > g1
@@ -149,6 +169,8 @@ phyltr --fasta <input> --procs <int> \
 * trimAl
 * GENECONV
 #### B. Run LTR divergence estimation: `--ltr_divergence`
+###### Description
+###### Output
 ###### Options
 ```
 --remove_GC_from_modeltest_aln	Remove elements with gene conversion (--geneconvclusters)
@@ -162,6 +184,8 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 6. "Solo LTR" search
 #### Run "Solo LTR" search: `--soloLTRsearch`
+###### Description
+###### Output
 ###### Options
 ```
 --soloLTRminPid (80.0)		Minimum %identity in blastn alignment to associate LTR with a cluster
@@ -174,6 +198,8 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 7. Gene conversion assessment between elements in clusters
 #### Run GENECONV: `--geneconvclusters`
+###### Description
+###### Output
 ###### Options
 ```
 --geneconv_g (g1,g2,g3)	Comma-separated list, g1, g2, and/or g3. Stringency for mismatch-free gene conversion tracts: g0 > g2 > g1
@@ -184,12 +210,16 @@ phyltr --fasta <input> --procs <int> \
 * trimAl
 * GENECONV
 #### Make Circos plots: `--circos`
+###### Description
+###### Output
 ###### External dependencies
 * BEDtools
 * Circos
 ---
 ## 8. Phylogenetics
 #### Run phylogenetic inference: `--phylo`
+###### Description
+###### Output
 ###### Options
 ```
 --min_clust_size (7)		Do not align clusters smaller than this.
@@ -215,6 +245,8 @@ phyltr --fasta <input> --procs <int> \
 ## 9. External scripts
 ---
 #### A. Search genes for LTR-R ORF homologs
+###### Description
+###### Output
 ###### Documentation
 ```
  Usage:
@@ -320,31 +352,43 @@ Colors
 * Python 3 modules: ETE3
 ---
 #### C. Visualize insertion ages
+###### Description
+###### Output
 ###### External dependencies
 * R
 * R packages:  hash, ggplot2
 ---
 #### D. Lineage through time plots
+###### Description
+###### Output
 ###### External dependencies
 * R
 * R packages: ape, hash, ggplot2
 ---
 #### E. Transposition rate analyses
+###### Description
+###### Output
 ###### External dependencies
 * R
 * R packages: ape, hash, ggplot2
 ---
 #### F. Tree shape analyses
+###### Description
+###### Output
 ###### External dependencies
 * R
 * R packages: ape, apTreeshape, hash, ggplot2
 ---
 #### G. Transposition/deletion rate modeling
+###### Description
+###### Output
 ###### External dependencies
 * R
 * R packages: ape, phangorn, hash, ggplot2, LASER (functions included as LASER is deprecated)
 ---
 #### H. Other scripts
+###### Description
+###### Output
 ---
 ## APPENDIX A. Global MAFFT options
 This step has been the limiting process in my experience. It can be sped up by reducing the number of iterations performed for each alignment and by reducing the maximum number of elements for classiying elements as medium and small clusters. MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. Depending on resources available to you, you may need to cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. Default is to not align clusters with >1000 elements. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1 for large clusters, which is much more inaccurate.
@@ -369,4 +413,8 @@ This step has been the limiting process in my experience. It can be sped up by r
 ## APPENDIX C. All options
 ---
 ## APPENDIX D. Example output
+---
+## APPENDIX E. References
+* GenomeTools
+* etc.
 ---
