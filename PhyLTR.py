@@ -18,17 +18,13 @@ from inspect import currentframe, getframeinfo
 
 def mergeCoords(A,B):
 	'''
-	takes two tuples and outputs two tuples, which will be identical if the original overlap otherwise will be the originals
+	Takes two tuples and outputs two tuples, which will be identical if the original overlap otherwise will be the originals
 
-	let A = (a1, a2), B = (b1, b2) | a1<=b1, a1<=a2, b1<=b2
+		A = (a1, a2), B = (b1, b2) and a1<=b1, a1<=a2, b1<=b2
 
-	case 1: a2<=b1 ---> output originals
-
-	case 2: b1<a2 && b2>a2 ---> output (a1, b2)
-
-	case 3: b2<=a2 ---> output A
-
-	used in ltr_divergence()
+		case 1: a2<=b1 ---> output originals
+		case 2: b1<a2 && b2>a2 ---> output (a1, b2)
+		case 3: b2<=a2 ---> output A
 	'''
 	assert min(A) <= min(B), "tuples given to mergeCoords in wrong order: A={0}, B={1}".format(A,B)
 
@@ -51,7 +47,6 @@ def append2logfile(directory, logfilename, content):
 		logfile.write('{0}\n'.format(logtime))
 		logfile.write('{0}\n\n'.format(content))
 
-
 def write2summary(text):
 	'''
 	Write text to a hardcoded summary file at output_dir/summary
@@ -61,7 +56,6 @@ def write2summary(text):
 	append2logfile(paths['output_top_dir'], mainlogfile, 'line {1} in {2}\nWriting to summary file at {0}'.format('{0}/summary'.format(paths['output_top_dir']), lineno, scriptpath))
 	with open('{0}/summary'.format(paths['output_top_dir']), 'a') as summaryFl:
 		summaryFl.write('{0}\n'.format(text))
-
 
 def makecall(call, stdout=None, stderr=None, stdin=None):
 	'''
@@ -97,7 +91,6 @@ def makecall(call, stdout=None, stderr=None, stdin=None):
 		with open(stdin, 'r') as inFl:
 			subprocess.call(call, stdin=inFl)
 
-
 def makecallMultiprocessing(callBundle):
 	'''
 	Handles running subprocess.call when using multiprocessing.
@@ -124,7 +117,6 @@ def makecallMultiprocessing(callBundle):
 				else:
 					with open(stdin, 'r') as inFl:
 						subprocess.call(call, stdin=inFl, stdout=outfl)
-
 	elif stderr != None and stdout == None:
 		with open(stderr, 'w') as errfl:
 			if stdin == None:
@@ -132,12 +124,9 @@ def makecallMultiprocessing(callBundle):
 			else:
 				with open(stdin, 'r') as inFl:
 					subprocess.call(call, stdin=inFl,  stderr=errfl)
-		
-
 	elif stdin != None and stderr == None and stdout == None:
 		with open(stdin, 'r') as inFl:
 			subprocess.call(call, stdin=inFl)
-
 
 def MakeDir(pathsname, path):
 	'''
@@ -151,7 +140,6 @@ def MakeDir(pathsname, path):
 		scriptpath = os.path.realpath(__file__)
 		lineno = getframeinfo(currentframe()).lineno + 1
 		append2logfile(paths['output_top_dir'], mainlogfile, 'line {2} in {3}\nCreated dir for {0}:\n{1}'.format(pathsname, path, lineno, scriptpath))
-
 
 def addStrandToGFF(strandDct, GFFpth):
 	'''
@@ -195,7 +183,6 @@ def addStrandToGFF(strandDct, GFFpth):
 				with open(newgff, 'a') as outGFFfl:
 					outGFFfl.write(line)
 	os.rename(newgff, GFFpth)
-
 
 def RemoveNonLTRretrotransposons(LTRdigestGFFfl, annotAttr2DbDict, outputFlName, REPORTCONFLICTS=True, KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, logFilePth='conflictingAnnotations.log'):
 	'''
@@ -298,7 +285,6 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl, annotAttr2DbDict, outputFlName,
 				else:
 					LTR_retrotransposon_GFF_lines[gffLine.attributes['Parent']].append(line.strip())
 					continue
-
 			else:
 				if FOUNDNONLTR:
 					continue
@@ -320,7 +306,6 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl, annotAttr2DbDict, outputFlName,
 				outFl.write('###\n')
 
 	logfile.close()
-
 
 def writeLTRretrotransposonInternalRegions(inputGFFpth, outputGFFpth, elementSet=None, truncateParent=False):
 	''' 
@@ -365,7 +350,6 @@ def writeLTRretrotransposonInternalRegions(inputGFFpth, outputGFFpth, elementSet
 							currentNewElement.attributes_order.append('Parent')
 							currentNewElement.refreshAttrStr()
 								
-
 def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None, REPEATREGION=False, truncateParent=True):
 	''' 
 	Requires Class GFF3_line
@@ -400,7 +384,6 @@ def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None, REPEA
 							gffLine.attributes['ID'] = gffLine.attributes['ID'][19:]
 							gffLine.refreshAttrStr()
 						outFl.write(str(gffLine)+'\n')
-
 
 def writeLTRsGFF(inputGFFpth, outputGFFpth, elementSet=None):
 	''' 
@@ -500,7 +483,6 @@ def ltrharvest():
 				statusFlAppend.write('LTRharvestGFF\t{0}\n'.format(paths['LTRharvestGFF']))
 			paths['CurrentGFF'] = paths['LTRharvestGFF']
 
-
 def ltrdigest():
 	'''
 	Runs LTRdigest. Domains to search for can be be given as a multi HMM with the command line flag: --ltrdigest_hmms
@@ -554,7 +536,6 @@ def Overlaps(j, k):
 		return True
 	else:
 		return False
-
 
 def bestORFs(fasta, outdir, gff, minLen=300):
 	'''
@@ -753,7 +734,6 @@ def bestORFs(fasta, outdir, gff, minLen=300):
 			with open(outgff, 'a') as outFl:
 				outFl.write('{0}\tgetorf\tORF\t{1}\t{2}\t.\t{3}\t.\tParent={4};translated_seq={5}\n'.format(element, start, end, strand_used, element, seq))
 
-
 def addORFs(maingff, orfgff, newgff):
 	'''
 	Inserts ORFs into existing LTRdigest/LTRharvest GFF. Expects Orfs were obtained from EMBOSS getorf on output from writeLTRretrotransposonInternalRegions()
@@ -814,23 +794,10 @@ def addORFs(maingff, orfgff, newgff):
 						for orf in orfs[el]:
 							orf.start = firstLTRend + int(orf.start)
 							orf.end = firstLTRend + int(orf.end)
-							#with open('ERR','a') as errFl:
-							#	errFl.write(str(orf)+'\n')
 							orf.seqid = gl.seqid # Change the scaffold name
-							#with open('ERR','a') as errFl:
-							#	errFl.write(str(orf)+'\n')
 							OVERLAP = False
 							for part in internalparts:
-							#	print([orf.start, orf.end], [part.start, part.end])
-							#	print(Overlaps([orf.start, orf.end], [part.start, part.end]))
 								if Overlaps([orf.start, orf.end], [part.start, part.end]):
-									#with open('ERR','a') as errFl:
-									#	errFl.write('OVERLAPS\n')
-									#	errFl.write(str(orf)+'\n')
-									#	errFl.write('{0}\t{1}\n'.format(orf.start, orf.end))
-									#	errFl.write(str(part)+'\n')
-									#	errFl.write('{0}\t{1}\n'.format(part.start, part.end))
-									
 									OVERLAP = True
 									break
 							if not OVERLAP:
@@ -839,18 +806,9 @@ def addORFs(maingff, orfgff, newgff):
 								orf.attributes_order.insert(0, 'ID')
 								orf.refreshAttrStr()
 								outFl.write('>{0}\n{1}\n'.format(orf.attributes['ID'], orf.attributes['translated_seq']))
-								#with open('ERR','a') as errFl:
-								#	errFl.write('GOING OUT\n')
-								#	errFl.write(orf.seqid+'\n')
 								internalparts.append(orf)
 					internalparts.sort(key=lambda x:int(x.start))
 					NewGFFLines += internalparts
-					#with open('ERR','a') as errFl:
-					#	errFl.write('GOING NEWGFFLINES\n')
-					#for p in internalparts:
-					#	with open('ERR','a') as errFl:
-					#		errFl.write(str(p)+'\n')
-					#		errFl.write(p.seqid+'\n')
 					NewGFFLines.append(gl)
 					firstLTRend = None
 				elif firstLTRend == None: # This is the first LTR
@@ -866,7 +824,6 @@ def addORFs(maingff, orfgff, newgff):
 				outFl.write('###\n')
 			outFl.write('{0}\n'.format(str(gl)))
 
-
 def AnnotateORFs(minLen):
 	'''
 	Uses bestORFs() and addORFs() to add ORFs of length > minLen
@@ -879,7 +836,6 @@ def AnnotateORFs(minLen):
 		internalGFF = '{0}/internals.gff'.format(paths['ORFsDir'])
 		internalFASTA = '{0}/internals.fasta'.format(paths['ORFsDir'])
 		writeLTRretrotransposonInternalRegions(paths['CurrentGFF'], internalGFF, elementSet=None, truncateParent=False)
-		#getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', internalGFF ]
 		getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-bed', internalGFF ]
 		makecall(getfasta_call, internalFASTA)
 		ChangeFastaHeaders(internalFASTA, internalGFF, attribute='Parent')
@@ -892,7 +848,6 @@ def AnnotateORFs(minLen):
 		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 			statusFlAppend.write('WithORFsGFF\t{0}\n'.format(paths['WithORFsGFF']))
 		paths['CurrentGFF'] = paths['WithORFsGFF']
-
 
 def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbase_tblastx_evalue=1e-5, nhmmer_reporting_evalue=5e-2, nhmmer_inclusion_evalue=1e-2):
 
@@ -922,21 +877,17 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting LTR_retrotransposons from LTRharvest GFF')
 			getfasta_ltrretrotransposons_call = [  executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', '{0}'.format(paths['LTRharvest_LTR_retrotransposons_GFF']) ]
 			getfasta_ltrretrotransposons_call_string = 'bedtools getfasta -fi {0} -s -bed {1} > {2} 2> {3}'.format(paths['inputFasta'], paths['LTRharvest_LTR_retrotransposons_GFF'], paths['LTRharvest_LTR_retrotransposons_fasta'], '{0}/bedtools_getfasta.stderr'.format(paths['FastaOutputDir']))
-
 			scriptpath = os.path.realpath(__file__)
 			lineno = getframeinfo(currentframe()).lineno + 2
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting LTR_retrotransposon sequences from LTRharvest GFF:\n{0}'.format(getfasta_ltrretrotransposons_call_string))
 			makecall(getfasta_ltrretrotransposons_call, paths['LTRharvest_LTR_retrotransposons_fasta'], '{0}/bedtools_getfasta.stderr'.format(paths['FastaOutputDir']))
-
 			scriptpath = os.path.realpath(__file__)
 			lineno = getframeinfo(currentframe()).lineno + 2
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting LTR_retrotransposon sequences from LTRharvest GFF')
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Changing FASTA headers from bedtools getfasta-style to LTR_retrotransposon ID')
-
 			ChangeFastaHeaders(paths['LTRharvest_LTR_retrotransposons_fasta'], paths['LTRharvest_LTR_retrotransposons_GFF'])
-
 			scriptpath = os.path.realpath(__file__)
 			lineno = getframeinfo(currentframe()).lineno + 2
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
@@ -945,28 +896,21 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 				statusFlAppend.write('LTRharvest_LTR_retrotransposons_fasta\t{0}\n'.format(paths['LTRharvest_LTR_retrotransposons_fasta']))
 
 	if CLASSIFYDFAM: # Find evidence of homology to repeats in Dfam using HMMER. NEED TO CHANGE THIS SO REVERSE COMPLEMENT IS ALSO SEARCHED (nhmmsearch I think)
-		
-		#paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam.annotations.LTR.names.map'.format(paths['selfDir'])
-		
 		if not 'DfamTable' in paths: # If this is in paths this step has been completed. Skip
 			# make Dfam classification output dir
 			MakeDir('DfamClassificationDir', '{0}/DfamClassification'.format(paths['output_top_dir']))
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('DfamClassificationDir\t{0}\n'.format(paths['DfamClassificationDir']))
-
 			# run hmmsearch of LTR_retrotransposon features from LTRdigest or LTRharvest on Dfam
 			paths['nhmmer_DfamHits_table'] = '{0}/{1}.nhmmer_DfamHits.table'.format(paths['DfamClassificationDir'], filenames['inputFasta'])
 			nhmmer_dfam_call = [ '{0}/nhmmer'.format(executables['hmmer']), '--tblout', paths['nhmmer_DfamHits_table'], '--incE', str(nhmmer_inclusion_evalue), '-E', str(nhmmer_reporting_evalue), '--cpu', str(procs), paths['DfamDB'], paths['LTRharvest_LTR_retrotransposons_fasta'] ]
 			nhmmer_dfam_call_string = '{0} {1}'.format(' '.join(nhmmer_dfam_call), '1>/dev/null 2>{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
-			#nhmmer_dfam_call_string = '{0} {1}'.format(' '.join(nhmmer_dfam_call), '1>{0}.nhmmer_DfamHits.stdout 2>{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
 			scriptpath = os.path.realpath(__file__)
 			lineno = getframeinfo(currentframe()).lineno + 2
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began nhmmer of Dfam:\n{0}'.format(nhmmer_dfam_call_string))
-			#makecall(nhmmer_dfam_call, '{0}.nhmmer_DfamHits.stdout'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])), '{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
 			makecall(nhmmer_dfam_call, '/dev/null', '{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished nhmmer of Dfam')
-
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('DfamTable\t{0}\n'.format(paths['nhmmer_DfamHits_table']))
 			paths['DfamTable'] = paths['nhmmer_DfamHits_table']
@@ -993,7 +937,6 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began adding best hits from nhmmer on Dfam results to LTRdigest GFF:\n{0}'.format(add_dfam_hits_to_ltrdigest_gff_call_string))
 			makecall(add_dfam_hits_to_ltrdigest_gff_call, paths['GFFwithDfamClassification'], '{0}/gffAddAttr.py.DfamHits.stderr'.format(paths['GFFOutputDir']))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished adding best hits from nhmmer on Dfam results to LTRdigest GFF')
-
 
 			# Add LTRdigest GFF3 with Dfam classifications path to status file (for resuming later)
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
@@ -1066,7 +1009,6 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 	if CLASSIFYDFAM or CLASSIFYREPBASE: # Remove false positives from LTRdigest GFF3
 
 		if not 'LTRdigestClassifiedNoFP' in paths: # If this is in paths this step has been completed. Skip
-
 			if CLASSIFYREPBASE:
 				gff_classified = paths['GFFwithRepbaseClassification'] # Will have both Dfam and Repbase classifications if CLASSIFYDFAM==True also
 			else:
@@ -1100,20 +1042,10 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 				addStrandToGFF(strands, paths['CurrentGFF'])
 
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Update strandedness in GFF3 based on Dfam and/or Repbase results')
-
-			#def addStrandToGFF(strandDct, GFFpth):
-			#	'''
-			#	Updates strand field for element with ? as strand based on Dfam and Repbase results.
-			#	Provide a dictionary with LTR RT # (e.g. 4 for LTR_retrotransposon4) as keys and
-			#	strand as values. A new GFF will be written, and the old one removed.
-			#	'''
-
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Finished removing false positives from LTRdigest GFF with classifications. TP file at:\n{0}'.format(paths['LTRdigestClassifiedNoFP']))
 			# Add LTRdigest GFF3 with FP removed path to status file (for resuming later)
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('LTRdigestClassifiedNoFP\t{0}\n'.format(paths['LTRdigestClassifiedNoFP']))
-
-			
 
 			# Remove large tblastx output and Dfam output. best hits are kept
 			if not KEEP_UNUSED_FILES:
@@ -5228,7 +5160,7 @@ def help2():
 	--maxlenltr			    <int>		1000
 	--mindistltr			    <int>		1000
 	--maxdistltr			    <int>		15000
-	--similar			    <num>		85.0
+	--similar			    <num>		0.0
 	--vic				    <int>		60
 	--mintsd			    <int>		4
 	--maxtsd			    <int>		20
@@ -5331,7 +5263,7 @@ def help():
   	  --maxlenltr	<int>		maximum length allowed for LTRs for element caling (default 1000 bp)
   	  --mindistltr	<int>		minimum distance allowed between LTRs for element calling (default 1000 bp)
   	  --maxdistltr	<int>		maximum distance allowed between LTRs for element calling (default 15000 bp)
-  	  --similar	<int|float>	minimum % similarity for LTR calling (default 85.0)
+  	  --similar	<int|float>	minimum % similarity for LTR calling (default 0.0)
   	  --vic		<int>		# of nucleotides to left and right to search for TSDs (default 60)
   	  --mintsd	<int>		minimum length allowed for TSDs (use with --maxtsd) (default 4)
   	  --maxtsd	<int>		maximum length allowed for TSDs (use with --mintsd) (default 20)
@@ -5551,7 +5483,7 @@ else:
 if '--similar' in args:
 	ltrharvest_similar = float(args[args.index('--similar')+1])
 else:
-	ltrharvest_similar = 85
+	ltrharvest_similar = 0.0
 if '--vic' in args:
 	ltrharvest_vic = int(args[args.index('--vic')+1])
 else:

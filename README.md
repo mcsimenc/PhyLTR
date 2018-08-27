@@ -59,7 +59,7 @@ phyltr --fasta <input> --procs <int> \
 --maxlenltr (1000)	Maximum LTR length (bp)
 --mindistltr (1000)	Minimum distance between LTRs (bp)
 --maxdistltr (15000)	Maximum distance between LTRs (bp)
---similar (85.0)	Minimum % similarity between LTRs
+--similar (0.0)		Minimum % similarity between LTRs
 --vic (60)		Distance (bp) beyond LTRs to search for TSDs
 --mintsd (4)		Minimum length for each TSD
 --maxtsd (20)		Maximum length for each TSD
