@@ -146,7 +146,7 @@ Finds homologs in Repbase using tblastx
 ## 4. Cluster LTR-Rs
 #### A. Run WickerFam clustering: `--wicker`
 ###### Description
-An implementation of the method suggested in Wicker et al. (2007) for circumscribing putative LTR-R families. Elements are clustered if . All-by-all blastn is performed for LTRs and/or internal regions and used to construct a graph, subject to constraings (e.g. --wicker_minLen). Clusters are assigned the elements in the connected components in the graph which are discovered using depth first search.
+An implementation of the method suggested in Wicker et al. (2007) for circumscribing putative LTR-R families. Elements are assigned to the same cluster if in an alignment of either their LTRs or internal regions share a sequence of some minimum % identity that is at least so many base pairs long and also is over some percentage of the length of the inputs. All-by-all blastn is performed for LTRs and/or internal regions and used to construct a graph, subject to constraints (e.g. --wicker_minLen). Clusters are assigned the elements in the connected components in the graph which are discovered using depth first search.
 ###### Output
 ###### Options
 ```
