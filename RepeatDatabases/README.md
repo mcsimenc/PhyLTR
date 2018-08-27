@@ -1,2 +1,2 @@
 # Repeat Database: Dfam and Repbase
-Repeat database files go here. See the master README.md for instructions.
+Repeat database files go here. See the main README.md for instructions.
