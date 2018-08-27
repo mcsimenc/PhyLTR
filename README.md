@@ -137,7 +137,7 @@ phyltr --fasta <input> --procs <int> \
 * NCBI Blast+
 * MCL
 ---
-## 5. Estimate LTR divergences (aka insertion age)
+## 5. Estimate LTR divergences
 #### A. Run gene conversion assessment on LTR pairs for each element: `--geneconvltrs`
 ###### Options
 ```
