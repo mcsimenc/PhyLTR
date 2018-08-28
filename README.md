@@ -95,7 +95,7 @@ LTRdigest coordinates HMMER3 searches for transposable element protein coding se
 * GenomeTools
 * HMMER3
 * pHMMs
-#### B. Run Open reading frame (ORF) annotation: `--findORFs`
+#### B. Run open reading frame (ORF) annotation: `--findORFs`
 ![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/step3output.png)
 ###### Description
 Internal regions are searched for ORFs that don't overlap any preexisting annotation from step 2A and are longer than a user-defined threshold.
