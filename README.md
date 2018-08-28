@@ -31,6 +31,7 @@ SoloLTRsearch/		"Solo LTR" search files
 Trees/			Phylogenetic analyses
 ```
 ---
+---
 ## Default settings
 If phyltr is run without any flags specifying a task, all tasks are run (below). The following two calls are equivalent. The processes specified by the flags in the second call are explained below with additional optional flags. Some of the processes modify the GFF3 file that is used for downstream analyses.
 ```
@@ -50,6 +51,7 @@ phyltr --fasta <input> --procs <int> \
 	--phylo \
 	--LTT
 ```
+---
 ---
 ## 1. Identify candidate long terminal repeat retrotransposon (LTR-R) loci
 #### Run LTRharvest: `--ltrharvest`
@@ -76,6 +78,7 @@ LTRharvest finds loci with the expected structure of full-length LTR-Rs, TSD-LTR
 ```
 ###### External dependencies
 * GenomeTools
+---
 ---
 ## 2. Identify putatve protein-coding domains in LTR-R internal regions.
 If both are run, LTRdigest runs first, then the ORF-finding routine.
@@ -108,6 +111,7 @@ Internal regions are searched for ORFs that don't overlap any preexisting annota
 ###### External dependencies
 * BEDtools
 * EMBOSS
+---
 ---
 ## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase and remove false positives
 #### A. Run both Repbase and Dfam classification: `--classify`
@@ -147,6 +151,7 @@ Finds homologs in Repbase using tblastx
 * NCBI BLAST+
 * Repbase
 ---
+---
 ## 4. Cluster LTR-Rs
 #### A. Run WickerFam clustering: `--wicker`
 ###### Description
@@ -180,6 +185,7 @@ An implementation of the protocol "Clustering similarity graphs encoded in BLAST
 * NCBI Blast+
 * MCL
 ---
+---
 ## 5. Estimate LTR divergences
 #### A. Run gene conversion assessment on LTR pairs for each element: `--geneconvltrs`
 ###### Description
@@ -212,6 +218,7 @@ Estimates sequence divergences (substitutions per site) between LTRs for each el
 * jModelTest2
 * PAUP\*
 ---
+---
 ## 6. "Solo LTR" search
 #### Run "Solo LTR" search: `--soloLTRsearch`
 ###### Description
@@ -228,6 +235,7 @@ Finds candidate solo LTRs in the input fasta by performs blastn of each LTR to t
 ###### External dependencies
 * BEDtools
 * NCBI BLAST+
+---
 ---
 ## 7. Gene conversion assessment between elements in clusters
 #### Run GENECONV: `--geneconvclusters`
@@ -255,6 +263,7 @@ Runs Circos to make plots showing gene conversion tracts between elements as lin
 ###### External dependencies
 * BEDtools
 * Circos
+---
 ---
 ## 8. Phylogenetics
 #### Run phylogenetic inference: `--phylo`
@@ -284,7 +293,9 @@ Infers phylogenies from alignments of entire elements for each cluster, optional
 * PATHd8
 * PHYLIP
 ---
+---
 ## 9. External scripts
+---
 ---
 #### A. Search genes for LTR-R ORF homologs
 ###### Description
@@ -393,12 +404,14 @@ Colors
 * Python 3
 * Python 3 modules: ETE3
 ---
+---
 #### C. Visualize insertion ages
 ###### Description
 ###### Output
 ###### External dependencies
 * R
 * R packages:  hash, ggplot2
+---
 ---
 #### D. Lineage through time plots
 ###### Description
@@ -407,12 +420,14 @@ Colors
 * R
 * R packages: ape, hash, ggplot2
 ---
+---
 #### E. Transposition rate analyses
 ###### Description
 ###### Output
 ###### External dependencies
 * R
 * R packages: ape, hash, ggplot2
+---
 ---
 #### F. Tree shape analyses
 ###### Description
@@ -421,6 +436,7 @@ Colors
 * R
 * R packages: ape, apTreeshape, hash, ggplot2
 ---
+---
 #### G. Transposition/deletion rate modeling
 ###### Description
 ###### Output
@@ -428,9 +444,11 @@ Colors
 * R
 * R packages: ape, phangorn, hash, ggplot2, LASER (functions included as LASER is deprecated)
 ---
+---
 #### H. Other scripts
 ###### Description
 ###### Output
+---
 ---
 ## APPENDIX A. Global MAFFT options
 This step has been the limiting process in my experience. It can be sped up by reducing the number of iterations performed for each alignment and by reducing the maximum number of elements for classiying elements as medium and small clusters. MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. Depending on resources available to you, you may need to cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. Default is to not align clusters with >1000 elements. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1 for large clusters, which is much more inaccurate.
@@ -443,6 +461,7 @@ This step has been the limiting process in my experience. It can be sped up by r
 --mafft_largeAln_maxclustsize (1000)	Max elements to consider a cluster large. Clusters larger than this will not be aligned.
 ```
 ---
+---
 ## APPENDIX B. Other global options
 ```
 --keep_files				Keeps intermediate files that are otherwise removed.
@@ -452,9 +471,12 @@ This step has been the limiting process in my experience. It can be sped up by r
 --nosmalls				Do not combine and assemble all clusters smaller than --min_clust_size
 ```
 ---
+---
 ## APPENDIX C. All options
 ---
+---
 ## APPENDIX D. Example output
+---
 ---
 ## APPENDIX E. References
 Bao, W., Kojima, K. K., & Kohany, O. (2015). Repbase Update, a database of repetitive elements in eukaryotic genomes. Mobile DNA, 6(1), 11. http://doi.org/10.1186/s13100-015-0041-9
