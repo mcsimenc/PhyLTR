@@ -406,7 +406,7 @@ Colors
 ---
 ---
 #### C. Visualize insertion ages
-![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/rates.png)
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/LTRdivergence.png)
 ###### Description
 ###### Output
 ###### External dependencies
@@ -415,7 +415,7 @@ Colors
 ---
 ---
 #### D. Lineage through time plots
-![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/rates.png)
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/LTT.png)
 ###### Description
 ###### Output
 ###### External dependencies
