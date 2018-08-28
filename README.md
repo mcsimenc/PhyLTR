@@ -469,6 +469,8 @@ Cossu, R. M., Casola, C., Giacomello, S., Vidalis, A., Scofield, D. G., & Zuccol
 
 Darriba, D., Taboada, G. L., Doallo, R., & Posada, D. (2012). jModelTest 2: more models, new heuristics and parallel computing. Nature Methods, 9(8), 772-772. http://doi.org/10.1038/nmeth.2109
 
+van Dongen, Stijn. Graph Clustering by Flow Simulation. PhD thesis, University of Utrecht, May 2000.
+
 Ellinghaus, D., Kurtz, S., & Willhoeft, U. (2008). LTRharvest, an efficient and flexible software for de novo detection of LTR retrotransposons. BMC Bioinformatics, 9(1), 18-14. http://doi.org/10.1186/1471-2105-9-18
 
 Felsenstein, J. 2005. PHYLIP (Phylogeny Inference Package) version 3.6. Distributed by the author. Department of Genome Sciences, University of Washington, Seattle.
@@ -495,7 +497,5 @@ Sawyer, S.A. (1999) GENECONV: A computer package for the statistical detection o
 
 Steinbiss, S., Willhoeft, U., Gremme, G., & Kurtz, S. (2009). Fine-grained annotation and classification of de novo predicted LTR retrotransposons. Nucleic Acids Research, 37(21), 70027013. http://doi.org/10.1093/nar/gkp759
 
-Stijn van Dongen, Graph Clustering by Flow Simulation. PhD thesis, University of Utrecht, May 2000.
-
-Swofford, D. L. 2003. PAUP*. Phylogenetic Analysis Using Parsimony (*and Other Methods). Version 4. Sinauer Associates, Sunderland, Massachusetts.
+Swofford, D. L. 2003. PAUP\*. Phylogenetic Analysis Using Parsimony (\* = and Other Methods). Version 4. Sinauer Associates, Sunderland, Massachusetts.
 ---
