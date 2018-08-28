@@ -341,6 +341,8 @@ Optional flags:
 * Python 3
 * BEDtools
 * NCBI BLAST+
+---
+---
 #### B. Render graphical trees annotated with LTR-R diagrams with colored ORFs
 ![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/Ete3example.png)
 ###### Documentation
@@ -411,7 +413,6 @@ Colors
 * Lineage through time plots
 * Transposition/deletion rate modeling
 * Tree shape analysis
-### Output
 ---
 ---
 ## APPENDIX A. Global MAFFT options
