@@ -380,8 +380,8 @@ Description:
 
 
 -transcribed <path>
-	A file containing a list of element IDs (e.g. LTR_retrotransposon123) to mark with a green asterix.
-	Instead of an asterix, a 'T' is shown as if -classif is used.
+	A file containing a list of element IDs (e.g. LTR_retrotransposon123) to mark with a green asterisk.
+	Instead of an asterisk, a 'T' is shown as if -classif is used.
 
 -round
 	Draw ORFs with rounded corners.
