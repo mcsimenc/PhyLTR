@@ -300,8 +300,6 @@ Infers phylogenies from alignments of entire elements for each cluster, optional
 ---
 ---
 #### A. Search genes for LTR-R ORF homologs
-###### Description
-###### Output
 ###### Documentation
 ```
  Usage:
