@@ -406,6 +406,7 @@ Colors
 ---
 ---
 #### C. Visualize insertion ages
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/rates.png)
 ###### Description
 ###### Output
 ###### External dependencies
@@ -414,6 +415,7 @@ Colors
 ---
 ---
 #### D. Lineage through time plots
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/rates.png)
 ###### Description
 ###### Output
 ###### External dependencies
@@ -421,12 +423,13 @@ Colors
 * R packages: ape, hash, ggplot2
 ---
 ---
-#### E. Transposition rate analyses
+#### E. Transposition/deletion rate modeling
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/rates.png)
 ###### Description
 ###### Output
 ###### External dependencies
 * R
-* R packages: ape, hash, ggplot2
+* R packages: ape, phangorn, hash, ggplot2, LASER (functions included as LASER is deprecated)
 ---
 ---
 #### F. Tree shape analyses
@@ -437,15 +440,7 @@ Colors
 * R packages: ape, apTreeshape, hash, ggplot2
 ---
 ---
-#### G. Transposition/deletion rate modeling
-###### Description
-###### Output
-###### External dependencies
-* R
-* R packages: ape, phangorn, hash, ggplot2, LASER (functions included as LASER is deprecated)
----
----
-#### H. Other scripts
+#### G. Other scripts
 ###### Description
 ###### Output
 ---
