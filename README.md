@@ -111,6 +111,7 @@ Internal regions are searched for ORFs that don't overlap any preexisting annota
 ---
 ## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase and remove false positives
 #### A. Run both Repbase and Dfam classification: `--classify`
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/step4output.png)
 ###### Description
 Both methods use homology-based evidence for classifying elements as one of the classifications obtained from the database records: BEL, Copia, DIRS, Endogenous Retrovirus, ERV1, ERV2, ERV3, ERV4, Gypsy, Lentivirus (Repbase) and Copia, DIRS, ERV?, ERV1, ERV1?, ERV-Foamy, ERVK, ERVK?, ERVL, ERVL?, ERVL-MaLR, Gypsy, Gypsy?, Ngaro, Pao, Undefined, Unknown (Dfam Superfamily). As currently implemented, Dfam hits trump Repbase because they are expected to be longer, and only the highest scoring hits are considered. This worked well for our test genomes and classifications matched domain annotations (e.g. gypsy elements always and only had gypsy domains).
 ###### Output
