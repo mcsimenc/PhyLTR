@@ -53,6 +53,28 @@ phyltr --fasta <input> --procs <int> \
 ```
 ---
 ---
+## Global options
+```
+--keep_files				Keeps more intermediate files.
+--output_dir (PhyLTR.output)		Output directory.
+--logfile (<output_dir>/log.txt)	Path to where log file is written 
+--min_clust_size (7)			Do not align/infer phylogenies from clusters smaller than this.
+--nosmalls				Do not combine and assemble all clusters smaller than --min_clust_size
+```
+---
+---
+## MAFFT options
+These apply to all steps that do alignments. Cluster alignments has been the limiting process in my experience. It can be sped up by reducing the number of iterations performed for each alignment and by reducing the maximum number of elements for classiying elements as medium and small clusters. MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. Depending on resources available to you, you may need to cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. Default is to not align clusters with >1000 elements. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1 for large clusters, which is much more inaccurate.
+###### Options
+```
+--maxiterate_small_clusters (30)	MAFFT iterations for small clusters. (more = better alignment = slower)
+--maxiterate_medium_clusters (3)	MAFFT iterations for medium clusters. (more = better alignment = slower)
+--mafft_smallAln_maxclustsize (50)	Max elements to consider a cluster small.
+--mafft_mediumAln_maxclustsize (500)	Max elements to consider a cluster medium.
+--mafft_largeAln_maxclustsize (1000)	Max elements to consider a cluster large. Clusters larger than this will not be aligned.
+```
+---
+---
 ## 1. Identify candidate long terminal repeat retrotransposon (LTR-R) loci
 #### Run LTRharvest: `--ltrharvest`
 ![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/step1output.png)
@@ -415,32 +437,10 @@ Colors
 * Tree shape analysis
 ---
 ---
-## APPENDIX A. Global MAFFT options
-This step has been the limiting process in my experience. It can be sped up by reducing the number of iterations performed for each alignment and by reducing the maximum number of elements for classiying elements as medium and small clusters. MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. Depending on resources available to you, you may need to cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. Default is to not align clusters with >1000 elements. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1 for large clusters, which is much more inaccurate.
-###### Options
-```
---maxiterate_small_clusters (30)	MAFFT iterations. More will improve alignment quality.
---maxiterate_medium_clusters (3)	MAFFT iterations. More will improve alignment quality.
---mafft_smallAln_maxclustsize (50)	Max elements to consider a cluster small.
---mafft_mediumAln_maxclustsize (500)	Max elements to consider a cluster medium.
---mafft_largeAln_maxclustsize (1000)	Max elements to consider a cluster large. Clusters larger than this will not be aligned.
-```
+## APPENDIX A. All options
 ---
 ---
-## APPENDIX B. Other global options
-```
---keep_files				Keeps intermediate files that are otherwise removed.
---output_dir (PhyLTR.output)		Output directory. Default is "PhyLTR.output
---logfile (<output_dir>/log.txt)	Path to where log file is written 
---min_clust_size (7)			Do not align clusters smaller than this.
---nosmalls				Do not combine and assemble all clusters smaller than --min_clust_size
-```
----
----
-## APPENDIX C. All options
----
----
-## APPENDIX E. References
+## APPENDIX B. References
 Bao, W., Kojima, K. K., & Kohany, O. (2015). Repbase Update, a database of repetitive elements in eukaryotic genomes. Mobile DNA, 6(1), 11. http://doi.org/10.1186/s13100-015-0041-9
 
 Britton, T., Anderson, C. L., Jacquet, D., Lundqvist, S., & Bremer, K. (2007). Estimating divergence times in large phylogenetic trees. Systematic Biology, 56(5), 741-752. http://doi.org/10.1080/10635150701613783
