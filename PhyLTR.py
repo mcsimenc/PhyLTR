@@ -3002,9 +3002,7 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 			if not line.startswith('#'):
 				c = line.strip().split()
 				query, subj, pid, alnLen = c[:4]
-				#alnLen = int(alnLen)
 				LTRlen = int(c[7]) - int(c[6]) + 1
-				#pLen = alnLen/LTRlengths[query]*100 # percent of LTR length in the alignment
 				pLen = LTRlen/LTRlengths[query]*100 # percent of LTR length in the alignment
 				if pLen < soloLTRminLen: # skip alignments shorter 
 					continue
@@ -3072,10 +3070,6 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 			if Remaining == []:
 				break
 
-	#print(sum([len(Hits[val]) for val in Hits]))
-	#print(sum([len(HitsR1[val]) for val in HitsR1]))
-	#print(sum([len(HitsR2[val]) for val in HitsR2]))
-
 	# write table with cluster and # of solo LTRs
 	append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nparsing cluster membership and summary files'.format(key_base))
 	ClusterMembership = {}
@@ -3094,7 +3088,6 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 						ClusterSizes[classif][clust] = 1
 				else:
 					ClusterSizes[classif] = {clust:1}
-					
 	
 	SoloLTRclusterMembership = {}
 	GFFoutput = {}
