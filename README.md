@@ -268,7 +268,7 @@ Runs Circos to make plots showing gene conversion tracts between elements as lin
 ---
 ## 8. Phylogenetics
 #### Run phylogenetic inference: `--phylo`
-![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/LTRdivergence.png)
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/Phylogenetic.png)
 ###### Description
 Infers phylogenies from alignments of entire elements for each cluster, optionally with an outgroup, using FastTree2 w/GTR. The alignment is resampled for bootstrapping using SEQBOOT from PHYLIP and optionally converted into an ultrametric tree using PATHd8.
 ###### Output
