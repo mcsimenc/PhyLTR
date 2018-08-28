@@ -456,6 +456,45 @@ This step has been the limiting process in my experience. It can be sped up by r
 ## APPENDIX D. Example output
 ---
 ## APPENDIX E. References
-* GenomeTools
-* etc.
+Bao, W., Kojima, K. K., & Kohany, O. (2015). Repbase Update, a database of repetitive elements in eukaryotic genomes. Mobile DNA, 6(1), 11. http://doi.org/10.1186/s13100-015-0041-9
+
+Britton, T., Anderson, C. L., Jacquet, D., Lundqvist, S., & Bremer, K. (2007). Estimating divergence times in large phylogenetic trees. Systematic Biology, 56(5), 741-752. http://doi.org/10.1080/10635150701613783
+
+Camacho, C., Coulouris, G., Avagyan, V., Ma, N., Papadopoulos, J., Bealer, K., & Madden, T. L. (2009). BLAST+: architecture and applications. BMC Bioinformatics, 10(1), 421. http://doi.org/10.1186/1471-2105-10-421
+
+Capella-Gutiérrez, S., Silla-Martínez, J. M., & Gabaldón, T. (2009). trimAl: a tool for automated alignment trimming in large-scale phylogenetic analyses. Bioinformatics, 25(15), 1972-1973. http://doi.org/10.1093/bioinformatics/btp348
+
+Cossu, R. M., Casola, C., Giacomello, S., Vidalis, A., Scofield, D. G., & Zuccolo, A. (2017). LTR Retrotransposons Show Low Levels of Unequal Recombination and High Rates of Intraelement Gene Conversion in Large Plant Genomes. Genome Biology and Evolution, 9(12), 3449-3462. http://doi.org/10.1093/gbe/evx260
+
+Darriba, D., Taboada, G. L., Doallo, R., & Posada, D. (2012). jModelTest 2: more models, new heuristics and parallel computing. Nature Methods, 9(8), 772-772. http://doi.org/10.1038/nmeth.2109
+
+Ellinghaus, D., Kurtz, S., & Willhoeft, U. (2008). LTRharvest, an efficient and flexible software for de novo detection of LTR retrotransposons. BMC Bioinformatics, 9(1), 18-14. http://doi.org/10.1186/1471-2105-9-18
+
+Felsenstein, J. 2005. PHYLIP (Phylogeny Inference Package) version 3.6. Distributed by the author. Department of Genome Sciences, University of Washington, Seattle.
+
+Finn, R. D., Coggill, P., Eberhardt, R. Y., Eddy, S. R., Mistry, J., Mitchell, A. L., et al. (2016). The Pfam protein families database: towards a more sustainable future. Nucleic Acids Research, 44(D1), D279-85. http://doi.org/10.1093/nar/gkv1344
+
+Gremme, G., Steinbiss, S., & Kurtz, S. (2013). GenomeTools: a comprehensive software library for efficient processing of structured genome annotations. IEEE/ACM Transactions on Computational Biology and Bioinformatics, 10(3), 645-656. http://doi.org/10.1109/TCBB.2013.68
+
+Hubley, R., Finn, R. D., Clements, J., Eddy, S. R., Jones, T. A., Bao, W., et al. (2016). The Dfam database of repetitive DNA families. Nucleic Acids Research, 44(D1), D81-9. http://doi.org/10.1093/nar/gkv1272
+
+Huerta-Cepas, J., Serra, F., & Bork, P. (2016). ETE 3: Reconstruction, Analysis, and Visualization of Phylogenomic Data. Molecular Biology and Evolution, 33(6), 1635-1638. http://doi.org/10.1093/molbev/msw046
+
+Katoh, K., & Standley, D. M. (2013b). MAFFT multiple sequence alignment software version 7: improvements in performance and usability. Molecular Biology and Evolution, 30(4), 772-780. http://doi.org/10.1093/molbev/mst010
+
+Krzywinski, M., Schein, J., Birol, I., Connors, J., Gascoyne, R., Horsman, D., et al. (2009). Circos: an information aesthetic for comparative genomics. Genome Research, 19(9), 1639-1645. http://doi.org/10.1101/gr.092759.109
+
+Llorens, C., Futami, R., Covelli, L., Domínguez-Escribá, L., Viu, J. M., Tamarit, D., et al. (2011). The Gypsy Database (GyDB) of mobile genetic elements: release 2.0. Nucleic Acids Research, 39(Database issue), D70-4. http://doi.org/10.1093/nar/gkq1061
+
+Quinlan, A. R., & Hall, I. M. (2010). BEDTools: a flexible suite of utilities for comparing genomic features. Bioinformatics, 26(6), 841-842. http://doi.org/10.1093/bioinformatics/btq033
+
+Rice, P., Longden, I., & Bleasby, A. (2000). EMBOSS: the European Molecular Biology Open Software Suite. Trends in Genetics, 16(6), 276-277.
+
+Sawyer, S.A. (1999) GENECONV: A computer package for the statistical detection of gene conversion. Distributed by the author, Department of Mathematics, Washington University in St. Louis, available at http://www.math.wustl.edu/~sawyer.
+
+Steinbiss, S., Willhoeft, U., Gremme, G., & Kurtz, S. (2009). Fine-grained annotation and classification of de novo predicted LTR retrotransposons. Nucleic Acids Research, 37(21), 70027013. http://doi.org/10.1093/nar/gkp759
+
+Stijn van Dongen, Graph Clustering by Flow Simulation. PhD thesis, University of Utrecht, May 2000.
+
+Swofford, D. L. 2003. PAUP*. Phylogenetic Analysis Using Parsimony (*and Other Methods). Version 4. Sinauer Associates, Sunderland, Massachusetts.
 ---
