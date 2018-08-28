@@ -246,6 +246,7 @@ Summary file (TSV)
 * trimAl
 * GENECONV
 #### Make Circos plots: `--circos`
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/small-circos.png)
 ###### Description
 Runs Circos to make plots showing gene conversion tracts between elements as links. (g0=orange, g2=blue, g1=purple)
 ###### Output
