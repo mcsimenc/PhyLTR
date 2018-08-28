@@ -344,7 +344,7 @@ Optional flags:
 * BEDtools
 * NCBI BLAST+
 #### B. Render graphical trees annotated with LTR-R diagrams with colored ORFs
-![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/GraphicTree.png)
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/Ete3example.png)
 ###### Documentation
 ```
 Usage:
