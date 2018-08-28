@@ -1,4 +1,4 @@
-![](https://github.com/mcsimenc/PhyLTR/blob/master/GraphicTree.png)
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/GraphicTree.png)
 The main program is written in Python 3 and tested on Scientific and Ubuntu Linux. Many of the routines in PhyLTR are parallelized, but not for MPI. As the pipeline runs, paths to intermediate results like alignments are stored in the file `PhyLTR.output/status`. If the execution is interrupted, this file is used to allow PhyLTR to resume more or less where it left off.
 
 ## Input
@@ -53,7 +53,7 @@ phyltr --fasta <input> --procs <int> \
 ---
 ## 1. Identify candidate long terminal repeat retrotransposon (LTR-R) loci
 #### Run LTRharvest: `--ltrharvest`
-![](https://github.com/mcsimenc/PhyLTR/blob/master/step1output.png)
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/step1output.png)
 ###### Description
 LTRharvest finds loci with the expected structure of full-length LTR-Rs, TSD-LTR-LTR-TSD (TSD = targest site duplication). LTRharvest searches a suffix array to make things fast, which PhyLTR creates from the FASTA input with the GenomeTools program suffixerator.
 ###### Output
@@ -80,7 +80,7 @@ LTRharvest finds loci with the expected structure of full-length LTR-Rs, TSD-LTR
 ## 2. Identify putatve protein-coding domains in LTR-R internal regions.
 If both are run, LTRdigest runs first, then the ORF-finding routine.
 #### A. Run LTRdigest: `--ltridgest`
-![](https://github.com/mcsimenc/PhyLTR/blob/master/step2output.png)
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/step2output.png)
 ###### Description
 LTRdigest coordinates HMMER3 searches for transposable element protein coding sequence homologs in the internal regions (between the LTRs) of the putative LTR-Rs from step 1. A set of TE-related pHMMs is included with PhyLTR.
 ###### Output
@@ -96,7 +96,7 @@ LTRdigest coordinates HMMER3 searches for transposable element protein coding se
 * HMMER3
 * pHMMs
 #### B. Run Open reading frame (ORF) annotation: `--findORFs`
-![](https://github.com/mcsimenc/PhyLTR/blob/master/step3output.png)
+![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/step3output.png)
 ###### Description
 Internal regions are searched for ORFs that don't overlap any preexisting annotation from step 2A and are longer than a user-defined threshold.
 ###### Output
