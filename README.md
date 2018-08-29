@@ -492,55 +492,56 @@ Colors
 |--keep_conflicting_classifications||
 |--keep_no_classification||
 
-|Cluster|
+|Cluster|Default|
 |:---:|:---:|
-|--wicker|
-|--wicker_pId				80|
-|--wicker_pAln				80|
-|--wicker_minLen				80|
-|--wicker_no_ltrs|
-|--wicker_no_internals|
-|--mcl|
-|--I					6|
+|--wicker||
+|--wicker_pId|80|
+|--wicker_pAln|80|
+|--wicker_minLen|80|
+|--wicker_no_ltrs||
+|--wicker_no_internals||
+|--mcl||
+|--I|6|
 
-|Find solo LTRs|
+|Find solo LTRs|Default|
 |:---:|:---:|
-|--soloLTRsearch|
-|--soloLTRminPid				80.0|
-|--soloLTRminLen				80.0|
-|--soloLTRmaxEvalue			1e-3|
+|--soloLTRsearch||
+|--soloLTRminPid|80.0|
+|--soloLTRminLen|80.0|
+|--soloLTRmaxEvalue|1e-3|
 
-|Alignment settings|
+|Alignment settings|Default|
 |:---:|:---:|
-|--maxiterate_small_clusters		20|
-|--maxiterate_medium_clusters		3|
-|--mafft_smallAln_maxclustsize		50|
-|--mafft_mediumAln_maxclustsize		500|
-|--mafft_largeAln_maxclustsize		1000|
+|--maxiterate_small_clusters|20|
+|--maxiterate_medium_clusters|3|
+|--mafft_smallAln_maxclustsize|50|
+|--mafft_mediumAln_maxclustsize|500|
+|--mafft_largeAln_maxclustsize|1000|
 
-|LTR divegence and gene conversion|
+|LTR divegence and gene conversion|Default|
 |:---:|:---:|
-|All alignment settings|
-|--geneconvltrs|
-|--geneconvclusters|
-|--geneconv_g				g0,g1,g2|
-|--remove_GC_from_modeltest_aln|
-|--ltrdivergence|
-|--circos|
+|All alignment settings||
+|--geneconvltrs||
+|--geneconvclusters||
+|--geneconv_g|g0,g1,g2|
+|--remove_GC_from_modeltest_aln||
+|--ltrdivergence||
+|--circos||
 
-|Phylogenetics|
+|Phylogenetics|Default|
 |:---:|:---:|
-|All alignment settings|
-|--phylo|
-|--LTT|
-|--rmhomoflank|
-|--bpflank				500|
-|--flank_evalue				1e-5|
-|--flank_pId				70.0|
-|--flank_plencutoff			70.0|
-|--auto_outgroup|
-|--bootstrap_reps			100|
-|--convert_to_ultrametric|
+|All alignment settings||
+|--phylo||
+|--LTT||
+|--rmhomoflank||
+|--bpflank|500|
+|--flank_evalue|1e-5|
+|--flank_pId|70.0|
+|--flank_plencutoff|70.0|
+|--auto_outgroup||
+|--bootstrap_reps|100|
+|--convert_to_ultrametric||
+
 ## APPENDIX B. References
 Bao, W., Kojima, K. K., & Kohany, O. (2015). Repbase Update, a database of repetitive elements in eukaryotic genomes. Mobile DNA, 6(1), 11. http://doi.org/10.1186/s13100-015-0041-9
 
