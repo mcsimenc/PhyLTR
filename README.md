@@ -209,7 +209,6 @@ An implementation of the protocol "Clustering similarity graphs encoded in BLAST
 ---
 ---
 ## 5. Estimate LTR divergences
-![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/LTRdivergence.png)
 #### A. Run gene conversion assessment on LTR pairs for each element: `--geneconvltrs`
 ###### Description
 Finds evidence of gene conversion between the LTRs of each element using GENECONV as in Cossu et al. (2017). If this step is run, gene conversion estimates will be used to scale LTR divergence estimates as in Casola et al. (2010) in the next step (5B).
@@ -261,7 +260,6 @@ Finds candidate solo LTRs in the input fasta by performs blastn of each LTR to t
 ---
 ---
 ## 7. Gene conversion assessment between elements in clusters
-![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/small-circos.png)
 #### Run GENECONV: `--geneconvclusters`
 ###### Description
 Finds evidence of gene conversion in multiple alignments of entire elements for each cluster using GENECONV.
@@ -288,9 +286,8 @@ Runs Circos to make plots showing gene conversion tracts between elements as lin
 * Circos
 ---
 ---
-## 8. Phylogenetics
-![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/Phylogenetic.png)
-#### Run phylogenetic inference: `--phylo`
+## 8. Trees
+#### Infer phylogenies for each cluster: `--phylo`
 ###### Description
 Infers phylogenies from alignments of entire elements for each cluster, optionally with an outgroup, using FastTree2 w/GTR. The alignment is resampled for bootstrapping using SEQBOOT from PHYLIP and optionally converted into an ultrametric tree using PATHd8.
 ###### Output
