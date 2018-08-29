@@ -128,7 +128,7 @@ Internal regions are searched for ORFs that don't overlap any preexisting annota
 * Modified version of step 2A or 1 output with ORF annotations + translated sequences (GFF3)
 ###### Options
 ```
---min_orf_len (300)	The minimum length (bp) of ORF to find
+--min_orf_len (300)	The minimum length (bp) of ORF to annotate
 ```
 ###### External dependencies
 * BEDtools
