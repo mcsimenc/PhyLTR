@@ -2780,7 +2780,7 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 		append2logfile(paths['output_top_dir'], mainlogfile, 'ltr_divergence() already completed: {0}'.format(paths['{0}.LTR_divergence_complete'.format(key_base)]))
 		return
 
-	if GENECONVLTRS or DIVERGENCE:
+	if GENECONVLTRS or LTRDIVERGENCE:
 
 		MakeDir('LTRsGFFoutputDir', '{0}/LTRs'.format(paths['GFFOutputDir']))
 		MakeDir('LTRsFASTAoutputDir', '{0}/LTRs'.format(paths['FastaOutputDir']))
@@ -3729,6 +3729,9 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
 			
 	'''
 	global paths
+
+	if not PHYLO:
+		return
 
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Start phylo() for {0}'.format(clustering_method))
 
@@ -5397,12 +5400,6 @@ filenames = {}
 paths = {}
 paths_toClean = {}
 params = {}
-# paths may contain:
-# inputFasta			Input fasta
-# inputFastaSuffixArray		Basename for suffixerator output
-# LTRharvestGFF			GFF3 output from LTRharvest
-# LTRdigestOutputPrefix		Prefix for LTRdigest output files
-# LTRdigestHMMs			Directory for individual Pfam HMMs for LTR retrotransposon domains
 
 paths['selfDir'] = '/'.join(os.path.realpath(__file__).split('/')[:-1])
 paths['scriptsDir'] = '{0}/scripts'.format(paths['selfDir'])
@@ -5622,11 +5619,6 @@ if '--circos' in args:
 else:
 	CIRCOS = False
 
-if '--estimate_divergence' in args:
-	DIVERGENCE = True
-else:
-	DIVERGENCE = False
-
 if '--wicker_pId' in args:
 	wicker_pId = int(args[args.index('--wicker_pId')+1])
 else:
@@ -5644,6 +5636,10 @@ if '--remove_GC_from_modeltest_aln' in args:
 	remove_GC_from_modeltest_aln = True
 else:
 	remove_GC_from_modeltest_aln = False
+if '--phylo' in args:
+	PHYLO = True
+else:
+	PHYLO = False
 if '--bootstrap_reps' in args:
 	bootstrap_reps = int(args[args.index('--bootstrap_reps')+1])
 else:
@@ -5742,18 +5738,17 @@ else:
 paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta'.format(paths['selfDir'])
 paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(paths['selfDir'])
 paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF'.format(paths['selfDir'])
-#paths['RepbaseSuperfamilies'] = '{0}/RepeatDatabases/Repbase/Repbase.unique_SFs'.format(paths['selfDir'])
 
 paths['DfamDB'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm'.format(paths['selfDir'])
 paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.list'.format(paths['selfDir'])
 paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF'.format(paths['selfDir'])
-#paths['DfamSuperfamilies'] = '{0}/RepeatDatabases/Dfam/Dfam.unique_SFs'.format(paths['selfDir'])
 
 LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL', 'Tas', 'Suzu', 'Sinbad', 'Unknown']
 
 MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
 MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
 paths['CurrentGFF'] = None # This path will have the path to the best GFF3 to use.
+
 try:
 	statusFlRead = open('{0}/status'.format(paths['output_top_dir']), 'r')
 except:
@@ -5786,60 +5781,29 @@ elif 'LTRdigestGFF' in paths:
 elif 'LTRharvestGFF' in paths:
 	paths['CurrentGFF'] = paths['LTRharvestGFF']
 
-
-# These functions modify the global var paths
-# They run various procedures and generate files
-# They'll be skipped if they appear to have been done already and the requisite files for subsequent steps exist
-# They'll also be skipped if the are not supposed to run for the requested procedure
-# If they run they will append to the log
-
 sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
 
-#  I. Identification and classification of elements
-#
-#	1. Run LTRharvest
-#
+#################################################################################################### Begin
+
 ltrharvest()    # Predict LTR retrotransposons using structural criteria
-#		# Input: Sequences (FASTA)
-#		# Output: LTRharvest GFF3
-#
-#	2. Run LTRdigest
-#
+
 ltrdigest()	# Identify parts of element internal regions with evidence of homology to LTR RT protein coding domains
-#		# Input: Sequences (FASTA), LTRharvest GFF3, pHMMs
-#		# Output: LTRdigest GFF3
-#
+
 if FINDORFS:
 	AnnotateORFs(minLen=min_orf_len)
-#
-#	3. Classify elements to superfamily using homology evidence in Dfam and/or Repbase
-#
+
 classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, repbase_tblastx_evalue=repbase_tblastx_evalue, nhmmer_reporting_evalue=nhmmer_reporting_evalue, nhmmer_inclusion_evalue=nhmmer_inclusion_evalue)  # Extract LTR_retrotransposon sequences for classification using homology
-#			# Find evidence of homology to repeats in Dfam using HMMER.
-#			# Find evidence of homology to repeats in Repbase using tblastx
-#			# Remove false positives from LTRdigest GFF3
-#			# Input: Sequences (FASTA), DBs (Dfam & Repbase), LTRdigest or LTRharvest GFF3
-#			# Output: LTR RT GFF3 with classifications and false positives removed (FPs have homology to non-LTR RTs in DBs or no homology)
-#
-#		Global variables containg superfamily assignment for each element
-#
+
 clusters_by_classif = shortClassif()
 classifs_by_element = shortClassif(ElNames=True)
 classifs = set(list(clusters_by_classif.keys()))
-#
-#  II. Clustering, divergence, gene conversion, and phylogenetic analysis
-#
 
 if WICKER:
-	# 1. Perform clustering
 	WickerFam(pId=wicker_pId, percAln=wicker_pAln, minLen=wicker_minLen, use_ltrs=wicker_use_ltrs, use_internal=wicker_use_internal)
 	summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
 
 	if GENECONVCLUSTERS or LTRDIVERGENCE:
-		# 2. MSA for each cluster
 		AutoAlign(I=None, part='entire', rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
-
-		# 3. GENECONV for each MSA
 		if GENECONV_G0:
 			geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 		if GENECONV_G1:
@@ -5847,23 +5811,18 @@ if WICKER:
 		if GENECONV_G2:
 			geneconvClusters(trimal=True, g='/g2', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 
-		# 4. Modeltesting  for each cluster
 		modeltest(iters=1, I=None, removegeneconv=remove_GC_from_modeltest_aln, part='entire', clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 
 if USEMCL:
-	# 1. Perform clustering
-	# Run MCL. I is the inflation paramater that controls granularity. Default is 6. MCL docs recommend 1.4, 2, 4, and 6, and between 1.1 and 10 for most cases.
 	MCL(I=MCL_I, minClustSize=MinClustSize, CombineIfTooFew=False)	
 	summarizeClusters(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
 
 	if GENECONVCLUSTERS or LTRDIVERGENCE:
-		# 2. MSA for each cluster
 		if not LTRDIVERGENCE:
 			AutoAlign(I=MCL_I, part='entire', rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
 		else:
 			AutoAlign(I=MCL_I, part='entire', rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
 
-		# 3. GENECONV for each MSA
 		if GENECONV_G0:
 			geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
 		if GENECONV_G1:
@@ -5871,22 +5830,10 @@ if USEMCL:
 		if GENECONV_G2:
 			geneconvClusters(trimal=True, g='/g2', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
 
-
-		# 4. Modeltesting  for each cluster
 		modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part='entire', clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-#
-#
-#	GENECONV stringency settings
-#
-#	g = '/g0'	Most stringent - no mismatches in fragments
-#	g = '/g1'	Most relaxed - mismatches in fragments
-#	g = '/g2'	Medium relaxed
-#
-#
-#  
+  
 if SOLOLTR:
 	if WICKER:
-		#summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
 		SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
 	if USEMCL:
 		SoloLTRsearch(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
@@ -5896,11 +5843,9 @@ if CIRCOS:
 		Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
 	if USEMCL:
 		Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
-#
-#
 if WICKER:
 	align_ltrs(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})	# Runs if need to use geneconvLTRs or estimate divergences
-#
+
 	if GENECONV_G0:
 		geneconvLTRs(g='/g0', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
 	if GENECONV_G1:
@@ -5909,26 +5854,22 @@ if WICKER:
 		geneconvLTRs(g='/g2', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
 if USEMCL:
 	align_ltrs(I=MCL_I, clustering_method='MCL', WickerParams=None)	# Runs if need to use geneconvLTRs or estimate divergences
-	#
+
 	if GENECONV_G0:
 		geneconvLTRs(g='/g0', I=MCL_I, clustering_method='MCL', WickerParams=None)
 	if GENECONV_G1:
 		geneconvLTRs(g='/g1', I=MCL_I, clustering_method='MCL', WickerParams=None)
 	if GENECONV_G2:
 		geneconvLTRs(g='/g2', I=MCL_I, clustering_method='MCL', WickerParams=None)
-#
-#
+
 if WICKER:
 	ltr_divergence(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+	
 	phylo(removegeneconv=False, BOOTSTRAP=True, I=None, align='cluster', removehomologouspair=RMHOMOFLANK, part='entire', clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=AUTO_OUTGROUP, bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-#
-#
+
 if USEMCL:
 	ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None)
 	phylo(removegeneconv=False, BOOTSTRAP=True, I=MCL_I, align='cluster', removehomologouspair=RMHOMOFLANK, part='entire', clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP,  bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-#
-#div2Rplots(I=MCL_I)
-#
-#
+
 print('fin!')
 sys.exit()
