@@ -3934,6 +3934,8 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 		if os.path.isfile(paths[AlnFasta]):
 			if os.stat(paths[AlnFasta]).st_size == 0: # if alignment file is empty
 				continue
+			if len(list(SeqIO.parse(paths[AlnFasta], 'fasta'))[0]) == 0: # no sequences
+				continue
 				
 		else:
 			continue
@@ -3958,6 +3960,8 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
 		fasttreeCalls = []
 		if os.path.isfile(paths[AlnFasta]):
 			if os.stat(paths[AlnFasta]).st_size == 0: # if alignment file is empty
+				continue
+			if len(list(SeqIO.parse(paths[AlnFasta], 'fasta'))[0]) == 0: # no sequences
 				continue
 				
 		else:
