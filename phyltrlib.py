@@ -207,14 +207,13 @@ def fastas2supermatrix(**kwargs):
 
 def bedtoolsid2attr(gff_flpath, attr='ID', strand=False, lstrip=None):
 	'''
-	ÂThis takes a GFF and creates a map of the current attribute specified by
+	This takes a GFF and creates a map of the current attribute specified by
 	attr, to the expected names that will be output by bedtools getfasta (a tool
 	for extracting sequences from a FASTA which correspond to features in a GFF3.
 
 	Also as a standalone script:
 
 		bedtoolsid2attr.py -gff <gff> [-attr <str>] [-strand]
-
 	'''
 	STRAND = strand
 	attr_pat = re.compile('{0}=(.+?)(;|$)'.format(attr))
