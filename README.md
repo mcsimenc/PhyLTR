@@ -440,58 +440,107 @@ Colors
 ## APPENDIX A. All options
 
 |General||
-|:---:---|
+|:---:|:---:|
 |-h or --h||
 |-help or --help||
 |--logfile|log.txt|
---procs					1
---output_dir				PhyLTR.output
---keep_files
---min_clust_size			7
---nosmalls
-###### Input
---fasta
-###### LTRharvest
---ltrharvest
---del					-3
---ins					-3
---mis					-2
---mat					2
---xdrop					5
---minlenltr				100
---maxlenltr				1000
---mindistltr				1000
---maxdistltr				15000
---similar				0.0
---vic					60
---mintsd				4
---maxtsd				20
-###### LTRdigest
---ltrdigest
---ltrdigest_hmms			PhyLTR.output/RepeatDatabases/LTRdigest_HMMs/hmms
-###### ORFs
---findORFs
---min_orf_len				300
-###### Classification
---classify
---classify_dfam
---nhmmer_reporting_evalue		10
---nhmmer_inclusion_evalue		1e-5
---classify_repbase
---repbase_tblastx_evalue		1e-5
---keep_conflicting_classifications
---keep_no_classification
-###### Cluster
---wicker
---wicker_pId				80
---wicker_pAln				80
---wicker_minLen				80
---wicker_no_ltrs
---wicker_no_internals
---mcl
---I					6
----
----
+|--procs|1|
+|--output_dir|PhyLTR.output|
+|--keep_files||
+|--min_clust_size|7|
+|--nosmalls||
+
+|###### Input
+|:---:|:---:|
+|--fasta
+
+|###### LTRharvest
+|:---:|:---:|
+|--ltrharvest
+|--del					-3
+|--ins					-3
+|--mis					-2
+|--mat					2
+|--xdrop					5
+|--minlenltr				100
+|--maxlenltr				1000
+|--mindistltr				1000
+|--maxdistltr				15000
+|--similar				0.0
+|--vic					60
+|--mintsd				4
+|--maxtsd				20
+
+|###### LTRdigest
+|:---:|:---:|
+|--ltrdigest
+|--ltrdigest_hmms			PhyLTR.output/RepeatDatabases/LTRdigest_HMMs/hmms
+
+|###### ORFs
+|:---:|:---:|
+|--findORFs
+|--min_orf_len				300
+
+|###### Classification
+|:---:|:---:|
+|--classify
+|--classify_dfam
+|--nhmmer_reporting_evalue		10
+|--nhmmer_inclusion_evalue		1e-5
+|--classify_repbase
+|--repbase_tblastx_evalue		1e-5
+|--keep_conflicting_classifications
+|--keep_no_classification
+
+|###### Cluster
+|:---:|:---:|
+|--wicker
+|--wicker_pId				80
+|--wicker_pAln				80
+|--wicker_minLen				80
+|--wicker_no_ltrs
+|--wicker_no_internals
+|--mcl
+|--I					6
+
+|###### Find solo LTRs
+|:---:|:---:|
+|--soloLTRsearch
+|--soloLTRminPid				80.0
+|--soloLTRminLen				80.0
+|--soloLTRmaxEvalue			1e-3
+
+|###### Alignment settings
+|:---:|:---:|
+|--maxiterate_small_clusters		20
+|--maxiterate_medium_clusters		3
+|--mafft_smallAln_maxclustsize		50
+|--mafft_mediumAln_maxclustsize		500
+|--mafft_largeAln_maxclustsize		1000
+
+|###### LTR divegence and gene conversion
+|:---:|:---:|
+|All alignment settings
+|--geneconvltrs
+|--geneconvclusters
+|--geneconv_g				g0,g1,g2
+|--remove_GC_from_modeltest_aln
+|--ltrdivergence
+|--circos
+
+|###### Phylogenetics
+|:---:|:---:|
+|All alignment settings
+|--phylo
+|--LTT
+|--rmhomoflank
+|--bpflank				500
+|--flank_evalue				1e-5
+|--flank_pId				70.0
+|--flank_plencutoff			70.0
+|--auto_outgroup
+|--bootstrap_reps			100
+|--convert_to_ultrametric
 ## APPENDIX B. References
 Bao, W., Kojima, K. K., & Kohany, O. (2015). Repbase Update, a database of repetitive elements in eukaryotic genomes. Mobile DNA, 6(1), 11. http://doi.org/10.1186/s13100-015-0041-9
 
