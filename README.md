@@ -438,31 +438,34 @@ Colors
 ---
 ---
 ## APPENDIX A. All options
-###### General
--h or --h
--help or --help	
---logfile				log.txt
---procs					1
---output_dir				PhyLTR.output
---keep_files
---min_clust_size			7
---nosmalls
-###### Input
---fasta
-###### LTRharvest
+General|
+:---:|:---:
+-h  or  --h|
+-help  or  --help|
+--logfile|log.txt
+--procs|1
+--output_dir|PhyLTR.output
+--keep_files|
+--min_clust_size|7
+--nosmalls|
+Input|
+:---:|:---:
+--fasta|
+LTRharvest|
+:---:|:---:
 --ltrharvest
---del					-3
---ins					-3
---mis					-2
---mat					2
---xdrop					5
---minlenltr				100
---maxlenltr				1000
---mindistltr				1000
---maxdistltr				15000
---similar				0.0
---vic					60
---mintsd				4
+--del|-3
+--ins|-3
+--mis|-2
+--mat|2
+--xdrop|5
+--minlenltr|100
+--maxlenltr|1000
+--mindistltr|1000
+--maxdistltr|15000
+--similar|0.0
+--vic|60
+--mintsd|4
 --maxtsd				20
 ###### LTRdigest
 --ltrdigest
