@@ -551,6 +551,8 @@ Camacho, C., Coulouris, G., Avagyan, V., Ma, N., Papadopoulos, J., Bealer, K., &
 
 Capella-Gutiérrez, S., Silla-Martínez, J. M., & Gabaldón, T. (2009). trimAl: a tool for automated alignment trimming in large-scale phylogenetic analyses. Bioinformatics, 25(15), 1972-1973. http://doi.org/10.1093/bioinformatics/btp348
 
+Casola, C., Ganote, C. L. & Hahn, M. W. Nonallelic Gene Conversion in the Genus Drosophila. Genetics 185, 95-103 (2010).
+
 Cossu, R. M., Casola, C., Giacomello, S., Vidalis, A., Scofield, D. G., & Zuccolo, A. (2017). LTR Retrotransposons Show Low Levels of Unequal Recombination and High Rates of Intraelement Gene Conversion in Large Plant Genomes. Genome Biology and Evolution, 9(12), 3449-3462. http://doi.org/10.1093/gbe/evx260
 
 Darriba, D., Taboada, G. L., Doallo, R., & Posada, D. (2012). jModelTest 2: more models, new heuristics and parallel computing. Nature Methods, 9(8), 772-772. http://doi.org/10.1038/nmeth.2109
