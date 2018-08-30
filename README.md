@@ -471,7 +471,7 @@ Colors
 |LTRdigest|Default|
 |:---:|:---:|
 |--ltrdigest||
-|--ltrdigest_hmms|PhyLTR.output/RepeatDatabases/LTRdigest_HMMs/hmms|
+|--ltrdigest_hmms|PhyLTR/RepeatDatabases/LTRdigest_HMMs/hmms|
 
 |ORFs|Default|
 |:---:|:---:|
