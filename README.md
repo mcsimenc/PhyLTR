@@ -7,7 +7,7 @@ A nucleotide FASTA file
 * LTR-R annotations in GFF3 format
 * Putative solo LTR annotations GFF3 format
 * Clusterings
-* Rooted, bootstrapped phylogenies as phylograms and ultrametric trees for full-length elements from each cluster in newick format
+* Rooted, bootstrapped phylogenies as phylograms and ultrametric trees for each cluster in newick format
 * LTR divergence estimates
 * Gene conversion assessments
 
