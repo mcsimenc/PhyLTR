@@ -4,9 +4,9 @@ The main program is written in Python 3 and tested on Scientific and Ubuntu Linu
 ## Input
 A nucleotide FASTA file
 ## Output
-* LTR-R annotations in GFF3 format (incl. protein-coding domains and ORFs)
+* LTR-R annotations in GFF3 format
 * Clusterings
-* Rooted, bootstrapped phylogenies as phylograms and ultrametric trees for all clusters in newick format
+* Rooted, bootstrapped phylogenies as phylograms and ultrametric trees for each cluster in newick format
 * LTR divergence estimates
 * Gene conversion assessments
 * Solo LTR annotations GFF3 format
