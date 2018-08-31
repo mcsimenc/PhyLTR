@@ -65,7 +65,7 @@ phyltr --fasta <input> --procs <int> \
 ```
 --keep_files				Keeps more intermediate files.
 --output_dir (PhyLTR.output)		Output directory.
---logfile (<output_dir>/log.txt)	Path to where log file is written 
+--logfile (<output_dir>/log.txt)	Desired file for log 
 --min_clust_size (7)			Do not align/infer phylogenies from clusters smaller than this.
 --nosmalls				Do not combine and assemble all clusters smaller than --min_clust_size
 ```
