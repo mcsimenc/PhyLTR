@@ -5,11 +5,12 @@ The main program is written in Python 3 and tested on Scientific and Ubuntu Linu
 A nucleotide FASTA file
 ## Output
 * LTR-R annotations in GFF3 format
+* Putative solo LTR annotations GFF3 format
 * Clusterings
-* Rooted, bootstrapped phylogenies as phylograms and ultrametric trees for each cluster in newick format
+* Rooted, bootstrapped phylogenies as phylograms and ultrametric trees for full-length elements from each cluster in newick format
 * LTR divergence estimates
 * Gene conversion assessments
-* Solo LTR annotations GFF3 format
+
 * Visualizations and modeling of branching dynamics using accessory scripts
 
 PhyLTR populates a directory structure, keeping results for different clusterings separate. The results obtained prior to clutering are used for any post-clustering analysis. Within `PhyLTR.output` (default):
