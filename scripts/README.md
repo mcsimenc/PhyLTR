@@ -16,8 +16,8 @@ RepbaseIG2superfamilies.py    Script for preparing the Repbase databse for PhyLT
 ```
 ## Used in PhyLTR
 ```
-best_blast_hit.py		          Returns the highest scoring hit for each query in tabular BLAST output
-CompareToBootstrap.pl		      FastTree2 script for calculating bootstrap support values
+best_blast_hit.py             Returns the highest scoring hit for each query in tabular BLAST output
+CompareToBootstrap.pl         FastTree2 script for calculating bootstrap support values
 gffAddAttr.py                 Adds new key-value pairs to the attributes field of a GFF3
 hmmer_table2columns.py        Parses hmmer output (deprecated in favor of nhmmer)
 nhmmer_table2columns.py       Parses nhmmer output, used in Dfam classification step
