@@ -1,11 +1,6 @@
 # PhyLTR scripts
 Some of these scripts are called during PhyLTR's execution and some are not, but all are standalone and contain helps.
 ## External scripts
-#### Visualizing trees and diagrammatic elements
-```
-ete3_tree.py                  Requires a graphics device. Renders phylogenetic trees of LTR-Rs with
-                              diagrams showing element ORF and domain content.
-```
 ---
 ## For preparing the LTR-R databases
 ```
@@ -26,8 +21,9 @@ gff2circos-tile.py            Creates Circos-format file for tile features from 
 ideogramFromLengths.py        Creates Circos-format file for scaffolds
 geneconv2links.py             Converts GENECONV output to Circos links format
 ```
----
-### Circos-related
+### Other
 ```
 domainSearch.py               Searchers for homologs to LTR-R ORFs in a protein FASTA
+ete3_tree.py                  Requires a graphics device. Renders phylogenetic trees of LTR-Rs with
+                              diagrams showing element ORF and domain content.
 ```
