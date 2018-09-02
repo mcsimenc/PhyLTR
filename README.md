@@ -83,6 +83,9 @@ These apply to all steps that do alignments. Aligning can fail to complete if th
 ```
 ---
 ---
+# Processes
+---
+---
 ## 1. Identify candidate long terminal repeat retrotransposon (LTR-R) loci
 #### Run LTRharvest: `--ltrharvest`
 ![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/step1output.png)
