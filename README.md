@@ -83,7 +83,7 @@ These apply to all steps that do alignments. Aligning can fail to complete if th
 ```
 ---
 ---
-# Processes
+# PROCESSES
 ---
 ---
 ## 1. Identify candidate long terminal repeat retrotransposon (LTR-R) loci
@@ -445,7 +445,10 @@ Colors
 * Tree shape analysis
 ---
 ---
-## APPENDIX A. All options
+# Appendices
+---
+---
+## Appendix A. All options
 
 |General|Default|
 |:---:|:---:|
@@ -550,7 +553,7 @@ Colors
 |--bootstrap_reps|100|
 |--convert_to_ultrametric||
 
-## APPENDIX B. References
+## Appendix B. References
 Bao, W., Kojima, K. K., & Kohany, O. (2015). Repbase Update, a database of repetitive elements in eukaryotic genomes. Mobile DNA, 6(1), 11. http://doi.org/10.1186/s13100-015-0041-9
 
 Britton, T., Anderson, C. L., Jacquet, D., Lundqvist, S., & Bremer, K. (2007). Estimating divergence times in large phylogenetic trees. Systematic Biology, 56(5), 741-752. http://doi.org/10.1080/10635150701613783
