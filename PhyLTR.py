@@ -5284,6 +5284,10 @@ def help():
 	  --ltrdigest_hmms		<path>	Path to a file with one or more protein profile HMMs for LTRdigest (HMMER)
 	  					(default {0})
 
+	  ORFs
+	  -----
+	  --find_ORFs
+
 	  Classification of LTR RTs to superfamily using homology to annotated sequences in Repbase and/or Dfam
 	  -----------------------------------------------------------------------------------------------------
 	  --classify				Do both Dfam and Repbase classifications
