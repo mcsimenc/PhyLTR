@@ -10,8 +10,7 @@ A nucleotide FASTA file
 * Rooted, bootstrapped phylogenies as phylograms and ultrametric trees for each cluster in newick format
 * LTR divergence estimates
 * Gene conversion assessments
-
-* Visualizations and modeling of branching dynamics using accessory scripts
+* Visualizations and modeling of branching dynamics (external scripts)
 
 PhyLTR populates a directory structure, keeping results for different clusterings separate. The results obtained prior to clutering are used for any post-clustering analysis. Within `PhyLTR.output` (default):
 ```
