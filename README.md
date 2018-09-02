@@ -185,7 +185,7 @@ Finds homologs in Repbase using tblastx
 ## 4. Cluster
 #### A. Run WickerFam clustering: `--wicker`
 ###### Description
-An implementation of the method suggested in Wicker et al. (2007) for circumscribing putative LTR-R families. Elements are assigned to the same cluster if in an alignment of either their LTRs or internal regions share a sequence of some minimum % identity that is at least so many base pairs in length and over some percentage of the length of the inputs, with the defaults being 80%, 80 bp, and 80%. Separate all-by-all blastns are performed for LTRs and/or internal regions of elements in each classification and used to construct a graph, subject to constraints (see options below). Clusters are assigned the elements in the connected components in the graph which are discovered using depth first search.
+An implementation of the method suggested by Wicker et al. (2007) for circumscribing putative LTR-R families. Elements are assigned to the same cluster if in an alignment of either their LTRs or internal regions share a sequence of some minimum % identity that is at least so many base pairs in length and over some percentage of the length of the inputs, with the defaults being 80%, 80 bp, and 80%. Separate all-by-all blastns are performed for LTRs and/or internal regions of elements in each classification and used to construct a graph, subject to constraints (see options below). Clusters are assigned the elements in the connected components in the graph which are discovered using depth first search.
 ###### Output
 * Cluster assignments for each element (TSV)
 * Subsets of main annotation file for every cluster (GFF3s)
