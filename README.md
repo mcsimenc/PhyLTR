@@ -72,7 +72,7 @@ phyltr --fasta <input> --procs <int> \
 ---
 ---
 ## MAFFT options
-These apply to all steps that do alignments. Aligning can fail to complete if the input data are too big and/or not enough RAM is available, for example, MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. You can cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1, which is much more inaccurate, for large clusters. The alignment of clusters has been the limiting process in terms of computation time in my experience, but aligning can be sped up by reducing the number of improvement iterations performed. You can use the following options to designate ranges of cluster sizes and set the number of alignment improvement iterations for each size (less iterations = faster).
+These apply to all steps that do alignments. Aligning can fail to complete if the input data are too big and/or not enough RAM is available, for example, MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. You can cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1, which is much more inaccurate, for large clusters. The alignment of clusters has been the limiting process in terms of computation time in my experience, but aligning can be sped up by reducing the number of improvement iterations performed. You can use the following options to designate ranges of cluster sizes and set the number of alignment improvement iterations for each size (fewer iterations = faster).
 ###### Options
 ```
 --maxiterate_small_clusters (30)	MAFFT iterations for small clusters. (more = better alignment = slower)
