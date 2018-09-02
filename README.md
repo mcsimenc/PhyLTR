@@ -592,4 +592,4 @@ Steinbiss, S., Willhoeft, U., Gremme, G., & Kurtz, S. (2009). Fine-grained annot
 
 Swofford, D. L. 2003. PAUP\*. Phylogenetic Analysis Using Parsimony (\* = and Other Methods). Version 4. Sinauer Associates, Sunderland, Massachusetts.
 
----
+Wicker, T. et al. A unified classification system for eukaryotic transposable elements. Nat Rev Genet 8, 973–982 (2007).
