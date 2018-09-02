@@ -26,7 +26,7 @@ GFF_output/		various intermediate and final GFF3 files
 WickerFamDir/		WickerFam clusterings and downstream analyses
 MCL/			MCL clusterings and downstream analyses
 ```
-Within each clustering directory, e.g: `MCL/I6/`
+Within each clustering directory, e.g `MCL/I6/`, are:
 ```
 Alignments/		All alignments
 Clusters/		Results of clustering
