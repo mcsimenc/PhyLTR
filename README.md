@@ -202,7 +202,7 @@ An implementation of the method suggested in Wicker et al. (2007) for circumscri
 * NCBI Blast+
 #### B. Run MCL clustering: `--mcl`
 ###### Description
-An implementation of the protocol "Clustering similarity graphs encoded in BLAST results" in the protocols section on the MCL website (https://micans.org/mcl/). Separate all-by-all blastns of entire LTR-R sequences are performed for elements in each classification and MCL programs are used to carry out MCL clustering. A single parameter set by --I controls the output. See MCL documentation for a discussion of setting this parameter.
+An implementation of the protocol _Clustering similarity graphs encoded in BLAST results_ in the protocols section on the MCL website (https://micans.org/mcl/). Separate all-by-all blastns of entire LTR-R sequences are performed for elements in each classification and MCL programs are used to carry out MCL clustering. A single parameter set by --I controls the output. See MCL documentation for a discussion of setting this parameter.
 ###### Output
 * Cluster assignments for each element (TSV)
 * Subsets of main annotation file for every cluster (GFF3s)
