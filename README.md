@@ -529,7 +529,7 @@ Colors
 |--mafft_mediumAln_maxclustsize|500|
 |--mafft_largeAln_maxclustsize|1000|
 
-|LTR divegence and gene conversion|Default|
+|LTR divergence and gene conversion|Default|
 |:---:|:---:|
 |All alignment settings||
 |--geneconvltrs||

@@ -5119,8 +5119,8 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('{0}\t{1}\n'.format(ClusterSummaryFl, paths[ClusterSummaryFl]))
-			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-				statusFlAppend.write('{0}\t{1}\n'.format(ClusterMembershipFl, paths[ClusterMembershipFl]))
+			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusflappend:
+				statusflappend.write('{0}\t{1}\n'.format(clustermembershipfl, paths[clustermembershipfl]))
 
 
 
@@ -5130,94 +5130,95 @@ def shortHelp():
 	print('''
 	  Usage:
 	  ------------
-	  phyltr -f|--fasta <path> [--logfile <path>] [-p|--procs <int>] [--keep_files]
-	  [-o|--output_dir <path>] [-lh|--ltrharvest] [--minlenltr <int>] [--maxlenltr <int>]
-	  [--mindistltr <int>] [--maxdistltr <int>] [--similar <int|float>] [--vic <int>]
-	  [--mintsd <int>] [--maxtsd <int>] [--xdrop <int>] [--mat <int>] [--mis <int>]
-	  [--ins <int>] [--del <int>] [-ld|--ltrdigest] [--ltrdigest_hmms <path>] [--classify]
-	  [--classify_dfam] [--classify_repbase] [--nhmmer_reporting_evalue <int|float>]
-	  [--nhmmer_inclusion_evalue <int|float>] [--repbase_tblastx_evalue <int|float>] 
-	  [--keep_conflicting_classificaitons] [--keep_no_classifications] [--min_clust_size <int>]
-	  [--wicker] [--wicker_pId <int|float>] [--wicker_minLen <int>] [--wicker_pAln <int|float>]
-	  [--wicker_no_ltrs] [--wicker_no_internals] [--mcl] [--I <int|float>] [--nosmalls]
-	  [--geneconvltrs] [--geneconv_g <[g0[,g1[,g2]]]>] [--ltrdivergence] [--remove_GC_from_modeltest_aln]
-	  [--gc_ltr_div_scaling <int>] [ --maxiterate_small_clusters <int> ]
-	  [ --maxiterate_medium_clusters <int> ] [ --mafft_smallAln_maxclustsize <int> ]
-	  [ --mafft_mediumAln_maxclustsize <int> ] [ --mafft_largeAln_maxclustsize <int> ]
-	  [--geneconvclusters] [--LTT] [--phylo] [--bootstrap_reps] [--bpflank <int>]
-	  [--flank_evalue <int|float>] [--flank_pId <int|float>][--flank_plencutoff <int|float>]
-	  [--min_orf_len <int>] Solo LTR
+	  	phyltr [options] --fasta <path> [options]
 	  ''', file=sys.stderr)
 
 def help2():
 	print('''
-	  Option			    ArgType	       Default
-	----------------------------------------------------------------
-	--fasta				    <path>		NONE
-	--procs				    <int>		1
-	--keep_files			    BINARY		OFF
-	--output_dir			    <path>		PhyLTR.output
-	--ltrharvest			    BINARY		OFF
-	--minlenltr			    <int>		100
-	--maxlenltr			    <int>		1000
-	--mindistltr			    <int>		1000
-	--maxdistltr			    <int>		15000
-	--similar			    <num>		0.0
-	--vic				    <int>		60
-	--mintsd			    <int>		4
-	--maxtsd			    <int>		20
-	--xdrop				    <int>		5
-	--mat				    <int>		2
-	--mis				    <int>		-2
-	--ins				    <int>		-3
-	--del				    <int>		-3
-	--ltrdigest			    BINARY		OFF
-	--ltrdigest_hmms		    <path>		{0}
-	--classify			    BINARY		OFF
-	--classify_dfam			    BINARY		OFF
-	--classify_repbase		    BINARY		OFF
-	--nhmmer_reporting_evalue	    <num>		10
-	--nhmmer_inclusion_evalue	    <num>		1e-2
-	--repbase_tblastx_evalue	    <num>		1e-5
-	--keep_conflicting_classificaitons  BINARY		OFF
-	--keep_no_classifications	    BINARY		OFF
-	--min_clust_size		    <int>		7
-	--wicker			    BINARY		OFF
-	--wicker_pId			    <num>		80
-	--wicker_minLen			    <int>		80
-	--wicker_pAln			    <num>		80
-	--wicker_no_internals		    BINARY		OFF
-	--wicker_no_ltrs		    BINARY		OFF
-	--mcl				    BINARY		MCL
-	--I				    <num>		6
-	--nosmalls			    BINARY		OFF
-	--geneconvltrs			    BINARY		OFF
-	--geneconv_g			    <str>		g0,g1,g2
-	--ltrdivergence			    BINARY		OFF
-	--remove_GC_from_modeltest_aln	    BINARY		OFF
-	--modeltest_criterion		    <str>		BIC
-	--gc_ltr_div_scaling		    <int>		1
-	--maxiterate_small_clusters	    <int>		20
-	--maxiterate_medium_clusters	    <int>		3
-	--mafft_smallAln_maxclustsize	    <int>	 	50
-	--mafft_mediumAln_maxclustsize	    <int>		500
-	--mafft_largeAln_maxclustsize  	    <int>		1000
-	--geneconvclusters		    BINARY		OFF
-	--LTT				    BINARY		OFF
-	--phylo				    BINARY		OFF
-	--bootstrap_reps		    <int>		100
-	--bpflank			    <int>		500
-	--flank_evalue			    <num>		1e-5
-	--flank_pId			    <num>		70
-	--flank_plencutoff		    <num>		70
-	--findORFs			    BINARY		on
-	--min_orf_len			    <int>		300
-	--soloLTRsearch			    BINARY		OFF
-	--soloLTRminPid			    <num>		80.0
-	--soloLTRminLen			    <num>		80.0
-	--soloLTRmaxEvalue		    <num>		1e-3
+						Default
+General--------|--------------------------------------------
+               | -h or --h	
+               | -help or --help	
+               | --logfile			log.txt
+               | --procs			1
+               | --output_dir			phyltr.output
+               | --keep_files	
+               | --min_clust_size		7
+               | --nosmalls	
+Input----------|--------------------------------------------
+               | --fasta	
+LTRharvest-----|--------------------------------------------
+               | --ltrharvest	
+               | --del				-3
+               | --ins				-3
+               | --mis				-2
+               | --mat				2
+               | --xdrop			5
+               | --minlenltr			100
+               | --maxlenltr			1000
+               | --mindistltr			1000
+               | --maxdistltr			15000
+               | --similar			0.0
+               | --vic				60
+               | --mintsd			4
+               | --maxtsd			20
+LTRdigest------|--------------------------------------------
+               | --ltrdigest	
+               | --ltrdigest_hmms		PhyLTR/RepeatDatabases/LTRdigest_HMMs/hmms
+ORFs-----------|--------------------------------------------
+               | --findORFs	
+               | --min_orf_len			300
+Classify-------|--------------------------------------------
+               | --classify	
+               | --classify_dfam	
+               | --nhmmer_reporting_evalue	10
+               | --nhmmer_inclusion_evalue	1e-5
+               | --classify_repbase	
+               | --repbase_tblastx_evalue	1e-5
+               | --keep_no_classification	
+               | --keep_conflicting_classifications	
+Cluster--------|--------------------------------------------
+               | --wicker	
+               | --wicker_pId			80
+               | --wicker_pAln			80
+               | --wicker_minLen		80
+               | --wicker_no_ltrs	
+               | --wicker_no_internals	
+               | --mcl	
+               | --I				6
+Solo LTR-------|--------------------------------------------
+               | --soloLTRsearch	
+               | --soloLTRminPid		80.0
+               | --soloLTRminLen		80.0
+               | --soloLTRmaxEvalue		1e-3
+Alignment------|--------------------------------------------
+               | --maxiterate_small_clusters	20
+               | --maxiterate_medium_clusters	3
+               | --mafft_smallAln_maxclustsize	50
+               | --mafft_mediumAln_maxclustsize	500
+               | --mafft_largeAln_maxclustsize	1000
+LTR divergence-|--------------------------------------------
+               |  (All alignment settings)
+               | --geneconvltrs	
+               | --geneconvclusters	
+               | --geneconv_g			g0,g1,g2
+               | --remove_GC_from_modeltest_aln	
+               | --ltrdivergence	
+               | --circos	
+Phylo----------|--------------------------------------------
+               | All alignment settings	
+               | --phylo	
+               | --LTT	
+               | --rmhomoflank	
+               | --bpflank			500
+               | --flank_evalue			1e-5
+               | --flank_pId			70.0
+               | --flank_plencutoff		70.0
+               | --auto_outgroup	
+               | --bootstrap_reps		100
+               | --convert_to_ultrametric	
+'''.format('{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
 
-	'''.format('{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
 
 def help():
 
@@ -5345,14 +5346,6 @@ def help():
 	  -------------------------
 	  --ltrdivergence			Find statistially best supported (BIC) substitution model for each cluster (default ON)
 	  					and estimate substitutions per site between LTRs for each element. 
-	  --modeltest_criterion		<str>	AIC, AICc, or BIC. (default BIC)
-						MULTIPLE CHOICES NOT YET IMPLEMENTED
-	  --gc_ltr_div_scaling		<int>	For reporting scaled divergence estimates to account for effects of gene conversion, if observed. (default 1)
-						MULTIPLE CHOICES NOT YET IMPLEMENTED
-	  					1. divC = div * len(aln)/(len(aln)-len(gc_trac))
-	  --default_model		<str>	When model testing is not possible (i.e. cluster is too small) HKY85 or JC,
-	  					if HKY85 is not possible due to dinucleotide LTRs.
-	  					MULTIPLE CHOICES NOT YET IMPLEMENTED
 	  --remove_GC_from_modeltest_aln	Remove elements with suspected intra-cluster inter-element gene conversion tracts.
 
 	  Solo LTR search
