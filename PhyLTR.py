@@ -3154,10 +3154,12 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 				append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nwriting GFF3 output to\n{1}'.format(key_base, paths[SoloLTRsGFF]))
 				for classif in GFFoutput[scaf]:
 					with open('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif), 'a') as outClassifFl:
+						outClassifFl.write('##gff-version 3\n')
 						clustersOut = 'SoloLTRs{0}'.format(classif)
 						MakeDir(clustersOut, '{0}/{1}_clusters'.format(paths['SoloLTRsGFFsDir'], classif))
 						for clust in GFFoutput[scaf][classif]:
 							with open('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust), 'a') as outClusterFl:
+								outClusterFl.write('##gff-version 3\n')
 								for relatedLTR in GFFoutput[scaf][classif][clust]:
 									i+=1
 									#Info = {'coords': (8851, 8469), 'bit': 507.0, 'LTR': 'LTR_retrotransposon1004.2', 'pLen': 100.0} (1-based coordinates)
@@ -5283,10 +5285,6 @@ def help():
 	  -ld | --ltrdigest			Run LTRdigest on file given by --fasta and --ltrharvest results (GFF) (default ON)
 	  --ltrdigest_hmms		<path>	Path to a file with one or more protein profile HMMs for LTRdigest (HMMER)
 	  					(default {0})
-
-	  ORFs
-	  -----
-	  --find_ORFs
 
 	  Classification of LTR RTs to superfamily using homology to annotated sequences in Repbase and/or Dfam
 	  -----------------------------------------------------------------------------------------------------
