@@ -26,7 +26,7 @@ GFF_output/		various intermediate and final GFF3 files
 WickerFamDir/		WickerFam clusterings and downstream analyses
 MCL/			MCL clusterings and downstream analyses
 ```
-Within each clustering directory, e.g: `MCL/I6/`
+Within each clustering directory, e.g `MCL/I6/`, are:
 ```
 Alignments/		All alignments
 Clusters/		Results of clustering
@@ -72,7 +72,7 @@ phyltr --fasta <input> --procs <int> \
 ---
 ---
 ## MAFFT options
-These apply to all steps that do alignments. Aligning can fail to complete if the input data are too big and/or not enough RAM is available, for example, MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. You can cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1, which is much more inaccurate, for large clusters. The alignment of clusters has been the limiting process in terms of computation time in my experience, but aligning can be sped up by reducing the number of improvement iterations performed. You can use the following options to designate ranges of cluster sizes and set the number of alignment improvement iterations for each size (less iterations = faster).
+These apply to all steps that do alignments. Aligning can fail to complete if the input data are too big and/or not enough RAM is available, for example, MAFFT exhausted 256 Gb RAM with ~2.7k seqs of length >5kb. You can cap the size of clusters to align using `--mafft_largeAln_maxclustsize`. The MAFFT algorthim FFT-NS-2 is used for small and medium clusters and FFT_NS-1, which is much more inaccurate, for large clusters. The alignment of clusters has been the limiting process in terms of computation time in my experience, but aligning can be sped up by reducing the number of improvement iterations performed. You can use the following options to designate ranges of cluster sizes and set the number of alignment improvement iterations for each size (fewer iterations = faster).
 ###### Options
 ```
 --maxiterate_small_clusters (30)	MAFFT iterations for small clusters. (more = better alignment = slower)
@@ -81,6 +81,9 @@ These apply to all steps that do alignments. Aligning can fail to complete if th
 --mafft_mediumAln_maxclustsize (500)	Max elements to consider a cluster medium.
 --mafft_largeAln_maxclustsize (1000)	Max elements to consider a cluster large. Clusters larger than this will not be aligned.
 ```
+---
+---
+# PROCESSES
 ---
 ---
 ## 1. Identify candidate long terminal repeat retrotransposon (LTR-R) loci
@@ -442,7 +445,10 @@ Colors
 * Tree shape analysis
 ---
 ---
-## APPENDIX A. All options
+# Appendices
+---
+---
+## Appendix A. All options
 
 |General|Default|
 |:---:|:---:|
@@ -547,7 +553,7 @@ Colors
 |--bootstrap_reps|100|
 |--convert_to_ultrametric||
 
-## APPENDIX B. References
+## Appendix B. References
 Bao, W., Kojima, K. K., & Kohany, O. (2015). Repbase Update, a database of repetitive elements in eukaryotic genomes. Mobile DNA, 6(1), 11. http://doi.org/10.1186/s13100-015-0041-9
 
 Britton, T., Anderson, C. L., Jacquet, D., Lundqvist, S., & Bremer, K. (2007). Estimating divergence times in large phylogenetic trees. Systematic Biology, 56(5), 741-752. http://doi.org/10.1080/10635150701613783
