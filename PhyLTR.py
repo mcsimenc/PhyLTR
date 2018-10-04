@@ -11,7 +11,6 @@ from datetime import datetime
 from math import ceil
 from Bio import SeqIO, AlignIO
 from multiprocessing import Pool, Manager
-from phyltrlib import *
 from copy import copy, deepcopy
 from inspect import currentframe, getframeinfo
 class GFF3_line:
@@ -5649,492 +5648,494 @@ def help():
 						  that is not j if j is the first cluster then the next smallest cluster is k if there is no other
 						  cluster, no outgroup is used.
 '''.format('{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
-args=sys.argv
 
-# get executable paths from CONFIG file, which should be in the same directory as this script
-executables = {}
-commentPattern = re.compile('#.*$')
-with open('{0}/CONFIG'.format(os.path.dirname(os.path.realpath(__file__)))) as config_file:
-	paths = [ re.sub(commentPattern, '', line) for line in config_file.read().strip().split('\n') ]
-	for path in paths:
-		if not path == '':
-			p = path.split('=')
-			executables[p[0]] = p[1]
-	
-filenames = {}
-paths = {}
-paths_toClean = {}
-params = {}
+if __name__ == '__main__':
+	args=sys.argv
 
-paths['selfDir'] = '/'.join(os.path.realpath(__file__).split('/')[:-1])
-paths['scriptsDir'] = '{0}/scripts'.format(paths['selfDir'])
+	# get executable paths from CONFIG file, which should be in the same directory as this script
+	executables = {}
+	commentPattern = re.compile('#.*$')
+	with open('{0}/CONFIG'.format(os.path.dirname(os.path.realpath(__file__)))) as config_file:
+		paths = [ re.sub(commentPattern, '', line) for line in config_file.read().strip().split('\n') ]
+		for path in paths:
+			if not path == '':
+				p = path.split('=')
+				executables[p[0]] = p[1]
+		
+	filenames = {}
+	paths = {}
+	paths_toClean = {}
+	params = {}
 
-if '-h' in args or '--h' in args:
-	help2()
-	sys.exit(0)
+	paths['selfDir'] = '/'.join(os.path.realpath(__file__).split('/')[:-1])
+	paths['scriptsDir'] = '{0}/scripts'.format(paths['selfDir'])
 
-if '-help' in args or '--help' in args:
-	help()
-	sys.exit(0)
-if len(args) < 3:
-	shortHelp()
-	sys.exit(0)
+	if '-h' in args or '--h' in args:
+		help2()
+		sys.exit(0)
 
-if '--fasta' in args:
-	paths['inputFasta'] = args[args.index('--fasta') + 1]
-elif '-f' in args:
-	paths['inputFasta'] = args[args.index('-f') + 1]
-else:
-	help()
-	print('''
+	if '-help' in args or '--help' in args:
+		help()
+		sys.exit(0)
+	if len(args) < 3:
+		shortHelp()
+		sys.exit(0)
 
-		MUST SPECIFY INPUT FASTA WITH -f or --fasta
-
-		''', file=sys.stderr)
-	sys.exit(0)
-
-filenames['inputFasta'] = paths['inputFasta'].split('/')[-1]
-
-if '--keep_files' in args:
-	KEEP_UNUSED_FILES = True
-else:
-	KEEP_UNUSED_FILES = False
-if '--nosmalls' in args:
-	SMALLS = False
-else:
-	SMALLS = True
-if '--del' in args:
-	ltrharvest_del = int(args[args.index('--del')+1])
-else:
-	ltrharvest_del = -3
-if '--ins' in args:
-	ltrharvest_ins = int(args[args.index('--ins')+1])
-else:
-	ltrharvest_ins = -3
-if '--mis' in args:
-	ltrharvest_mis = int(args[args.index('--mis')+1])
-else:
-	ltrharvest_mis = -2
-if '--mat' in args:
-	ltrharvest_mat = int(args[args.index('--mat')+1])
-else:
-	ltrharvest_mat = 2
-if '--xdrop' in args:
-	ltrharvest_xdrop = int(args[args.index('--xdrop')+1])
-else:
-	ltrharvest_xdrop = 5 
-if '--minlenltr' in args:
-	ltrharvest_minlenltr = int(args[args.index('--minlenltr')+1])
-else:
-	ltrharvest_minlenltr = 100
-if '--maxlenltr' in args:
-	ltrharvest_maxlenltr = int(args[args.index('--maxlenltr')+1])
-else:
-	ltrharvest_maxlenltr = 1000
-if '--mindistltr' in args:
-	ltrharvest_mindistltr = int(args[args.index('--mindistltr')+1])
-else:
-	ltrharvest_mindistltr = 1000
-if '--maxdistltr' in args:
-	ltrharvest_maxdistltr = int(args[args.index('--maxdistltr')+1])
-else:
-	ltrharvest_maxdistltr = 15000
-if '--similar' in args:
-	ltrharvest_similar = float(args[args.index('--similar')+1])
-else:
-	ltrharvest_similar = 0.0
-if '--vic' in args:
-	ltrharvest_vic = int(args[args.index('--vic')+1])
-else:
-	ltrharvest_vic = 60
-if '--mintsd' in args:
-	ltrharvest_mintsd = int(args[args.index('--mintsd')+1])
-else:
-	ltrharvest_mintsd = 4
-if '--maxtsd' in args:
-	ltrharvest_maxtsd = int(args[args.index('--maxtsd')+1])
-else:
-	ltrharvest_maxtsd = 20
-if '--logfile' in args:
-	mainlogfile = args[args.index('--logfile')+1]
-else:
-	mainlogfile = 'log.txt'
-if '--procs' in args:
-	procs = int(args[args.index('--procs') + 1])
-if '-p' in args:
-	procs = int(args[args.index('-p') + 1])
-else:
-	procs = 1
-if '--output_dir' in args:
-	MakeDir('output_top_dir', args[args.index('--output_dir') + 1])
-if '-o' in args:
-	MakeDir('output_top_dir', args[args.index('-o') + 1])
-else:
-	MakeDir('output_top_dir', 'PhyLTR.output')
-
-if '--ltrharvest' in args or '-lh' in args: # Turn on LTRharvest for file given by --fasta
-	LTRHARVEST = True
-else:
-	LTRHARVEST = False
-
-if '--ltrdigest' in args or '-ld' in args: # Turn on LTRdigest for LTRharvest results
-	LTRDIGEST = True
-else:
-	LTRDIGEST = False
-
-if '--ltrdigest_hmms' in args: # Check for user-supplied location of HMMs for LTRdigest, set default otherwise (comes with package)
-	paths['LTRdigestHMMs'] = args[args.index('--ltrdigest_hmms') + 1]
-else:
-	paths['LTRdigestHMMs'] = '{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir'])
-if '--findORFs' in args:
-	FINDORFS = True
-else:
-	FINDORFS = False
-if '--min_orf_len' in args:
-	min_orf_len = int(args[args.index('--min_orf_len')+1])
-else:
-	min_orf_len = 300
-
-if '--classify_dfam' or '--classify' in args: # Classification Parameters
-	CLASSIFYDFAM = True
-else:
-	CLASSIFYDFAM = False
-
-if '--repbase_tblastx_evalue' in args:
-	repbase_tblastx_evalue = float(args[args.index('--repbase_tblastx_evalue')+1])
-else:
-	repbase_tblastx_evalue = 1e-5
-
-if '--classify_repbase' in args or '--classify' in args:
-	CLASSIFYREPBASE = True
-else:
-	CLASSIFYREPBASE = False
-	os.environ['BLASTDB'] = paths['FastaOutputDir']
-if '--keep_conflicting_classifications' in args:
-	KEEPCONFLICTS=True
-else:
-	KEEPCONFLICTS=False
-if '--keep_no_classification' in args:
-	KEEPNOCLASSIFICATION=True
-else:
-	KEEPNOCLASSIFICATION=False
-if '--nhmmer_reporting_evalue' in args:
-	nhmmer_reporting_evalue = float(args[args.index('--nhmmer_reporting_evalue')+1])
-else:
-	nhmmer_reporting_evalue = 10
-if '--nhmmer_inclusion_evalue' in args:
-	nhmmer_inclusion_evalue = float(args[args.index('--nhmmer_inclusion_evalue')+1])
-else:
-	nhmmer_inclusion_evalue = 1e-5
-if '--wicker' in args:
-	WICKER = True
-else:
-	WICKER = False
-
-if '--mcl' in args:
-	USEMCL = True
-	if '--I' in args:
-		MCL_I = args[args.index('--I')+1]
+	if '--fasta' in args:
+		paths['inputFasta'] = args[args.index('--fasta') + 1]
+	elif '-f' in args:
+		paths['inputFasta'] = args[args.index('-f') + 1]
 	else:
-		MCL_I = '6'
+		help()
+		print('''
 
-else:
-	USEMCL = False
+			MUST SPECIFY INPUT FASTA WITH -f or --fasta
 
-if '--min_clust_size' in args:
-	MinClustSize = int(args[args.index('--min_clust_size')+1])
-else:
-	MinClustSize = 7
+			''', file=sys.stderr)
+		sys.exit(0)
 
-if '--ltrdivergence' in args:
-	LTRDIVERGENCE = True
-else:
-	LTRDIVERGENCE = False
+	filenames['inputFasta'] = paths['inputFasta'].split('/')[-1]
 
-if '--geneconvltrs' in args:
-	GENECONVLTRS = True
-else:
-	GENECONVLTRS = False
-
-if '--geneconvclusters' in args:
-	GENECONVCLUSTERS = True
-else:
-	GENECONVCLUSTERS = False
-if '--geneconv_g' in args:
-	gcparams = args[args.index('--geneconv_g')+1].split(',')
-	if 'g0' in gcparams:
-		GENECONV_G0 = True
+	if '--keep_files' in args:
+		KEEP_UNUSED_FILES = True
 	else:
-		GENECONV_G0 = False
-	if 'g1' in gcparams:
-		GENECONV_G1 = True
+		KEEP_UNUSED_FILES = False
+	if '--nosmalls' in args:
+		SMALLS = False
 	else:
-		GENECONV_G1 = False
-	if 'g2' in gcparams:
-		GENECONV_G2 = True
+		SMALLS = True
+	if '--del' in args:
+		ltrharvest_del = int(args[args.index('--del')+1])
 	else:
-		GENECONV_G2 = False
-else:
-	GENECONV_G0 = True
-	GENECONV_G1 = True
-	GENECONV_G2 = True
+		ltrharvest_del = -3
+	if '--ins' in args:
+		ltrharvest_ins = int(args[args.index('--ins')+1])
+	else:
+		ltrharvest_ins = -3
+	if '--mis' in args:
+		ltrharvest_mis = int(args[args.index('--mis')+1])
+	else:
+		ltrharvest_mis = -2
+	if '--mat' in args:
+		ltrharvest_mat = int(args[args.index('--mat')+1])
+	else:
+		ltrharvest_mat = 2
+	if '--xdrop' in args:
+		ltrharvest_xdrop = int(args[args.index('--xdrop')+1])
+	else:
+		ltrharvest_xdrop = 5 
+	if '--minlenltr' in args:
+		ltrharvest_minlenltr = int(args[args.index('--minlenltr')+1])
+	else:
+		ltrharvest_minlenltr = 100
+	if '--maxlenltr' in args:
+		ltrharvest_maxlenltr = int(args[args.index('--maxlenltr')+1])
+	else:
+		ltrharvest_maxlenltr = 1000
+	if '--mindistltr' in args:
+		ltrharvest_mindistltr = int(args[args.index('--mindistltr')+1])
+	else:
+		ltrharvest_mindistltr = 1000
+	if '--maxdistltr' in args:
+		ltrharvest_maxdistltr = int(args[args.index('--maxdistltr')+1])
+	else:
+		ltrharvest_maxdistltr = 15000
+	if '--similar' in args:
+		ltrharvest_similar = float(args[args.index('--similar')+1])
+	else:
+		ltrharvest_similar = 0.0
+	if '--vic' in args:
+		ltrharvest_vic = int(args[args.index('--vic')+1])
+	else:
+		ltrharvest_vic = 60
+	if '--mintsd' in args:
+		ltrharvest_mintsd = int(args[args.index('--mintsd')+1])
+	else:
+		ltrharvest_mintsd = 4
+	if '--maxtsd' in args:
+		ltrharvest_maxtsd = int(args[args.index('--maxtsd')+1])
+	else:
+		ltrharvest_maxtsd = 20
+	if '--logfile' in args:
+		mainlogfile = args[args.index('--logfile')+1]
+	else:
+		mainlogfile = 'log.txt'
+	if '--procs' in args:
+		procs = int(args[args.index('--procs') + 1])
+	if '-p' in args:
+		procs = int(args[args.index('-p') + 1])
+	else:
+		procs = 1
+	if '--output_dir' in args:
+		MakeDir('output_top_dir', args[args.index('--output_dir') + 1])
+	if '-o' in args:
+		MakeDir('output_top_dir', args[args.index('-o') + 1])
+	else:
+		MakeDir('output_top_dir', 'PhyLTR.output')
 
-if '--circos' in args:
-	CIRCOS = True
-else:
-	CIRCOS = False
+	if '--ltrharvest' in args or '-lh' in args: # Turn on LTRharvest for file given by --fasta
+		LTRHARVEST = True
+	else:
+		LTRHARVEST = False
 
-if '--wicker_pId' in args:
-	wicker_pId = int(args[args.index('--wicker_pId')+1])
-else:
-	wicker_pId = 80
-if '--wicker_pAln' in args:
-	wicker_pAln = int(args[args.index('--wicker_pAln')+1])
-else:
-	wicker_pAln = 80
+	if '--ltrdigest' in args or '-ld' in args: # Turn on LTRdigest for LTRharvest results
+		LTRDIGEST = True
+	else:
+		LTRDIGEST = False
 
-if '--wicker_minLen' in args:
-	wicker_minLen = int(args[args.index('--wicker_minLen')+1])
-else:
-	wicker_minLen = 80
-if '--remove_GC_from_modeltest_aln' in args:
-	remove_GC_from_modeltest_aln = True
-else:
-	remove_GC_from_modeltest_aln = False
-if '--phylo' in args:
-	PHYLO = True
-else:
-	PHYLO = False
-if '--bootstrap_reps' in args:
-	bootstrap_reps = int(args[args.index('--bootstrap_reps')+1])
-else:
-	bootstrap_reps = 100
-if '--rmhomoflank' in args:
-	RMHOMOFLANK = True
-else:
-	RMHOMOFLANK = False
-if '--convert_to_ultrametric' in args:
-	ULTRAMETRIC = True
-else:
-	ULTRAMETRIC = False
-if '--auto_outgroup' in args:
-	AUTO_OUTGROUP = True
-else:
-	AUTO_OUTGROUP = False
-if '--LTT' in args:
-	AUTO_OUTGROUP = True
-	RMHOMOFLANK = True
-	LTT = True
-	ULTRAMETRIC = True
-else:
-	AUTO_OUTGROUP = False
-	RMHOMOFLANK = False
-	LTT = False
-	ULTRAMETRIC = False
+	if '--ltrdigest_hmms' in args: # Check for user-supplied location of HMMs for LTRdigest, set default otherwise (comes with package)
+		paths['LTRdigestHMMs'] = args[args.index('--ltrdigest_hmms') + 1]
+	else:
+		paths['LTRdigestHMMs'] = '{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir'])
+	if '--findORFs' in args:
+		FINDORFS = True
+	else:
+		FINDORFS = False
+	if '--min_orf_len' in args:
+		min_orf_len = int(args[args.index('--min_orf_len')+1])
+	else:
+		min_orf_len = 300
 
-# MAFFT parameters
-if '--maxiterate_small_clusters' in args:
-	mafft_smallAln_maxiterate = int(args[args.index('--maxiterate_small_clusters')+1])
-else:
-	mafft_smallAln_maxiterate = 20
-if '--maxiterate_medium_clusters' in args:
-	mafft_mediumAln_maxiterate = int(args[args.index('--maxiterate_medium_clusters')+1])
-else:
-	mafft_mediumAln_maxiterate = 3
-if '--mafft_smallAln_maxclustsize' in args:
-	mafft_smallAln_maxclustsize = int(args[args.index('--mafft_smallAln_maxclustsize')+1])
-else:
-	mafft_smallAln_maxclustsize = 50
-if '--mafft_mediumAln_maxclustsize' in args:
-	mafft_mediumAln_maxclustsize = int(args[args.index('--mafft_mediumAln_maxclustsize')+1])
-else:
-	mafft_mediumAln_maxclustsize = 500
-if '--mafft_largeAln_maxclustsize' in args:
-	mafft_largeAln_maxclustsize = int(args[args.index('--mafft_largeAln_maxclustsize')+1])
-else:
-	mafft_largeAln_maxclustsize = 1000
-#if '--retree' in args:
-#	mafft_retree = int(args[args.index('--retree')+1])
-#else:
-#	mafft_retree = 2
-if '--bpflank' in args:
-	bpflank = int(args[args.index('--bpflank')+1])
-else:
-	bpflank = 500
-if '--flank_evalue' in args:
-	flank_evalue = int(args[args.index('--flank_evalue')+1])
-else:
-	flank_evalue = 1e-5
-if '--flank_pId' in args:
-	flank_pId = float(args[args.index('--flank_pId')+1])
-else:
-	flank_pId = 70.0
-if '--flank_plencutoff' in args:
-	flank_plencutoff = float(args[args.index('--flank_plencutoff')+1])
-else:
-	flank_plencutoff = 70.0
-if '--wicker_no_ltrs' in args:
-	wicker_use_ltrs = False
-else:
-	wicker_use_ltrs = True
-if '--wicker_no_internals' in args:
-	wicker_use_internal = False
-else:
-	wicker_use_internal = True
+	if '--classify_dfam' or '--classify' in args: # Classification Parameters
+		CLASSIFYDFAM = True
+	else:
+		CLASSIFYDFAM = False
 
-# Solo LTR search parameters
-if '--soloLTRsearch' in args:
-	SOLOLTR = True
-else:
-	SOLOLTR = False
-if '--soloLTRminPid' in args:
-	soloLTRminPid = str(float(args[args.index('--soloLTRminPid')+1]))
-else:
-	soloLTRminPid = 80.0
-if '--soloLTRminLen' in args:
-	soloLTRminLen = float(args[args.index('--soloLTRminLen')+1])
-else:
-	soloLTRminLen = 80.0
-if '--soloLTRmaxEvalue' in args:
-	soloLTRmaxEvalue = float(args[args.index('--soloLTRmaxEvalue')+1])
-else:
-	soloLTRmaxEvalue = 1e-3
-	
-paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta'.format(paths['selfDir'])
-paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(paths['selfDir'])
-paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF'.format(paths['selfDir'])
+	if '--repbase_tblastx_evalue' in args:
+		repbase_tblastx_evalue = float(args[args.index('--repbase_tblastx_evalue')+1])
+	else:
+		repbase_tblastx_evalue = 1e-5
 
-paths['DfamDB'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm'.format(paths['selfDir'])
-paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.list'.format(paths['selfDir'])
-paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF'.format(paths['selfDir'])
+	if '--classify_repbase' in args or '--classify' in args:
+		CLASSIFYREPBASE = True
+	else:
+		CLASSIFYREPBASE = False
+		os.environ['BLASTDB'] = paths['FastaOutputDir']
+	if '--keep_conflicting_classifications' in args:
+		KEEPCONFLICTS=True
+	else:
+		KEEPCONFLICTS=False
+	if '--keep_no_classification' in args:
+		KEEPNOCLASSIFICATION=True
+	else:
+		KEEPNOCLASSIFICATION=False
+	if '--nhmmer_reporting_evalue' in args:
+		nhmmer_reporting_evalue = float(args[args.index('--nhmmer_reporting_evalue')+1])
+	else:
+		nhmmer_reporting_evalue = 10
+	if '--nhmmer_inclusion_evalue' in args:
+		nhmmer_inclusion_evalue = float(args[args.index('--nhmmer_inclusion_evalue')+1])
+	else:
+		nhmmer_inclusion_evalue = 1e-5
+	if '--wicker' in args:
+		WICKER = True
+	else:
+		WICKER = False
 
-LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL', 'Tas', 'Suzu', 'Sinbad', 'Unknown']
-
-MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
-MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
-paths['CurrentGFF'] = None # This path will have the path to the best GFF3 to use.
-
-try:
-	statusFlRead = open('{0}/status'.format(paths['output_top_dir']), 'r')
-except:
-	pass
-
-def write2summary(text):
-	with open('{0}/summary'.format(paths['output_top_dir']), 'a') as summaryFl:
-		summaryFl.write('{0}\n'.format(text))
-
-# Check for status file. if exists parse it and skip the sections that are done.
-try:
-	statusContents = statusFlRead.read()
-	if not statusContents == '':
-		for pair in statusContents.strip().split('\n'):
-			pair = pair.split('\t')
-			paths[pair[0]] = pair[1]
-except:
-	pass
-
-if 'LTRdigestClassifiedNoFP' in paths:
-	paths['CurrentGFF'] = paths['LTRdigestClassifiedNoFP']
-elif 'GFFwithRepbaseClassification' in paths:
-	paths['CurrentGFF'] = paths['GFFwithRepbaseClassification']
-elif 'GFFwithDfamClassification' in paths:
-	paths['CurrentGFF'] = paths['GFFwithDfamClassification']
-elif 'WithORFsGFF' in paths:
-	paths['CurrentGFF'] = paths['WithORFsGFF']
-elif 'LTRdigestGFF' in paths:
-	paths['CurrentGFF'] = paths['LTRdigestGFF']
-elif 'LTRharvestGFF' in paths:
-	paths['CurrentGFF'] = paths['LTRharvestGFF']
-
-sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
-
-#################################################################################################### Begin
-
-ltrharvest()    # Predict LTR retrotransposons using structural criteria
-
-ltrdigest()	# Identify parts of element internal regions with evidence of homology to LTR RT protein coding domains
-
-if FINDORFS:
-	AnnotateORFs(minLen=min_orf_len)
-
-classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, repbase_tblastx_evalue=repbase_tblastx_evalue, nhmmer_reporting_evalue=nhmmer_reporting_evalue, nhmmer_inclusion_evalue=nhmmer_inclusion_evalue)  # Extract LTR_retrotransposon sequences for classification using homology
-
-clusters_by_classif = shortClassif()
-classifs_by_element = shortClassif(ElNames=True)
-classifs = set(list(clusters_by_classif.keys()))
-
-if WICKER:
-	WickerFam(pId=wicker_pId, percAln=wicker_pAln, minLen=wicker_minLen, use_ltrs=wicker_use_ltrs, use_internal=wicker_use_internal)
-	summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
-
-	if GENECONVCLUSTERS or LTRDIVERGENCE:
-		AutoAlign(I=None, part='entire', rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
-		if GENECONV_G0:
-			geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
-		if GENECONV_G1:
-			geneconvClusters(trimal=True, g='/g1', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
-		if GENECONV_G2:
-			geneconvClusters(trimal=True, g='/g2', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
-
-		modeltest(iters=1, I=None, removegeneconv=remove_GC_from_modeltest_aln, part='entire', clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-
-if USEMCL:
-	MCL(I=MCL_I, minClustSize=MinClustSize, CombineIfTooFew=False)	
-	summarizeClusters(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
-
-	if GENECONVCLUSTERS or LTRDIVERGENCE:
-		if not LTRDIVERGENCE:
-			AutoAlign(I=MCL_I, part='entire', rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
+	if '--mcl' in args:
+		USEMCL = True
+		if '--I' in args:
+			MCL_I = args[args.index('--I')+1]
 		else:
-			AutoAlign(I=MCL_I, part='entire', rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
+			MCL_I = '6'
+
+	else:
+		USEMCL = False
+
+	if '--min_clust_size' in args:
+		MinClustSize = int(args[args.index('--min_clust_size')+1])
+	else:
+		MinClustSize = 7
+
+	if '--ltrdivergence' in args:
+		LTRDIVERGENCE = True
+	else:
+		LTRDIVERGENCE = False
+
+	if '--geneconvltrs' in args:
+		GENECONVLTRS = True
+	else:
+		GENECONVLTRS = False
+
+	if '--geneconvclusters' in args:
+		GENECONVCLUSTERS = True
+	else:
+		GENECONVCLUSTERS = False
+	if '--geneconv_g' in args:
+		gcparams = args[args.index('--geneconv_g')+1].split(',')
+		if 'g0' in gcparams:
+			GENECONV_G0 = True
+		else:
+			GENECONV_G0 = False
+		if 'g1' in gcparams:
+			GENECONV_G1 = True
+		else:
+			GENECONV_G1 = False
+		if 'g2' in gcparams:
+			GENECONV_G2 = True
+		else:
+			GENECONV_G2 = False
+	else:
+		GENECONV_G0 = True
+		GENECONV_G1 = True
+		GENECONV_G2 = True
+
+	if '--circos' in args:
+		CIRCOS = True
+	else:
+		CIRCOS = False
+
+	if '--wicker_pId' in args:
+		wicker_pId = int(args[args.index('--wicker_pId')+1])
+	else:
+		wicker_pId = 80
+	if '--wicker_pAln' in args:
+		wicker_pAln = int(args[args.index('--wicker_pAln')+1])
+	else:
+		wicker_pAln = 80
+
+	if '--wicker_minLen' in args:
+		wicker_minLen = int(args[args.index('--wicker_minLen')+1])
+	else:
+		wicker_minLen = 80
+	if '--remove_GC_from_modeltest_aln' in args:
+		remove_GC_from_modeltest_aln = True
+	else:
+		remove_GC_from_modeltest_aln = False
+	if '--phylo' in args:
+		PHYLO = True
+	else:
+		PHYLO = False
+	if '--bootstrap_reps' in args:
+		bootstrap_reps = int(args[args.index('--bootstrap_reps')+1])
+	else:
+		bootstrap_reps = 100
+	if '--rmhomoflank' in args:
+		RMHOMOFLANK = True
+	else:
+		RMHOMOFLANK = False
+	if '--convert_to_ultrametric' in args:
+		ULTRAMETRIC = True
+	else:
+		ULTRAMETRIC = False
+	if '--auto_outgroup' in args:
+		AUTO_OUTGROUP = True
+	else:
+		AUTO_OUTGROUP = False
+	if '--LTT' in args:
+		AUTO_OUTGROUP = True
+		RMHOMOFLANK = True
+		LTT = True
+		ULTRAMETRIC = True
+	else:
+		AUTO_OUTGROUP = False
+		RMHOMOFLANK = False
+		LTT = False
+		ULTRAMETRIC = False
+
+	# MAFFT parameters
+	if '--maxiterate_small_clusters' in args:
+		mafft_smallAln_maxiterate = int(args[args.index('--maxiterate_small_clusters')+1])
+	else:
+		mafft_smallAln_maxiterate = 20
+	if '--maxiterate_medium_clusters' in args:
+		mafft_mediumAln_maxiterate = int(args[args.index('--maxiterate_medium_clusters')+1])
+	else:
+		mafft_mediumAln_maxiterate = 3
+	if '--mafft_smallAln_maxclustsize' in args:
+		mafft_smallAln_maxclustsize = int(args[args.index('--mafft_smallAln_maxclustsize')+1])
+	else:
+		mafft_smallAln_maxclustsize = 50
+	if '--mafft_mediumAln_maxclustsize' in args:
+		mafft_mediumAln_maxclustsize = int(args[args.index('--mafft_mediumAln_maxclustsize')+1])
+	else:
+		mafft_mediumAln_maxclustsize = 500
+	if '--mafft_largeAln_maxclustsize' in args:
+		mafft_largeAln_maxclustsize = int(args[args.index('--mafft_largeAln_maxclustsize')+1])
+	else:
+		mafft_largeAln_maxclustsize = 1000
+	#if '--retree' in args:
+	#	mafft_retree = int(args[args.index('--retree')+1])
+	#else:
+	#	mafft_retree = 2
+	if '--bpflank' in args:
+		bpflank = int(args[args.index('--bpflank')+1])
+	else:
+		bpflank = 500
+	if '--flank_evalue' in args:
+		flank_evalue = int(args[args.index('--flank_evalue')+1])
+	else:
+		flank_evalue = 1e-5
+	if '--flank_pId' in args:
+		flank_pId = float(args[args.index('--flank_pId')+1])
+	else:
+		flank_pId = 70.0
+	if '--flank_plencutoff' in args:
+		flank_plencutoff = float(args[args.index('--flank_plencutoff')+1])
+	else:
+		flank_plencutoff = 70.0
+	if '--wicker_no_ltrs' in args:
+		wicker_use_ltrs = False
+	else:
+		wicker_use_ltrs = True
+	if '--wicker_no_internals' in args:
+		wicker_use_internal = False
+	else:
+		wicker_use_internal = True
+
+	# Solo LTR search parameters
+	if '--soloLTRsearch' in args:
+		SOLOLTR = True
+	else:
+		SOLOLTR = False
+	if '--soloLTRminPid' in args:
+		soloLTRminPid = str(float(args[args.index('--soloLTRminPid')+1]))
+	else:
+		soloLTRminPid = 80.0
+	if '--soloLTRminLen' in args:
+		soloLTRminLen = float(args[args.index('--soloLTRminLen')+1])
+	else:
+		soloLTRminLen = 80.0
+	if '--soloLTRmaxEvalue' in args:
+		soloLTRmaxEvalue = float(args[args.index('--soloLTRmaxEvalue')+1])
+	else:
+		soloLTRmaxEvalue = 1e-3
+		
+	paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta'.format(paths['selfDir'])
+	paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(paths['selfDir'])
+	paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF'.format(paths['selfDir'])
+
+	paths['DfamDB'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm'.format(paths['selfDir'])
+	paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.list'.format(paths['selfDir'])
+	paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF'.format(paths['selfDir'])
+
+	LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL', 'Tas', 'Suzu', 'Sinbad', 'Unknown']
+
+	MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
+	MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
+	paths['CurrentGFF'] = None # This path will have the path to the best GFF3 to use.
+
+	try:
+		statusFlRead = open('{0}/status'.format(paths['output_top_dir']), 'r')
+	except:
+		pass
+
+	def write2summary(text):
+		with open('{0}/summary'.format(paths['output_top_dir']), 'a') as summaryFl:
+			summaryFl.write('{0}\n'.format(text))
+
+	# Check for status file. if exists parse it and skip the sections that are done.
+	try:
+		statusContents = statusFlRead.read()
+		if not statusContents == '':
+			for pair in statusContents.strip().split('\n'):
+				pair = pair.split('\t')
+				paths[pair[0]] = pair[1]
+	except:
+		pass
+
+	if 'LTRdigestClassifiedNoFP' in paths:
+		paths['CurrentGFF'] = paths['LTRdigestClassifiedNoFP']
+	elif 'GFFwithRepbaseClassification' in paths:
+		paths['CurrentGFF'] = paths['GFFwithRepbaseClassification']
+	elif 'GFFwithDfamClassification' in paths:
+		paths['CurrentGFF'] = paths['GFFwithDfamClassification']
+	elif 'WithORFsGFF' in paths:
+		paths['CurrentGFF'] = paths['WithORFsGFF']
+	elif 'LTRdigestGFF' in paths:
+		paths['CurrentGFF'] = paths['LTRdigestGFF']
+	elif 'LTRharvestGFF' in paths:
+		paths['CurrentGFF'] = paths['LTRharvestGFF']
+
+	sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
+
+	#################################################################################################### Begin
+
+	ltrharvest()    # Predict LTR retrotransposons using structural criteria
+
+	ltrdigest()	# Identify parts of element internal regions with evidence of homology to LTR RT protein coding domains
+
+	if FINDORFS:
+		AnnotateORFs(minLen=min_orf_len)
+
+	classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, repbase_tblastx_evalue=repbase_tblastx_evalue, nhmmer_reporting_evalue=nhmmer_reporting_evalue, nhmmer_inclusion_evalue=nhmmer_inclusion_evalue)  # Extract LTR_retrotransposon sequences for classification using homology
+
+	clusters_by_classif = shortClassif()
+	classifs_by_element = shortClassif(ElNames=True)
+	classifs = set(list(clusters_by_classif.keys()))
+
+	if WICKER:
+		WickerFam(pId=wicker_pId, percAln=wicker_pAln, minLen=wicker_minLen, use_ltrs=wicker_use_ltrs, use_internal=wicker_use_internal)
+		summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
+
+		if GENECONVCLUSTERS or LTRDIVERGENCE:
+			AutoAlign(I=None, part='entire', rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
+			if GENECONV_G0:
+				geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+			if GENECONV_G1:
+				geneconvClusters(trimal=True, g='/g1', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+			if GENECONV_G2:
+				geneconvClusters(trimal=True, g='/g2', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+
+			modeltest(iters=1, I=None, removegeneconv=remove_GC_from_modeltest_aln, part='entire', clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
+
+	if USEMCL:
+		MCL(I=MCL_I, minClustSize=MinClustSize, CombineIfTooFew=False)	
+		summarizeClusters(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
+
+		if GENECONVCLUSTERS or LTRDIVERGENCE:
+			if not LTRDIVERGENCE:
+				AutoAlign(I=MCL_I, part='entire', rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
+			else:
+				AutoAlign(I=MCL_I, part='entire', rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
+
+			if GENECONV_G0:
+				geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+			if GENECONV_G1:
+				geneconvClusters(trimal=True, g='/g1', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+			if GENECONV_G2:
+				geneconvClusters(trimal=True, g='/g2', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+
+			modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part='entire', clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
+	  
+	if SOLOLTR:
+		if WICKER:
+			SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
+		if USEMCL:
+			SoloLTRsearch(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
+
+	if CIRCOS:
+		if WICKER:
+			Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+		if USEMCL:
+			Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
+	if WICKER:
+		align_ltrs(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})	# Runs if need to use geneconvLTRs or estimate divergences
 
 		if GENECONV_G0:
-			geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+			geneconvLTRs(g='/g0', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
 		if GENECONV_G1:
-			geneconvClusters(trimal=True, g='/g1', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+			geneconvLTRs(g='/g1', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
 		if GENECONV_G2:
-			geneconvClusters(trimal=True, g='/g2', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
-
-		modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part='entire', clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-  
-if SOLOLTR:
-	if WICKER:
-		SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
+			geneconvLTRs(g='/g2', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
 	if USEMCL:
-		SoloLTRsearch(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
+		align_ltrs(I=MCL_I, clustering_method='MCL', WickerParams=None)	# Runs if need to use geneconvLTRs or estimate divergences
 
-if CIRCOS:
+		if GENECONV_G0:
+			geneconvLTRs(g='/g0', I=MCL_I, clustering_method='MCL', WickerParams=None)
+		if GENECONV_G1:
+			geneconvLTRs(g='/g1', I=MCL_I, clustering_method='MCL', WickerParams=None)
+		if GENECONV_G2:
+			geneconvLTRs(g='/g2', I=MCL_I, clustering_method='MCL', WickerParams=None)
+
 	if WICKER:
-		Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+		ltr_divergence(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+		
+		phylo(removegeneconv=False, BOOTSTRAP=True, I=None, align='cluster', removehomologouspair=RMHOMOFLANK, part='entire', clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=AUTO_OUTGROUP, bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
+
 	if USEMCL:
-		Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
-if WICKER:
-	align_ltrs(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})	# Runs if need to use geneconvLTRs or estimate divergences
+		ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None)
+		phylo(removegeneconv=False, BOOTSTRAP=True, I=MCL_I, align='cluster', removehomologouspair=RMHOMOFLANK, part='entire', clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP,  bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 
-	if GENECONV_G0:
-		geneconvLTRs(g='/g0', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-	if GENECONV_G1:
-		geneconvLTRs(g='/g1', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-	if GENECONV_G2:
-		geneconvLTRs(g='/g2', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-if USEMCL:
-	align_ltrs(I=MCL_I, clustering_method='MCL', WickerParams=None)	# Runs if need to use geneconvLTRs or estimate divergences
-
-	if GENECONV_G0:
-		geneconvLTRs(g='/g0', I=MCL_I, clustering_method='MCL', WickerParams=None)
-	if GENECONV_G1:
-		geneconvLTRs(g='/g1', I=MCL_I, clustering_method='MCL', WickerParams=None)
-	if GENECONV_G2:
-		geneconvLTRs(g='/g2', I=MCL_I, clustering_method='MCL', WickerParams=None)
-
-if WICKER:
-	ltr_divergence(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-	
-	phylo(removegeneconv=False, BOOTSTRAP=True, I=None, align='cluster', removehomologouspair=RMHOMOFLANK, part='entire', clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=AUTO_OUTGROUP, bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-
-if USEMCL:
-	ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None)
-	phylo(removegeneconv=False, BOOTSTRAP=True, I=MCL_I, align='cluster', removehomologouspair=RMHOMOFLANK, part='entire', clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP,  bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-
-print('fin!')
-sys.exit()
+	print('fin!')
+	sys.exit()
