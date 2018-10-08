@@ -588,6 +588,8 @@ Krzywinski, M., Schein, J., Birol, I., Connors, J., Gascoyne, R., Horsman, D., e
 
 Llorens, C., Futami, R., Covelli, L., Domínguez-Escribá, L., Viu, J. M., Tamarit, D., et al. (2011). The Gypsy Database (GyDB) of mobile genetic elements: release 2.0. Nucleic Acids Research, 39(Database issue), D70-4. http://doi.org/10.1093/nar/gkq1061
 
+Price, M. N., Dehal, P. S. & Arkin, A. P. FastTree 2--approximately maximum-likelihood trees for large alignments. PLoS ONE 5, e9490 (2010).
+
 Quinlan, A. R., & Hall, I. M. (2010). BEDTools: a flexible suite of utilities for comparing genomic features. Bioinformatics, 26(6), 841-842. http://doi.org/10.1093/bioinformatics/btq033
 
 Rice, P., Longden, I., & Bleasby, A. (2000). EMBOSS: the European Molecular Biology Open Software Suite. Trends in Genetics, 16(6), 276-277.
