@@ -570,6 +570,8 @@ Darriba, D., Taboada, G. L., Doallo, R., & Posada, D. (2012). jModelTest 2: more
 
 van Dongen, Stijn. Graph Clustering by Flow Simulation. PhD thesis, University of Utrecht, May 2000.
 
+Eddy, S. R. A new generation of homology search tools based on probabilistic inference. Genome Inform 23, 205–211 (2009).
+
 Ellinghaus, D., Kurtz, S., & Willhoeft, U. (2008). LTRharvest, an efficient and flexible software for de novo detection of LTR retrotransposons. BMC Bioinformatics, 9(1), 18-14. http://doi.org/10.1186/1471-2105-9-18
 
 Felsenstein, J. 2005. PHYLIP (Phylogeny Inference Package) version 3.6. Distributed by the author. Department of Genome Sciences, University of Washington, Seattle.
