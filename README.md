@@ -570,6 +570,8 @@ Darriba, D., Taboada, G. L., Doallo, R., & Posada, D. (2012). jModelTest 2: more
 
 van Dongen, Stijn. Graph Clustering by Flow Simulation. PhD thesis, University of Utrecht, May 2000.
 
+Eddy, S. R. A new generation of homology search tools based on probabilistic inference. Genome Inform 23, 205–211 (2009).
+
 Ellinghaus, D., Kurtz, S., & Willhoeft, U. (2008). LTRharvest, an efficient and flexible software for de novo detection of LTR retrotransposons. BMC Bioinformatics, 9(1), 18-14. http://doi.org/10.1186/1471-2105-9-18
 
 Felsenstein, J. 2005. PHYLIP (Phylogeny Inference Package) version 3.6. Distributed by the author. Department of Genome Sciences, University of Washington, Seattle.
@@ -587,6 +589,8 @@ Katoh, K., & Standley, D. M. (2013b). MAFFT multiple sequence alignment software
 Krzywinski, M., Schein, J., Birol, I., Connors, J., Gascoyne, R., Horsman, D., et al. (2009). Circos: an information aesthetic for comparative genomics. Genome Research, 19(9), 1639-1645. http://doi.org/10.1101/gr.092759.109
 
 Llorens, C., Futami, R., Covelli, L., Domínguez-Escribá, L., Viu, J. M., Tamarit, D., et al. (2011). The Gypsy Database (GyDB) of mobile genetic elements: release 2.0. Nucleic Acids Research, 39(Database issue), D70-4. http://doi.org/10.1093/nar/gkq1061
+
+Price, M. N., Dehal, P. S. & Arkin, A. P. FastTree 2--approximately maximum-likelihood trees for large alignments. PLoS ONE 5, e9490 (2010).
 
 Quinlan, A. R., & Hall, I. M. (2010). BEDTools: a flexible suite of utilities for comparing genomic features. Bioinformatics, 26(6), 841-842. http://doi.org/10.1093/bioinformatics/btq033
 
