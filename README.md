@@ -1,5 +1,5 @@
 ![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/GraphicTree.png)
-PhyLTR was designed and created in the Der Lab at California State University, Fullerton. The main program is written in Python 3 and tested on Scientific and Ubuntu Linux. Many of the routines in PhyLTR are parallelized, but not for MPI. As the pipeline runs, paths to intermediate results are stored in the file `PhyLTR.output/status`. If the execution is interrupted and restarted, this file is used to allow PhyLTR to resume approximately where it left off.
+PhyLTR was designed and created in the [Der Lab](http://www.fullerton.edu/biology/People/faculty/derjp.php) at California State University, Fullerton. The main program is written in Python 3 and tested on Scientific and Ubuntu Linux. Many of the routines in PhyLTR are parallelized, but not for MPI. As the pipeline runs, paths to intermediate results are stored in the file `PhyLTR.output/status`. If the execution is interrupted and restarted, this file is used to allow PhyLTR to resume approximately where it left off.
 
 ## Input
 A nucleotide FASTA file
