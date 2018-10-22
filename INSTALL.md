@@ -75,6 +75,8 @@ PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.list
 
 ### Repbase
 
+### WARNING: Certain Amborella trichopoda sequences are mislabelled in Repbase and should be removed from all Repbase files before using PhyLTR
+
 ##### 1. Get an [account with GIRI](https://www.girinst.org/accountservices/register.php)
 1. Go to http://www.girinst.org/repbase/update/browse.php
 2. Select LTR Retrotransposon from the Repeat class dropdown list.
