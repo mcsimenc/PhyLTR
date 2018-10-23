@@ -5390,7 +5390,7 @@ def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 				statusFlAppend.write('{0}\t{1}\n'.format(ClusterSummaryFl, paths[ClusterSummaryFl]))
 			with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusflappend:
-				statusflappend.write('{0}\t{1}\n'.format(clustermembershipfl, paths[clustermembershipfl]))
+				statusflappend.write('{0}\t{1}\n'.format(ClusterMembershipFl, paths[ClusterMembershipFl]))
 
 
 
