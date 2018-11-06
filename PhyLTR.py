@@ -50,8 +50,11 @@ class GFF3_line:
 			self.attributes['Name'] = self.attributes.pop('name')
 			self.attributes_order[self.attributes_order.index('name')] = 'Name'
 
-	def __repr__(self): # for when str() or repr() are called
-
+	def __repr__(self):
+		'''
+		Defines str() and repr() behavior
+		'''
+		self.refreshAttrStr()
 		return '\t'.join( [ str(self.seqid), str(self.source), str(self.type), str(self.start), str(self.end), str(self.score), str(self.strand), str(self.phase), str(self.attributes_str) ] )
 
 	def addAttr(self, attr_key, attr_val, replace=False, attr_pos=0):
