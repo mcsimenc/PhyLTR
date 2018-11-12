@@ -36,7 +36,9 @@ class GFF3_line:
 			(self.seqid, self.source, self.type, self.start, self.end, self.score, self.strand, self.phase, self.attributes_str) = line.strip().split('\t')
 			self.start = int(self.start)
 			self.end = int(self.end)
+			assert self.start <= self.end
 			self.coords = (self.start, self.end)
+			self.length = self.end - self.start + 1
 			attributes_list = self.attributes_str.split(';')
 			self.attributes_order = [ attr.split('=')[0] for attr in attributes_list ]
 			self.attributes = { attr.split('=')[0]:attr.split('=')[1] for attr in attributes_list }
