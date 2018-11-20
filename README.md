@@ -2,7 +2,7 @@
 PhyLTR was designed and created in the [Der Lab](http://www.fullerton.edu/biology/People/faculty/derjp.php) at California State University, Fullerton. The main program is written in Python 3 and tested on Scientific and Ubuntu Linux. Many of the routines in PhyLTR are parallelized, but not for MPI. As the pipeline runs, paths to intermediate results are stored in the file `PhyLTR.output/status`. If the execution is interrupted and restarted, this file is used to allow PhyLTR to resume approximately where it left off.
 
 ## Input
-A nucleotide FASTA file
+A nucleotide FASTA file (e.g. genome assembly)
 ## Output
 * LTR-R annotations in GFF3 format
 * Putative solo LTR annotations GFF3 format
