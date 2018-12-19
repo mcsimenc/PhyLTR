@@ -373,7 +373,7 @@ Optional flags:
 * NCBI BLAST+
 ---
 ---
-#### B. Render graphical trees annotated with LTR-R diagrams with colored ORFs
+#### B. Render trees annotated with LTR-R diagrams with colored ORFs
 ![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/Ete3example.png)
 ###### Documentation
 ```
