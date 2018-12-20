@@ -3,7 +3,8 @@
 1. Clone repository
 2. Install dependencies
 3. Download databases
-*. Optionally add pHMMs for domain annotation
+
+*Optionally add pHMMs for domain annotation
 
 ## Clone Repository
 
