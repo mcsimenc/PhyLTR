@@ -41,10 +41,8 @@ Trees/			Phylogenetic analyses
 ---
 ---
 ## Default settings
-If phyltr is run without any flags specifying a task, all tasks are run (below). The following two calls are equivalent. The processes specified by the flags in the second call are explained below with additional optional flags. Some of the processes modify the GFF3 file that is used for downstream analyses.
+ The processes specified by the flags are explained below with additional optional flags. Some of the processes modify the GFF3 file that is used for downstream analyses.
 ```
-phyltr --fasta <input> --procs <int>
-
 phyltr --fasta <input> --procs <int> \
 	--ltrharvest \
 	--ltrdigest \
