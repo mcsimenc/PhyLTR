@@ -55,19 +55,19 @@ blast=directory # the bin/ directory in the BLAST+ installation
 mcl=directory # the bin/ directory in the MCL installation
 ```
 
-## Download databases: Dfam and Repbase
+## 4. Download databases: Dfam and Repbase
 
 ### Dfam
 
-##### 1.Download http://dfam.org/web_download/Release/Dfam_2.0/Dfam.hmm.gz and unpack it
+##### A.Download http://dfam.org/web_download/Release/Dfam_2.0/Dfam.hmm.gz and unpack it
 
-##### 2. Run: `PhyLTR/scripts/DfamExtractLTRelements.py < Dfam.hmm > Dfam_ERV_LTR.hmm`
+##### B. Run: `PhyLTR/scripts/DfamExtractLTRelements.py < Dfam.hmm > Dfam_ERV_LTR.hmm`
 
-##### 3. Run: `PhyLTR/scripts/DfamHMM2SuperFamTable.py < Dfam_ERV_LTR.hmm > Dfam_ERV_LTR.SF`
+##### C. Run: `PhyLTR/scripts/DfamHMM2SuperFamTable.py < Dfam_ERV_LTR.hmm > Dfam_ERV_LTR.SF`
 
-##### 4. Run: `cut -f1  < Dfam_ERV_LTR.SF > Dfam_ERV_LTR.list`
+##### D. Run: `cut -f1  < Dfam_ERV_LTR.SF > Dfam_ERV_LTR.list`
 
-##### 5. Move the files from B,C,D to the following locations:
+##### E. Move the files from B,C,D to the following locations:
 ```
 PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm
 PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF
@@ -76,7 +76,7 @@ PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.list
 
 ### Repbase
 
-##### 1. Get an [account with GIRI](https://www.girinst.org/accountservices/register.php)
+##### A. Get an [account with GIRI](https://www.girinst.org/accountservices/register.php)
 1. Go to http://www.girinst.org/repbase/update/browse.php
 2. Select LTR Retrotransposon from the Repeat class dropdown list.
 3. Select FASTA from the Output format drop down list.
@@ -85,17 +85,19 @@ PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.list
 6. Run: `cat <LTR.fa> <ERV.fa> >> Repbase_ERV_LTR.fasta`
 7. Move the new file from 6 to: `PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta`
 
-##### 2. Run: `PhyLTR/scripts/RepbaseIG2superfamilies.py < Repbase.LTR-ERV-concatenated.IG > Repbase_ERV_LTR.SF`
+##### B. Select IG from the Output format drop down list and download the ERV and LTR Retrotransposon entries in IG format, then concatenate to join both files as in A.6. as Repbase.LTR-ERV-concatenated.IG
 
-##### 3. Run: `cut -f1  < Repbase_ERV_LTR.SF > Repbase_ERV_LTR.list`
+##### C. Run: `PhyLTR/scripts/RepbaseIG2superfamilies.py < Repbase.LTR-ERV-concatenated.IG > Repbase_ERV_LTR.SF`
 
-##### 4. Move the files from B,C to the following locations:
+##### D. Run: `cut -f1  < Repbase_ERV_LTR.SF > Repbase_ERV_LTR.list`
+
+##### E. Move the files from A,B,C to the following locations:
 ```
 PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta
 PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF
 PhyLTR/RepeatDatabases/Repbase/Repbase_ERV_LTR.list
 ```
 
-## Add pHMMs for domain annotation (optional)
+## 5. Add pHMMs for domain annotation (optional)
 ##### Append any HMMs you want to include to `PhyLTR/LTRdigest_HMMs/hmm`
 The version included in repository contains pHMMs for TE-related domains from Pfam and from gydb.org, downloaded Summer 2018.
