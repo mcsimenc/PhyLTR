@@ -5809,6 +5809,9 @@ if __name__ == '__main__':
 	else:
 		MakeDir('output_top_dir', 'PhyLTR.output')
 
+	MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
+	MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
+
 	if '--ltrharvest' in args or '-lh' in args: # Turn on LTRharvest for file given by --fasta
 		LTRHARVEST = True
 	else:
@@ -6047,8 +6050,6 @@ if __name__ == '__main__':
 
 	LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL', 'Tas', 'Suzu', 'Sinbad', 'Unknown']
 
-	MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
-	MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
 	paths['CurrentGFF'] = None # This path will have the path to the best GFF3 to use.
 
 	try:
