@@ -5774,7 +5774,9 @@ if __name__ == '__main__':
 	if '--mindistltr' in args:
 		ltrharvest_mindistltr = int(args[args.index('--mindistltr')+1])
 	else:
-		ltrharvest_mindistltr = 1000
+		# Terminal-repeat retrotransposons in miniature (TRIM) are involved in restructuring plant genomes. Witte et al. 2001, PNAS
+		# TRIM elements have internal regions of only 100-300 bp
+		ltrharvest_mindistltr = 100
 	if '--maxdistltr' in args:
 		ltrharvest_maxdistltr = int(args[args.index('--maxdistltr')+1])
 	else:
