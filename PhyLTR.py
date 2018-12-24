@@ -2616,7 +2616,7 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
 						aligner(smallClusters, OutDir=outDir, statusFlAlnKey=statusFlKey, part=part)
 
 
-def geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=6, minClustSize=4, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, combine_and_do_small_clusters=True, LTRSONLY=True):
+def geneconvClusters(trimal=True, g='/g0', clust=None, I=6, minClustSize=4, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, combine_and_do_small_clusters=True, LTRSONLY=True):
 	'''
 	g can be one of /g0, /g1, or /g2
 	g is proportional to the tolerance for mismatches in fragments by geneconv
@@ -3506,7 +3506,7 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 	# Check that LTRs don't overlap anything
 
 
-def geneconvLTRs(trimal=True, g='/g0', force=False, I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
+def geneconvLTRs(trimal=True, g='/g0', I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
 	'''
 	g can be one of /g0, /g1, or /g2
 	g is proportional to the tolerance for mismatches in fragments by geneconv
@@ -6119,11 +6119,11 @@ if __name__ == '__main__':
 		if GENECONVCLUSTERS or LTRDIVERGENCE:
 			AutoAlign(I=None, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
 			if GENECONV_G0:
-				geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+				geneconvClusters(trimal=True, g='/g0', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 			if GENECONV_G1:
-				geneconvClusters(trimal=True, g='/g1', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+				geneconvClusters(trimal=True, g='/g1', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 			if GENECONV_G2:
-				geneconvClusters(trimal=True, g='/g2', force=False, clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+				geneconvClusters(trimal=True, g='/g2', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 
 			modeltest(iters=1, I=None, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 
@@ -6138,11 +6138,11 @@ if __name__ == '__main__':
 				AutoAlign(I=MCL_I, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
 
 			if GENECONV_G0:
-				geneconvClusters(trimal=True, g='/g0', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+				geneconvClusters(trimal=True, g='/g0', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
 			if GENECONV_G1:
-				geneconvClusters(trimal=True, g='/g1', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+				geneconvClusters(trimal=True, g='/g1', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
 			if GENECONV_G2:
-				geneconvClusters(trimal=True, g='/g2', force=False, clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+				geneconvClusters(trimal=True, g='/g2', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
 
 			modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 	  
