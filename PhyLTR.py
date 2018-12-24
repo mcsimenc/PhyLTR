@@ -5979,7 +5979,7 @@ if __name__ == '__main__':
 	if '--mafft_align_region' in args:
 		mafft_align_region = args[args.index('--mafft_align_region')+1]
 		if not mafft_align_region == 'entire' or mafft_align_region == 'internal':
-			sys.exit('ERROR: --mafft_align_region must be either \'internal\' or \'entire\''
+			sys.exit('ERROR: --mafft_align_region must be either \'internal\' or \'entire\'')
 	else:
 		mafft_align_region = 'entire' 
 	if '--maxiterate_small_clusters' in args:
