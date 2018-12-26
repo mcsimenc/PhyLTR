@@ -2616,7 +2616,7 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
 						aligner(smallClusters, OutDir=outDir, statusFlAlnKey=statusFlKey, part=part)
 
 
-def geneconvClusters(trimal=True, g='/g0', clust=None, I=6, minClustSize=4, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, combine_and_do_small_clusters=True, LTRSONLY=True):
+def geneconvClusters(g='/g0', clust=None, I=6, minClustSize=4, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, combine_and_do_small_clusters=True, LTRSONLY=True):
 	'''
 	g can be one of /g0, /g1, or /g2
 	g is proportional to the tolerance for mismatches in fragments by geneconv
@@ -2627,7 +2627,6 @@ def geneconvClusters(trimal=True, g='/g0', clust=None, I=6, minClustSize=4, clus
 	##
 	global paths
 	global filenames
-	TRIMAL = trimal
 	
 	if GENECONVCLUSTERS:
 
@@ -3025,7 +3024,7 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 					else:
 						pass
 
-def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, DONTALIGN=False):
+def align_ltrs(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, DONTALIGN=False):
 
 	'''
 	Run through GFF3
@@ -3041,7 +3040,6 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 	global paths
 	global filenames
 
-	TRIMAL = trimal
 	WICKERCLUST = False
 	MCLCLUST = False
 	# And set up directory structure for output (LTR pairs GFFs, FASTAs, and alignments)
@@ -3133,11 +3131,8 @@ def align_ltrs(trimal=True, I=6, clustering_method='WickerFam', WickerParams={'p
 								ltrs_mafft_calls[elementName] = (mafft_LTRs_call, LTRsAlignmentFilepath, None, None)
 								#ltrs_clean_mafft_output_calls[elementName] = (CleanMafft(LTRsAlignmentFilepath), None, None, None)
 								ltrs_clean_mafft_output_calls[elementName] = LTRsAlignmentFilepath
-
-
-								if TRIMAL:
-									trimal_LTRs_call = [ executables['trimal'], '-in', LTRsAlignmentFilepath, '-out', LTRsTrimmedAlnFilepath, '-automated1' ]
-									ltrs_trimal_calls[elementName] = (trimal_LTRs_call, LTRsTrimmedAlnFilepath, None, None)
+								trimal_LTRs_call = [ executables['trimal'], '-in', LTRsAlignmentFilepath, '-out', LTRsTrimmedAlnFilepath, '-automated1' ]
+								ltrs_trimal_calls[elementName] = (trimal_LTRs_call, LTRsTrimmedAlnFilepath, None, None)
 
 								num_pairs += 1
 						else:
@@ -3506,11 +3501,10 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 	# Check that LTRs don't overlap anything
 
 
-def geneconvLTRs(trimal=True, g='/g0', I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
+def geneconvLTRs(g='/g0', I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
 	'''
 	g can be one of /g0, /g1, or /g2
 	g is proportional to the tolerance for mismatches in fragments by geneconv
-	trimal should be true if LTRs were aligned then trimmed with trimal
 	'''
 	# GENECONV output:
 	##   Names                                                                                                    Pvalue  Pvalue   Begin  End   Len  Poly Dif  Difs Pen.
@@ -3519,7 +3513,6 @@ def geneconvLTRs(trimal=True, g='/g0', I=6, clustering_method='WickerFam', Wicke
 	global paths
 	global filenames
 
-	TRIMAL = trimal
 	WICKERCLUST = False
 	MCLCLUST = False
 	# And set up directory structure for output (LTR pairs GFFs, FASTAs, and alignments)
@@ -3588,10 +3581,7 @@ def geneconvLTRs(trimal=True, g='/g0', I=6, clustering_method='WickerFam', Wicke
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'Checking directory structure for GENECONV using {0}'.format(g) )
 
-		if TRIMAL:
-			files = [ f for f in os.listdir(paths[AlnKey]) if f.endswith('trimmed') ]
-		else:
-			files = [ f for f in os.listdir(paths[AlnKey]) if f.endswith('aln') ]
+		files = [ f for f in os.listdir(paths[AlnKey]) if f.endswith('trimmed') ]
 
 		num_elements = len(files)
 		alnLens = {}
@@ -6123,11 +6113,11 @@ if __name__ == '__main__':
 				AutoAlign(I=None, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
 				modeltest(iters=1, I=None, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 			if GENECONV_G0:
-				geneconvClusters(trimal=True, g='/g0', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+				geneconvClusters(g='/g0', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 			if GENECONV_G1:
-				geneconvClusters(trimal=True, g='/g1', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+				geneconvClusters(g='/g1', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 			if GENECONV_G2:
-				geneconvClusters(trimal=True, g='/g2', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+				geneconvClusters(g='/g2', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 
 
 	if USEMCL:
@@ -6142,11 +6132,11 @@ if __name__ == '__main__':
 				modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 
 			if GENECONV_G0:
-				geneconvClusters(trimal=True, g='/g0', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+				geneconvClusters(g='/g0', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
 			if GENECONV_G1:
-				geneconvClusters(trimal=True, g='/g1', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+				geneconvClusters(g='/g1', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
 			if GENECONV_G2:
-				geneconvClusters(trimal=True, g='/g2', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+				geneconvClusters(g='/g2', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
 
 	  
 	if SOLOLTR:
