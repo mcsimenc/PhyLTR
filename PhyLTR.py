@@ -3665,7 +3665,7 @@ def geneconvLTRs(g='/g0', I=6, clustering_method='WickerFam', WickerParams={'pId
 		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 			statusFlAppend.write('{0}\t{1}\n'.format(SummaryKey, paths['GENECONVsummary']))
 
-def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, iters=1):
+def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, iters=1, Model='hky85'):
 	'''
 	Runs PAUP
 	iters used with modeltest(). deprecated pretty much
@@ -5495,6 +5495,8 @@ Alignment------|--------------------------------------------
                | --mafft_largeAln_maxclustsize	1000
 LTR divergence-|--------------------------------------------
                |  (All alignment settings)
+               | --modeltest			off
+               | --model			hky85
                | --geneconvltrs	
                | --geneconvclusters	
                | --geneconv_g			g0,g1,g2
@@ -5642,8 +5644,13 @@ def help():
 
 	  LTR divergence estimation
 	  -------------------------
-	  --ltrdivergence			Find statistially best supported (BIC) substitution model for each cluster (default ON)
-	  					and estimate substitutions per site between LTRs for each element. 
+	  --modeltest				Find best-supported model of nucleotide substitution and use it to estimate intra-element LTR divergences
+						Off by default.
+	  --model			<str>	Specify model to be used for estimating intra-element LTR divergences: One of:
+						jc, f81, tajnei, k2p, hky85, k3p, tamnei, gtr, logdet, upholt, neili
+						See PAUP* manual for explanation. Default hky85.
+	  --ltrdivergence			Estimate substitutions per site between LTRs for each element using best supported model from model test
+						or --model (default hky85)
 	  --remove_GC_from_modeltest_aln	Remove elements with suspected intra-cluster inter-element gene conversion tracts.
 
 	  Solo LTR search
@@ -5668,8 +5675,9 @@ def help():
 	  ---------------------
 	  --phylo				##### not implemented yet
 	  --nosmalls				Do not combine and perform phylogentic analyses on clusters smaller than --min_clust_size.
-	  --LTT					Turns on --rmhomoflank, --convert_to_ultrametric, and --auto_outgroup. Generates and attempts to run
-	  					Rscript that generates a LTT plot for each cluster for which rooting is possible.
+	  --LTT					Turns on --rmhomoflank, --convert_to_ultrametric, and --auto_outgroup. Produces ultrametric
+						phylogeneis which are ready for use with external R scripts for generating LTT plots and other
+						phylogenetic analyses.
 	  --bootstrap_reps		<int>	Number of replicates to generate for bootstrapping (default 100)
 	  --convert_to_ultrametric		Convert trees to ultrametric using PATHd8. (default OFF; ON when using --LTT)
 	  --auto_outgroup			Pick an outgroup automatically:
@@ -5966,6 +5974,14 @@ if __name__ == '__main__':
 		RMHOMOFLANK = False
 		LTT = False
 		ULTRAMETRIC = False
+	if '--modeltest' in args:
+		MODELTEST = True
+	else:
+		MODELTEST = False
+	if '--model' in args:
+		model = args[args.index('--flank_evalue')+1]
+	else:
+		model = 'hky85'
 
 	# MAFFT parameters
 	if '--mafft_align_region' in args:
@@ -6102,8 +6118,11 @@ if __name__ == '__main__':
 	classifs_by_element = shortClassif(ElNames=True)
 	classifs = set(list(clusters_by_classif.keys()))
 
+
 	if WICKER:
+
 		WickerFam(pId=wicker_pId, percAln=wicker_pAln, minLen=wicker_minLen, use_ltrs=wicker_use_ltrs, use_internal=wicker_use_internal)
+
 		summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
 
 		if GENECONVCLUSTERS or LTRDIVERGENCE:
@@ -6111,7 +6130,10 @@ if __name__ == '__main__':
 				AutoAlign(I=None, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
 			else:
 				AutoAlign(I=None, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
-				modeltest(iters=1, I=None, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
+
+				if MODELTEST:
+					modeltest(iters=1, I=None, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
+
 			if GENECONV_G0:
 				geneconvClusters(g='/g0', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 			if GENECONV_G1:
@@ -6119,38 +6141,12 @@ if __name__ == '__main__':
 			if GENECONV_G2:
 				geneconvClusters(g='/g2', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 
-
-	if USEMCL:
-		MCL(I=MCL_I, minClustSize=MinClustSize, CombineIfTooFew=False)	
-		summarizeClusters(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
-
-		if GENECONVCLUSTERS or LTRDIVERGENCE:
-			if not LTRDIVERGENCE:
-				AutoAlign(I=MCL_I, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
-			else:
-				AutoAlign(I=MCL_I, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
-				modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-
-			if GENECONV_G0:
-				geneconvClusters(g='/g0', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
-			if GENECONV_G1:
-				geneconvClusters(g='/g1', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
-			if GENECONV_G2:
-				geneconvClusters(g='/g2', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
-
-	  
-	if SOLOLTR:
-		if WICKER:
+		if SOLOLTR:
 			SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
-		if USEMCL:
-			SoloLTRsearch(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
 
-	if CIRCOS:
-		if WICKER:
+		if CIRCOS:
 			Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-		if USEMCL:
-			Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
-	if WICKER:
+
 		align_ltrs(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})	# Runs if need to use geneconvLTRs or estimate divergences
 
 		if GENECONV_G0:
@@ -6159,7 +6155,38 @@ if __name__ == '__main__':
 			geneconvLTRs(g='/g1', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
 		if GENECONV_G2:
 			geneconvLTRs(g='/g2', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+
+		ltr_divergence(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, model=model)
+		
+		phylo(removegeneconv=False, BOOTSTRAP=True, I=None, align='cluster', removehomologouspair=RMHOMOFLANK, part=mafft_align_region, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=AUTO_OUTGROUP, bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
+
 	if USEMCL:
+
+		MCL(I=MCL_I, minClustSize=MinClustSize, CombineIfTooFew=False)	
+
+		summarizeClusters(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
+
+		if GENECONVCLUSTERS or LTRDIVERGENCE:
+
+			if not LTRDIVERGENCE:
+				AutoAlign(I=MCL_I, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
+			else:
+				AutoAlign(I=MCL_I, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
+				if MODELTEST:
+					modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
+
+			if GENECONV_G0:
+				geneconvClusters(g='/g0', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+			if GENECONV_G1:
+				geneconvClusters(g='/g1', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+			if GENECONV_G2:
+				geneconvClusters(g='/g2', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+		if SOLOLTR:
+			SoloLTRsearch(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
+
+		if CIRCOS:
+			Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
+
 		align_ltrs(I=MCL_I, clustering_method='MCL', WickerParams=None)	# Runs if need to use geneconvLTRs or estimate divergences
 
 		if GENECONV_G0:
@@ -6169,13 +6196,8 @@ if __name__ == '__main__':
 		if GENECONV_G2:
 			geneconvLTRs(g='/g2', I=MCL_I, clustering_method='MCL', WickerParams=None)
 
-	if WICKER:
-		ltr_divergence(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-		
-		phylo(removegeneconv=False, BOOTSTRAP=True, I=None, align='cluster', removehomologouspair=RMHOMOFLANK, part=mafft_align_region, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=AUTO_OUTGROUP, bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
+		ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None, model=model)
 
-	if USEMCL:
-		ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None)
 		phylo(removegeneconv=False, BOOTSTRAP=True, I=MCL_I, align='cluster', removehomologouspair=RMHOMOFLANK, part=mafft_align_region, clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP,  bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 
 	print('fin!')
