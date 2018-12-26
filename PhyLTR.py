@@ -2908,10 +2908,10 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
 				with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 					statusFlAppend.write('{0}\t{1}\n'.format(MCL_MT_dirkey, paths[MCL_MT_dirkey]))
 			if REMOVEGENECONV:
-				AutoAlign(I=I, part='entire', rmgeneconv=True, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
+				AutoAlign(I=I, part=part, rmgeneconv=True, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
 				MakeDir('ModelTestDir_{0}'.format(keySuffix), '{0}/GeneconversionDisallowed'.format(paths['ModelTestDir']))
 			else:
-				AutoAlign(I=I, part='entire', rmgeneconv=False, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
+				AutoAlign(I=I, part=part, rmgeneconv=False, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
 				MakeDir('ModelTestDir_{0}'.format(keySuffix), '{0}/NoGCFiltering'.format(paths['ModelTestDir']))
 			alignmentsForModeltesting = [ pth for pth in paths if pth.startswith('Aln_') and pth.endswith('{0}.nohomoflank.noOutgroup'.format(gc)) and 'I{0}'.format(I) in pth ]
 
