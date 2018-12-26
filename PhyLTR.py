@@ -6117,7 +6117,11 @@ if __name__ == '__main__':
 		summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
 
 		if GENECONVCLUSTERS or LTRDIVERGENCE:
-			AutoAlign(I=None, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff)
+			if not LTRDIVERGENCE:
+				AutoAlign(I=None, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
+			else:
+				AutoAlign(I=None, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
+				modeltest(iters=1, I=None, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 			if GENECONV_G0:
 				geneconvClusters(trimal=True, g='/g0', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 			if GENECONV_G1:
@@ -6125,7 +6129,6 @@ if __name__ == '__main__':
 			if GENECONV_G2:
 				geneconvClusters(trimal=True, g='/g2', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
 
-			modeltest(iters=1, I=None, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 
 	if USEMCL:
 		MCL(I=MCL_I, minClustSize=MinClustSize, CombineIfTooFew=False)	
@@ -6136,6 +6139,7 @@ if __name__ == '__main__':
 				AutoAlign(I=MCL_I, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
 			else:
 				AutoAlign(I=MCL_I, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
+				modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 
 			if GENECONV_G0:
 				geneconvClusters(trimal=True, g='/g0', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
@@ -6144,7 +6148,6 @@ if __name__ == '__main__':
 			if GENECONV_G2:
 				geneconvClusters(trimal=True, g='/g2', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
 
-			modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
 	  
 	if SOLOLTR:
 		if WICKER:
