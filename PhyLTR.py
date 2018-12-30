@@ -733,6 +733,7 @@ def ltrharvest():
 	global paths
 	global filenames
 
+
 	if LTRHARVEST:
 		if not 'inputFastaSuffixArray' in paths: # If this is in paths this step has been completed. Skip
 			MakeDir('suffixerator_dir', '{0}/suffixerator'.format(paths['output_top_dir']))
@@ -5799,12 +5800,13 @@ if __name__ == '__main__':
 		mainlogfile = args[args.index('--logfile')+1]
 	else:
 		mainlogfile = 'log.txt'
+
+	procs = 1
+
 	if '--procs' in args:
 		procs = int(args[args.index('--procs') + 1])
 	if '-p' in args:
 		procs = int(args[args.index('-p') + 1])
-	else:
-		procs = 1
 	if '--output_dir' in args:
 		MakeDir('output_top_dir', args[args.index('--output_dir') + 1])
 	if '-o' in args:
@@ -6103,7 +6105,7 @@ if __name__ == '__main__':
 
 	sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
 
-	#################################################################################################### Begin
+################################################################################################################### Begin
 
 	ltrharvest()    # Predict LTR retrotransposons using structural criteria
 
@@ -6117,7 +6119,6 @@ if __name__ == '__main__':
 	clusters_by_classif = shortClassif()
 	classifs_by_element = shortClassif(ElNames=True)
 	classifs = set(list(clusters_by_classif.keys()))
-
 
 	if WICKER:
 
