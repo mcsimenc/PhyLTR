@@ -5852,6 +5852,7 @@ if __name__ == '__main__':
 
 	if '--classify_repbase' in args or '--classify' in args:
 		CLASSIFYREPBASE = True
+		os.environ['BLASTDB'] = paths['FastaOutputDir']
 	else:
 		CLASSIFYREPBASE = False
 		os.environ['BLASTDB'] = paths['FastaOutputDir']
