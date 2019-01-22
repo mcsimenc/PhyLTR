@@ -1261,8 +1261,8 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 
 			# run tblastx of LTR_retrotransposon features from LTRdigest or LTRharvest on Repbase
 			paths['tblastx_RepbaseHits_table'] = '{0}/{1}.tblastx_Repbase.tab'.format(paths['RepbaseClassificationDir'], filenames['inputFasta'])
-			tblastx_repbase_call = [ '{0}/tblastx'.format(executables['blast']), '-db', 'Repbase_LTR_RTs.fasta', '-query', paths['LTRharvest_LTR_retrotransposons_fasta'], '-evalue', str(repbase_tblastx_evalue), '-outfmt', '7 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore sstrand', '-num_threads', str(procs), '-max_hsps', '25' ]
-			tblastx_repbase_call_string = '{0} -db {1} -query {2} -evalue {5} -outfmt "7 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore sstrand" -num_threads {3} -max_hsps 25 1>{4} 2>{4}.stderr'.format('{0}/tblastx'.format(executables['blast']), 'Repbase_LTR_RTs.fasta', paths['LTRharvest_LTR_retrotransposons_fasta'], procs, paths['tblastx_RepbaseHits_table'], repbase_tblastx_evalue)
+			tblastx_repbase_call = [ '{0}/tblastx'.format(executables['blast']), '-db', 'Repbase_ERV_LTR.fasta', '-query', paths['LTRharvest_LTR_retrotransposons_fasta'], '-evalue', str(repbase_tblastx_evalue), '-outfmt', '7 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore sstrand', '-num_threads', str(procs), '-max_hsps', '25' ]
+			tblastx_repbase_call_string = '{0} -db {1} -query {2} -evalue {5} -outfmt "7 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore sstrand" -num_threads {3} -max_hsps 25 1>{4} 2>{4}.stderr'.format('{0}/tblastx'.format(executables['blast']), 'Repbase_ERV_LTR.fasta', paths['LTRharvest_LTR_retrotransposons_fasta'], procs, paths['tblastx_RepbaseHits_table'], repbase_tblastx_evalue)
 			scriptpath = os.path.realpath(__file__)
 			lineno = getframeinfo(currentframe()).lineno + 2
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
