@@ -5742,6 +5742,7 @@ if __name__ == '__main__':
 
 	# Set default flags
 	if DEFAULT:
+		print('Running default settings (all analyses)', file=sys.stderr)
 		LTRHARVEST = True
 		LTRDIGEST = True
 		FINDORFS = True
@@ -5793,7 +5794,7 @@ if __name__ == '__main__':
 		SMALLS = True
 
 	# 1. LTRharvest
-	if '--ltrharvest' in args or '-lh' in args and not DEFAULT: # Turn on LTRharvest for file given by --fasta
+	if '--ltrharvest' in args or '-lh' in args or DEFAULT: # Turn on LTRharvest for file given by --fasta
 		LTRHARVEST = True
 	else:
 		LTRHARVEST = False
@@ -5855,7 +5856,7 @@ if __name__ == '__main__':
 
 
 	# 2. LTRdigest
-	if '--ltrdigest' in args or '-ld' in args and not DEFAULT: # Turn on LTRdigest for LTRharvest results
+	if '--ltrdigest' in args or '-ld' in args or DEFAULT: # Turn on LTRdigest for LTRharvest results
 		LTRDIGEST = True
 	else:
 		LTRDIGEST = False
@@ -5866,7 +5867,7 @@ if __name__ == '__main__':
 		paths['LTRdigestHMMs'] = '{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir'])
 
 	# 3. ORF annotation
-	if '--findORFs' in args and not DEFAULT:
+	if '--findORFs' in args or DEFAULT:
 		FINDORFS = True
 	else:
 		FINDORFS = False
@@ -5962,7 +5963,7 @@ if __name__ == '__main__':
 		remove_GC_from_modeltest_aln = False
 
 	# 7. LTR divergence and model testing
-	if '--ltrdivergence' in args and not DEFAULT:
+	if '--ltrdivergence' in args or DEFAULT:
 		LTRDIVERGENCE = True
 	else:
 		LTRDIVERGENCE = False
@@ -5972,13 +5973,13 @@ if __name__ == '__main__':
 		model = 'hky85'
 
 	# 8. Intra-element LTR gene conversion
-	if '--geneconvltrs' in args and not DEFAULT:
+	if '--geneconvltrs' in args or DEFAULT:
 		GENECONVLTRS = True
 	else:
 		GENECONVLTRS = False
 
 	# 9. Inter-element intra-cluster LTR gene conversion
-	if '--geneconvclusters' in args and not DEFAULT:
+	if '--geneconvclusters' in args or DEFAULT:
 		GENECONVCLUSTERS = True
 	else:
 		GENECONVCLUSTERS = False
@@ -6002,13 +6003,13 @@ if __name__ == '__main__':
 		GENECONV_G2 = True
 
 	# 10. Circos
-	if '--circos' in args and not DEFAULT:
+	if '--circos' in args or DEFAULT:
 		CIRCOS = True
 	else:
 		CIRCOS = False
 
 	# 11. Phylogenetic inference on clusters
-	if '--phylo' in args and not DEFAULT:
+	if '--phylo' in args or DEFAULT:
 		PHYLO = True
 	else:
 		PHYLO = False
@@ -6028,7 +6029,7 @@ if __name__ == '__main__':
 		AUTO_OUTGROUP = True
 	else:
 		AUTO_OUTGROUP = False
-	if '--LTT' in args and not DEFAULT:
+	if '--LTT' in args or DEFAULT:
 		AUTO_OUTGROUP = True
 		RMHOMOFLANK = True
 		LTT = True
@@ -6056,7 +6057,7 @@ if __name__ == '__main__':
 		flank_plencutoff = 70.0
 
 	# 12. Solo LTR search parameters
-	if '--soloLTRsearch' in args and not DEFAULT:
+	if '--soloLTRsearch' in args or DEFAULT:
 		SOLOLTR = True
 	else:
 		SOLOLTR = False
