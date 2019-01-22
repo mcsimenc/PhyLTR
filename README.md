@@ -41,12 +41,11 @@ Trees/			Phylogenetic analyses
 ---
 ---
 ## Default settings
- The processes specified by the flags are explained below with additional optional flags. Some of the processes modify the GFF3 file that is used for downstream analyses.
+ If none of the 11 flags below (excluding --fasta and --procs) are specified, then the default settings are used: All 11 flags are included. Other flags may be used to modify settings in either default or specific mode. The processes specified by the flags are explained below with additional optional flags. If any of these 11 flags are included in the call then it and all prerequisite processes are carried out, but not any of the others unless they are also included.
 ```
 phyltr --fasta <input> --procs <int> \
 	--ltrharvest \
 	--ltrdigest \
-	--classify \
 	--wicker \
 	--mcl \
 	--geneconvclusters \
