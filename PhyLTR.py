@@ -5914,7 +5914,7 @@ if __name__ == '__main__':
 		repbase_tblastx_evalue = 1e-5
 
 	# 5. Clustering
-	if '--wicker' in args:
+	if '--wicker' in args or DEFAULT:
 		WICKER = True
 	else:
 		WICKER = False
@@ -5939,7 +5939,7 @@ if __name__ == '__main__':
 		wicker_use_internal = False
 	else:
 		wicker_use_internal = True
-	if '--mcl' in args:
+	if '--mcl' in args or DEFAULT:
 		USEMCL = True
 	else:
 		USEMCL = False
