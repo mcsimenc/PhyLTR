@@ -3666,7 +3666,7 @@ def geneconvLTRs(g='/g0', I=6, clustering_method='WickerFam', WickerParams={'pId
 		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 			statusFlAppend.write('{0}\t{1}\n'.format(SummaryKey, paths['GENECONVsummary']))
 
-def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, iters=1, Model='hky85'):
+def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, iters=1, model='hky85'):
 	'''
 	Runs PAUP
 	iters used with modeltest(). deprecated pretty much
@@ -5956,10 +5956,6 @@ if __name__ == '__main__':
 		MODELTEST = True
 	else:
 		MODELTEST = False
-	if '--model' in args:
-		model = args[args.index('--flank_evalue')+1]
-	else:
-		model = 'hky85'
 	if '--remove_GC_from_modeltest_aln' in args:
 		remove_GC_from_modeltest_aln = True
 	else:
@@ -5970,6 +5966,10 @@ if __name__ == '__main__':
 		LTRDIVERGENCE = True
 	else:
 		LTRDIVERGENCE = False
+	if '--model' in args:
+		model = args[args.index('--model')+1]
+	else:
+		model = 'hky85'
 
 	# 8. Intra-element LTR gene conversion
 	if '--geneconvltrs' in args and not DEFAULT:
