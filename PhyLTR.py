@@ -5465,11 +5465,11 @@ ORFs-----------|--------------------------------------------
                | --findORFs	
                | --min_orf_len			300
 Classify-------|--------------------------------------------
-               | --classify	
-               | --classify_dfam	
+               | --no_classification
+               | --no_dfam	
                | --nhmmer_reporting_evalue	10
                | --nhmmer_inclusion_evalue	1e-5
-               | --classify_repbase	
+               | --no_repbase	
                | --repbase_tblastx_evalue	1e-5
                | --keep_no_classification	
                | --keep_conflicting_classifications	
@@ -5533,8 +5533,7 @@ def help():
 	  phyltr --fasta fasta.fa \\
 	  	 --procs 40 \\
 		 --ltrharvest \\
-		 --ltrdigest \\				Use: phyltr -h
-		 --classify \\				   to see the defaults
+		 --ltrdigest \\
 		 --mcl \\
 		 --wicker \\
 		 --geneconvltrs \\
@@ -5588,9 +5587,9 @@ def help():
 
 	  Classification of LTR RTs to superfamily using homology to annotated sequences in Repbase and/or Dfam
 	  -----------------------------------------------------------------------------------------------------
-	  --classify				Do both Dfam and Repbase classifications
-	  --classify_dfam			Run hmmsearch on Dfam database (default ON)
-	  --classify_repbase			Run tblastx on Repbase database (default ON)
+	  --no_classification			Do not classify LTR-Rs with Repbase or Dfam (on by default)
+	  --no_dfam				Do not run hmmsearch on Dfam database (on by default)
+	  --no_repbase				Do not run tblastx on Repbase database (on by default)
 	  --keep_conflicting_classifications		If an element has two classifications that disagree (i.e. Repbase and Dfam) and one classification
 	  						is an LTR RT hit and one is a non-LTR RT hit, and this flag is set, the element will be kept.
 							(default OFF; the element is discarded as a false positive)
@@ -5732,16 +5731,73 @@ if __name__ == '__main__':
 			''', file=sys.stderr)
 		sys.exit(0)
 
+
+	# If any of these flags are specified, then only up to those processes are performed, otherwise they are all run.
+	main_flags = ('--ltrharvest','--ltrdigest','--classify','--wicker','--mcl','--geneconvclusters','--circos','--sololtrsearch','--geneconvltrs','--ltrdivergence','--phylo','--LTT')
+	DEFAULT = True
+	for flag in main_flags:
+		if flag in args:
+			DEFAULT = False
+			break
+
+	# Set default flags
+	if DEFAULT:
+		LTRHARVEST = True
+		LTRDIGEST = True
+		FINDORFS = True
+		WICKER = True
+		USEMCL = True
+		LTRDIVERGENCE = True
+		GENECONVLTRS = True
+		GENECONVCLUSTERS = True
+		CIRCOS = True
+		PHYLO = True
+		AUTO_OUTGROUP = True
+		RMHOMOFLANK = True
+		LTT = True
+		ULTRAMETRIC = True
+		SOLOLTR = True
+
+	if '--logfile' in args:
+		mainlogfile = args[args.index('--logfile')+1]
+	else:
+		mainlogfile = 'log.txt'
+
 	filenames['inputFasta'] = paths['inputFasta'].split('/')[-1]
 
-	if '--keep_files' in args:
-		KEEP_UNUSED_FILES = True
+	KEEP_UNUSED_FILES = True
+	#if '--keep_files' in args:
+	#else:
+	#	KEEP_UNUSED_FILES = False
+
+	# Max number of processors for parallel flows
+	procs = 1
+	if '--procs' in args:
+		procs = int(args[args.index('--procs') + 1])
+	if '-p' in args:
+		procs = int(args[args.index('-p') + 1])
+	if '--output_dir' in args:
+		MakeDir('output_top_dir', args[args.index('--output_dir') + 1])
+	if '-o' in args:
+		MakeDir('output_top_dir', args[args.index('-o') + 1])
 	else:
-		KEEP_UNUSED_FILES = False
+		MakeDir('output_top_dir', 'PhyLTR.output')
+
+	MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
+	MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
+
+	# Do not align and infer histories for small clusters (size(cluster) < --min_clust_size)
 	if '--nosmalls' in args:
 		SMALLS = False
 	else:
 		SMALLS = True
+
+	# 1. LTRharvest
+	if '--ltrharvest' in args or '-lh' in args and not DEFAULT: # Turn on LTRharvest for file given by --fasta
+		LTRHARVEST = True
+	else:
+		LTRHARVEST = False
+	# LTRharvest controls
 	if '--del' in args:
 		ltrharvest_del = int(args[args.index('--del')+1])
 	else:
@@ -5796,33 +5852,10 @@ if __name__ == '__main__':
 		ltrharvest_maxtsd = int(args[args.index('--maxtsd')+1])
 	else:
 		ltrharvest_maxtsd = 20
-	if '--logfile' in args:
-		mainlogfile = args[args.index('--logfile')+1]
-	else:
-		mainlogfile = 'log.txt'
 
-	procs = 1
 
-	if '--procs' in args:
-		procs = int(args[args.index('--procs') + 1])
-	if '-p' in args:
-		procs = int(args[args.index('-p') + 1])
-	if '--output_dir' in args:
-		MakeDir('output_top_dir', args[args.index('--output_dir') + 1])
-	if '-o' in args:
-		MakeDir('output_top_dir', args[args.index('-o') + 1])
-	else:
-		MakeDir('output_top_dir', 'PhyLTR.output')
-
-	MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
-	MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
-
-	if '--ltrharvest' in args or '-lh' in args: # Turn on LTRharvest for file given by --fasta
-		LTRHARVEST = True
-	else:
-		LTRHARVEST = False
-
-	if '--ltrdigest' in args or '-ld' in args: # Turn on LTRdigest for LTRharvest results
+	# 2. LTRdigest
+	if '--ltrdigest' in args or '-ld' in args and not DEFAULT: # Turn on LTRdigest for LTRharvest results
 		LTRDIGEST = True
 	else:
 		LTRDIGEST = False
@@ -5831,7 +5864,9 @@ if __name__ == '__main__':
 		paths['LTRdigestHMMs'] = args[args.index('--ltrdigest_hmms') + 1]
 	else:
 		paths['LTRdigestHMMs'] = '{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir'])
-	if '--findORFs' in args:
+
+	# 3. ORF annotation
+	if '--findORFs' in args and not DEFAULT:
 		FINDORFS = True
 	else:
 		FINDORFS = False
@@ -5840,22 +5875,22 @@ if __name__ == '__main__':
 	else:
 		min_orf_len = 300
 
-	if '--classify_dfam' or '--classify' in args: # Classification Parameters
-		CLASSIFYDFAM = True
-	else:
+	# 4. Classification
+	os.environ['BLASTDB'] = paths['FastaOutputDir'] # Solves can't find blastdbs problem
+	if '--no_classification':
 		CLASSIFYDFAM = False
-
-	if '--repbase_tblastx_evalue' in args:
-		repbase_tblastx_evalue = float(args[args.index('--repbase_tblastx_evalue')+1])
-	else:
-		repbase_tblastx_evalue = 1e-5
-
-	if '--classify_repbase' in args or '--classify' in args:
-		CLASSIFYREPBASE = True
-		os.environ['BLASTDB'] = paths['FastaOutputDir']
-	else:
 		CLASSIFYREPBASE = False
-		os.environ['BLASTDB'] = paths['FastaOutputDir']
+	else:
+		CLASSIFYREPBASE = True
+		CLASSIFYDFAM = True
+	if '--no_dfam' in args:
+		CLASSIFYDFAM = False
+	else:
+		CLASSIFYDFAM = True
+	if '--no_repbase' in args:
+		CLASSIFYREPBASE = False
+	else:
+		CLASSIFYREPBASE = True
 	if '--keep_conflicting_classifications' in args:
 		KEEPCONFLICTS=True
 	else:
@@ -5864,45 +5899,86 @@ if __name__ == '__main__':
 		KEEPNOCLASSIFICATION=True
 	else:
 		KEEPNOCLASSIFICATION=False
-	if '--nhmmer_reporting_evalue' in args:
+	if '--nhmmer_reporting_evalue' in args: # Dfam control
 		nhmmer_reporting_evalue = float(args[args.index('--nhmmer_reporting_evalue')+1])
 	else:
 		nhmmer_reporting_evalue = 10
-	if '--nhmmer_inclusion_evalue' in args:
+	if '--nhmmer_inclusion_evalue' in args: # Dfam control
 		nhmmer_inclusion_evalue = float(args[args.index('--nhmmer_inclusion_evalue')+1])
 	else:
 		nhmmer_inclusion_evalue = 1e-5
+	if '--repbase_tblastx_evalue' in args: # Repbase control
+		repbase_tblastx_evalue = float(args[args.index('--repbase_tblastx_evalue')+1])
+	else:
+		repbase_tblastx_evalue = 1e-5
+
+	# 5. Clustering
 	if '--wicker' in args:
 		WICKER = True
 	else:
 		WICKER = False
+	if '--wicker_pId' in args:
+		wicker_pId = int(args[args.index('--wicker_pId')+1])
+	else:
+		wicker_pId = 80
+	if '--wicker_pAln' in args:
+		wicker_pAln = int(args[args.index('--wicker_pAln')+1])
+	else:
+		wicker_pAln = 80
 
+	if '--wicker_minLen' in args:
+		wicker_minLen = int(args[args.index('--wicker_minLen')+1])
+	else:
+		wicker_minLen = 80
+	if '--wicker_no_ltrs' in args:
+		wicker_use_ltrs = False
+	else:
+		wicker_use_ltrs = True
+	if '--wicker_no_internals' in args:
+		wicker_use_internal = False
+	else:
+		wicker_use_internal = True
 	if '--mcl' in args:
 		USEMCL = True
-		if '--I' in args:
-			MCL_I = args[args.index('--I')+1]
-		else:
-			MCL_I = '6'
-
 	else:
 		USEMCL = False
-
+	if '--I' in args:
+		MCL_I = args[args.index('--I')+1]
+	else:
+		MCL_I = '6'
 	if '--min_clust_size' in args:
 		MinClustSize = int(args[args.index('--min_clust_size')+1])
 	else:
 		MinClustSize = 7
 
-	if '--ltrdivergence' in args:
+	# 6. Model testing for LTR divergence
+	if '--modeltest' in args:
+		MODELTEST = True
+	else:
+		MODELTEST = False
+	if '--model' in args:
+		model = args[args.index('--flank_evalue')+1]
+	else:
+		model = 'hky85'
+	if '--remove_GC_from_modeltest_aln' in args:
+		remove_GC_from_modeltest_aln = True
+	else:
+		remove_GC_from_modeltest_aln = False
+
+	# 7. LTR divergence and model testing
+	if '--ltrdivergence' in args and not DEFAULT:
 		LTRDIVERGENCE = True
 	else:
 		LTRDIVERGENCE = False
 
-	if '--geneconvltrs' in args:
+	# 8. Intra-element LTR gene conversion
+	if '--geneconvltrs' in args and not DEFAULT:
 		GENECONVLTRS = True
 	else:
 		GENECONVLTRS = False
 
-	if '--geneconvclusters' in args:
+	# 9. Inter-element intra-cluster LTR gene conversion
+	if '--geneconvclusters' in args and not DEFAULT:
 		GENECONVCLUSTERS = True
 	else:
 		GENECONVCLUSTERS = False
@@ -5925,29 +6001,14 @@ if __name__ == '__main__':
 		GENECONV_G1 = True
 		GENECONV_G2 = True
 
-	if '--circos' in args:
+	# 10. Circos
+	if '--circos' in args and not DEFAULT:
 		CIRCOS = True
 	else:
 		CIRCOS = False
 
-	if '--wicker_pId' in args:
-		wicker_pId = int(args[args.index('--wicker_pId')+1])
-	else:
-		wicker_pId = 80
-	if '--wicker_pAln' in args:
-		wicker_pAln = int(args[args.index('--wicker_pAln')+1])
-	else:
-		wicker_pAln = 80
-
-	if '--wicker_minLen' in args:
-		wicker_minLen = int(args[args.index('--wicker_minLen')+1])
-	else:
-		wicker_minLen = 80
-	if '--remove_GC_from_modeltest_aln' in args:
-		remove_GC_from_modeltest_aln = True
-	else:
-		remove_GC_from_modeltest_aln = False
-	if '--phylo' in args:
+	# 11. Phylogenetic inference on clusters
+	if '--phylo' in args and not DEFAULT:
 		PHYLO = True
 	else:
 		PHYLO = False
@@ -5967,7 +6028,7 @@ if __name__ == '__main__':
 		AUTO_OUTGROUP = True
 	else:
 		AUTO_OUTGROUP = False
-	if '--LTT' in args:
+	if '--LTT' in args and not DEFAULT:
 		AUTO_OUTGROUP = True
 		RMHOMOFLANK = True
 		LTT = True
@@ -5977,14 +6038,41 @@ if __name__ == '__main__':
 		RMHOMOFLANK = False
 		LTT = False
 		ULTRAMETRIC = False
-	if '--modeltest' in args:
-		MODELTEST = True
+	if '--bpflank' in args:
+		bpflank = int(args[args.index('--bpflank')+1])
 	else:
-		MODELTEST = False
-	if '--model' in args:
-		model = args[args.index('--flank_evalue')+1]
+		bpflank = 500
+	if '--flank_evalue' in args:
+		flank_evalue = int(args[args.index('--flank_evalue')+1])
 	else:
-		model = 'hky85'
+		flank_evalue = 1e-5
+	if '--flank_pId' in args:
+		flank_pId = float(args[args.index('--flank_pId')+1])
+	else:
+		flank_pId = 70.0
+	if '--flank_plencutoff' in args:
+		flank_plencutoff = float(args[args.index('--flank_plencutoff')+1])
+	else:
+		flank_plencutoff = 70.0
+
+	# 12. Solo LTR search parameters
+	if '--soloLTRsearch' in args and not DEFAULT:
+		SOLOLTR = True
+	else:
+		SOLOLTR = False
+	if '--soloLTRminPid' in args:
+		soloLTRminPid = str(float(args[args.index('--soloLTRminPid')+1]))
+	else:
+		soloLTRminPid = 80.0
+	if '--soloLTRminLen' in args:
+		soloLTRminLen = float(args[args.index('--soloLTRminLen')+1])
+	else:
+		soloLTRminLen = 80.0
+	if '--soloLTRmaxEvalue' in args:
+		soloLTRmaxEvalue = float(args[args.index('--soloLTRmaxEvalue')+1])
+	else:
+		soloLTRmaxEvalue = 1e-3
+		
 
 	# MAFFT parameters
 	if '--mafft_align_region' in args:
@@ -6017,49 +6105,7 @@ if __name__ == '__main__':
 	#	mafft_retree = int(args[args.index('--retree')+1])
 	#else:
 	#	mafft_retree = 2
-	if '--bpflank' in args:
-		bpflank = int(args[args.index('--bpflank')+1])
-	else:
-		bpflank = 500
-	if '--flank_evalue' in args:
-		flank_evalue = int(args[args.index('--flank_evalue')+1])
-	else:
-		flank_evalue = 1e-5
-	if '--flank_pId' in args:
-		flank_pId = float(args[args.index('--flank_pId')+1])
-	else:
-		flank_pId = 70.0
-	if '--flank_plencutoff' in args:
-		flank_plencutoff = float(args[args.index('--flank_plencutoff')+1])
-	else:
-		flank_plencutoff = 70.0
-	if '--wicker_no_ltrs' in args:
-		wicker_use_ltrs = False
-	else:
-		wicker_use_ltrs = True
-	if '--wicker_no_internals' in args:
-		wicker_use_internal = False
-	else:
-		wicker_use_internal = True
 
-	# Solo LTR search parameters
-	if '--soloLTRsearch' in args:
-		SOLOLTR = True
-	else:
-		SOLOLTR = False
-	if '--soloLTRminPid' in args:
-		soloLTRminPid = str(float(args[args.index('--soloLTRminPid')+1]))
-	else:
-		soloLTRminPid = 80.0
-	if '--soloLTRminLen' in args:
-		soloLTRminLen = float(args[args.index('--soloLTRminLen')+1])
-	else:
-		soloLTRminLen = 80.0
-	if '--soloLTRmaxEvalue' in args:
-		soloLTRmaxEvalue = float(args[args.index('--soloLTRmaxEvalue')+1])
-	else:
-		soloLTRmaxEvalue = 1e-3
-		
 	paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta'.format(paths['selfDir'])
 	paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(paths['selfDir'])
 	paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF'.format(paths['selfDir'])
