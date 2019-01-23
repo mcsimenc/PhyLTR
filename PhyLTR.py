@@ -3221,7 +3221,7 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 		ClusterMembershipFl = 'MCL_ClusterMembership_I{0}'.format(I)
 
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning SoloLTRsearch(): {0}'.format(key_base))
-	OutputDir = 'SoloLTRSearch.{0}'.format(key_base)
+	OutputDir = 'SoloLTRSearch.{0}'.forat(key_base)
 	paths[OutputDir] = '{0}/SoloLTRsearch'.format(clustMethodTopDir)
 	MakeDir(OutputDir, paths[OutputDir])
 	paths['SoloLTRsGFFsDir'] = '{0}/GFFs'.format(paths[OutputDir])
@@ -3476,31 +3476,6 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 		with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
 			statusFlAppend.write('{0}\t{1}\n'.format(SoloLTRsGFF, paths[SoloLTRsGFF]))
 		append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nGFFs written'.format(key_base))
-
-#Sacu_v1.1_s0020	LTRharvest	repeat_region	246108	251250	.	-	.	ID=repeat_region1000
-#Sacu_v1.1_s0020	LTRharvest	repeat_region	258314	261115	.	+	.	ID=repeat_region1002
-#Sacu_v1.1_s0020	LTRharvest	repeat_region	307513	314010	.	-	.	ID=repeat_region1004
-#Sacu_v1.1_s0020	LTRharvest	repeat_region	798886	804636	.	+	.	ID=repeat_region1008
-#Sacu_v1.1_s0020	LTRharvest	repeat_region	851970	858922	.	+	.	ID=repeat_region1009
-#Sacu_v1.1_s0020	LTRharvest	repeat_region	920270	925761	.	-	.	ID=repeat_region1011
-#Sacu_v1.1_s0020	LTRharvest	repeat_region	945640	950865	.	-	.	ID=repeat_region1012
-#Sacu_v1.1_s0020	LTRharvest	repeat_region	1021229	1025210	.	-	.	ID=repeat_region1015
-#Sacu_v1.1_s0020	LTRharvest	repeat_region	1108500	1112289	.	+	.	ID=repeat_region1016
-#Sacu_v1.1_s0020	LTRharvest	repeat_region	1240169	1246565	.	+	.	ID=repeat_region1018
-
-
-	#element	classification	cluster
-	#3657	Unknown	0
-	#2241	Unknown	0
-	#700	Unknown	0
-	#4633	Unknown	0
-	#2444	Unknown	0
-	#785	Unknown	0
-	#3766	Unknown	0
-	#1275	Unknown	0
-	#3495	Unknown	0
-
-	# Check that LTRs don't overlap anything
 
 
 def geneconvLTRs(g='/g0', I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
