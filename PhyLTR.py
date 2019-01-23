@@ -3221,7 +3221,7 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 		ClusterMembershipFl = 'MCL_ClusterMembership_I{0}'.format(I)
 
 	append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning SoloLTRsearch(): {0}'.format(key_base))
-	OutputDir = 'SoloLTRSearch.{0}'.forat(key_base)
+	OutputDir = 'SoloLTRSearch.{0}'.format(key_base)
 	paths[OutputDir] = '{0}/SoloLTRsearch'.format(clustMethodTopDir)
 	MakeDir(OutputDir, paths[OutputDir])
 	paths['SoloLTRsGFFsDir'] = '{0}/GFFs'.format(paths[OutputDir])
@@ -3443,7 +3443,7 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 				if os.path.isfile('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif)):
 					os.remove('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif))
 				clustersOut = 'SoloLTRs{0}'.format(classif)
-				MakeDir(clustersOut, '{1}/{0}_clusters'.format(paths['SoloLTRsGFFsDir'], classif))
+				#MakeDir(clustersOut, '{1}/{0}_clusters'.format(paths['SoloLTRsGFFsDir'], classif)) # Causes dirs in wrong place?
 				for clust in GFFoutput[scaf][classif]:
 					if os.path.isfile('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust)):
 						os.remove('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust))
