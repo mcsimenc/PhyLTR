@@ -527,6 +527,7 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl, annotAttr2DbDict, outputFlName,
 					Db_LTR_retrotransposon_features[flName] = set([line.strip()])
 
 	logfile = open(logFilePth, 'a')
+	logfile.write('#Conflicting annotations (e.g. Dfam->Copia Repbase->Gypsy) are reported. If an annotation is Unknown it does not count as a conflict\n')
 	with open(LTRdigestGFFfl) as gffFl:
 		for line in gffFl:
 			if line.startswith('#'):
@@ -546,7 +547,7 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl, annotAttr2DbDict, outputFlName,
 					db = annotAttr2DbDict[attr].split('/')[-1]
 					annot = gffLine.attributes[attr]
 					if not annot == 'None':
-						if annot in Db_LTR_retrotransposon_features[db]:
+						if annot in Db_LTR_retrotransposon_features[db] or annot == 'Unknown':
 							LTRmatching[attr] = True # is homologous to LTR retrotransposon in given db
 						else:
 							LTRmatching[attr] = False # homologous to a non-LTR retrotransposon in given db. Flag for removal as 'false positive'
