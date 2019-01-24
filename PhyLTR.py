@@ -3446,8 +3446,9 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 				#MakeDir(clustersOut, '{1}/{0}_clusters'.format(paths['SoloLTRsGFFsDir'], classif)) # Causes dirs in wrong place?
 				if classif in GFFoutput[scaf]:
 					for clust in GFFoutput[scaf][classif]:
-						if os.path.isfile('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust)):
-							os.remove('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust))
+						if clustersOut in paths:
+							if os.path.isfile('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust)):
+								os.remove('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust))
 
 		# write GFF files with coordinates and store info for summary file
 		with open(paths[SoloLTRsGFF], 'w') as outFl:
