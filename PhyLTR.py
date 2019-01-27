@@ -5985,6 +5985,9 @@ if __name__ == '__main__':
 		CIRCOS = True
 	else:
 		CIRCOS = False
+	# 10. Circos
+	if '--nocircos' in args:
+		CIRCOS = False
 
 	# 11. Phylogenetic inference on clusters
 	if '--phylo' in args or DEFAULT:
