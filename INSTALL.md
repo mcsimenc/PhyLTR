@@ -8,6 +8,8 @@
 
 ## Clone Repository
 
+`git clone https://github.com/mcsimenc/PhyLTR.git`
+
 ## Install dependencies
 
 #### 1. Install [Python 3](https://www.python.org/) and [Biopython](https://biopython.org/)
