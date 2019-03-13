@@ -6,8 +6,6 @@
 
 import sys
 
-
-
 last_query = '!@#--sjsjsj-BI29(*YFen230*012kr3jnr)FU)R(u$%^&*()_QWERTYUIOP{'
 for line in sys.stdin:
 	if not line.startswith('#') and not line.startswith('{0}\t'.format(last_query)):
