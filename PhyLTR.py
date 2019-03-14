@@ -1322,7 +1322,7 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 				gff_classified = paths['GFFwithDfamClassification']
 
 			paths['LTRdigestClassifiedNoFP'] = '{0}/{1}.LTRdigestClassifiedNoFP.gff'.format(paths['GFFOutputDir'], filenames['inputFasta'])
-			TruePositiveLTRclassificationsDct = { 'dfamClassification':paths['DfamTruePosLTRlist'], 'repbaseClassification':paths['RepbaseTruePosLTRlist'] }
+			TruePositiveLTRclassificationsDct = { 'dfamClassification':paths['Dfam_ERV_LTR.list'], 'repbaseClassification':paths['Repbase_ERV_LTR.list'] }
 			scriptpath = os.path.realpath(__file__)
 			lineno = getframeinfo(currentframe()).lineno + 2
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
@@ -6087,13 +6087,12 @@ if __name__ == '__main__':
 	#	mafft_retree = int(args[args.index('--retree')+1])
 	#else:
 	#	mafft_retree = 2
-
 	paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta'.format(paths['selfDir'])
-	paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(paths['selfDir'])
+	paths['Repbase_ERV_LTR.list'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(paths['selfDir'])
 	paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF'.format(paths['selfDir'])
 
 	paths['DfamDB'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm'.format(paths['selfDir'])
-	paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.list'.format(paths['selfDir'])
+	paths['Dfam_ERV_LTR.list'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.list'.format(paths['selfDir'])
 	paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF'.format(paths['selfDir'])
 
 	LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL', 'Tas', 'Suzu', 'Sinbad', 'Unknown']
