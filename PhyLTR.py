@@ -454,7 +454,10 @@ def addStrandToGFF(strandDct, GFFpth):
 	'''
 	newgff = '{0}.updatingstrandinprocess'.format(GFFpth)
 	if os.path.exists(newgff):
-		os.remove(newgff)
+		try:
+			os.remove(newgff)
+		except PermissionError:
+			pass
 
 	with open(GFFpth) as inFl:
 		for line in inFl:
@@ -667,7 +670,10 @@ def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None, REPEA
 	global paths
 
 	if os.path.isfile(outputGFFpth):
-		os.remove(outputGFFpth)
+		try:
+			os.remove(outputGFFpth)
+		except PermissionError:
+			pass
 
 	scriptpath = os.path.realpath(__file__)
 	lineno = getframeinfo(currentframe()).lineno + 1
@@ -701,7 +707,10 @@ def writeLTRsGFF(inputGFFpth, outputGFFpth, elementSet=None):
 	global paths
 
 	if os.path.isfile(outputGFFpth):
-		os.remove(outputGFFpth)
+		try:
+			os.remove(outputGFFpth)
+		except PermissionError:
+			pass
 
 	scriptpath = os.path.realpath(__file__)
 	lineno = getframeinfo(currentframe()).lineno + 1
@@ -857,7 +866,11 @@ def bestORFs(fasta, outdir, gff, minLen=300):
 	'''
 	outgff = '{0}/{1}.orfs.gff'.format(outdir, fasta.split('/')[-1])
 	if os.path.isfile(outgff):
-		os.remove(outgff)
+		try:
+			os.remove(outgff)
+
+		except PermissionError:
+			pass
 	# Get strandedness for each element into a dictionary
 	strands = {}
 	with open(gff, 'r') as gffFl:
@@ -870,7 +883,10 @@ def bestORFs(fasta, outdir, gff, minLen=300):
 	# Run EMBOSS getorf
 	outseq = '{0}/{1}.orfs'.format(outdir, fasta.split('/')[-1])
 	if os.path.isfile(outseq):
-		os.remove(outseq)
+		try:
+			os.remove(outseq)
+		except PermissionError:
+			pass
 	getorf_call = [ executables['getorf'], '-sequence', fasta, '-outseq', outseq ]
 	makecall(getorf_call)
 
@@ -1356,10 +1372,13 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 
 			# Remove large tblastx output and Dfam output. best hits are kept
 			if not KEEP_UNUSED_FILES:
-				#rmtree(paths['RepbaseTable'])
-				os.remove(paths['RepbaseTable'])
-				#rmtree(paths['DfamTable'])
-				os.remove(paths['DfamTable'])
+				try:
+					#rmtree(paths['RepbaseTable'])
+					os.remove(paths['RepbaseTable'])
+					#rmtree(paths['DfamTable'])
+					os.remove(paths['DfamTable'])
+				except PermissionError:
+					pass
 
 
 def shortClassif(ElNames=False):
@@ -1806,7 +1825,10 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
 				paths['Wicker_{0}'.format(classif)] = '{0}/wicker_groups_{1}'.format(cOutDir, classif)
 				paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(pId, percAln, minLen, classif)] = paths['Wicker_{0}'.format(classif)]
 				if os.path.isfile(paths['Wicker_{0}'.format(classif)]):
-					os.remove(paths['Wicker_{0}'.format(classif)])
+					try:
+						os.remove(paths['Wicker_{0}'.format(classif)])
+					except PermissionError:
+						pass
 				for el in elements:
 					with open(paths['Wicker_{0}'.format(classif)], 'a') as outFl:
 						outFl.write('{0}\n'.format(el))
@@ -2027,7 +2049,10 @@ def removeRedundant(fastaPth):
 	seqnames = set()
 	tmp = '{0}.nonredundant'.format(fastaPth)
 	if os.path.isfile(tmp):
-		os.remove(tmp)
+		try:
+			os.remove(tmp)
+		except PermissionError:
+			pass
 	with open(tmp, 'w') as outFl:
 		with open(fastaPth, 'r') as inFl:
 			SKIP = False
@@ -2177,7 +2202,10 @@ def reportpairswithhomologousflanks(blastqueryfasta, blastResults, outFlPth, bpf
 					matchesset.add(frozenset([rpt1, rpt2]))
 					
 	if os.path.isfile(outFlPth):
-		os.remove(outFlPth)
+		try:
+			os.remove(outFlPth)
+		except PermissionError:
+			pass
 	for match in matchesset:
 		match = list(match)
 		with open(outFlPth, 'a') as outFl:
@@ -2195,9 +2223,15 @@ def elementsWithHomologousFlanks(ingff, infasta, outdir, bpflank=None, outfmt='7
 	flankgff = '{0}/{1}.flanks.gff'.format(outdir, ingffBasename)
 	if not os.path.isfile(blastout):
 		if os.path.isfile(flankfasta):
-			os.remove(flankfasta)
+			try:
+				os.remove(flankfasta)
+			except PermissionError:
+				pass
 		if os.path.isfile(flankgff):
-			os.remove(flankgff)
+			try:
+				os.remove(flankgff)
+			except PermissionError:
+				pass
 
 		full2flankgff(inGFFpth=ingff, outGFFpth=flankgff, bpflank=bpflank)
 		getfasta(inGFFpth=flankgff, fastaRefPth=infasta, outFastaPth=flankfasta, headerKey='ID')
@@ -2221,7 +2255,10 @@ def CleanMafft(mafft_fasta):
 					if STARTFASTA == True:
 						outFl.write(line)
 		copyfile('{0}.fixingmafftdefaultoutput.tmp'.format(mafft_fasta), mafft_fasta)
-		os.remove('{0}.fixingmafftdefaultoutput.tmp'.format(mafft_fasta))
+		try:
+			os.remove('{0}.fixingmafftdefaultoutput.tmp'.format(mafft_fasta))
+		except PermissionError:
+			pass
 
 
 def aligner(elementList, OutDir, statusFlAlnKey, part):
@@ -3441,14 +3478,20 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 		for scaf in GFFoutput:
 			for classif in GFFoutput[scaf]:
 				if os.path.isfile('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif)):
-					os.remove('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif))
+					try:
+						os.remove('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif))
+					except PermissionError:
+						pass
 				clustersOut = 'SoloLTRs{0}'.format(classif)
 				#MakeDir(clustersOut, '{1}/{0}_clusters'.format(paths['SoloLTRsGFFsDir'], classif)) # Causes dirs in wrong place?
 				if classif in GFFoutput[scaf]:
 					for clust in GFFoutput[scaf][classif]:
 						if clustersOut in paths:
 							if os.path.isfile('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust)):
-								os.remove('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust))
+								try:
+									os.remove('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust))
+								except PermissionError:
+									pass
 
 		# write GFF files with coordinates and store info for summary file
 		with open(paths[SoloLTRsGFF], 'w') as outFl:
@@ -4461,12 +4504,18 @@ def clusterSummary():
 			I = p[0].split('_')[-1][1:]
 			MCLclustdir = '/'.join(p[1].split('/')[:-2])
 			if os.path.exists('{0}/MCL_I{1}_summary'.format(MCLclustdir, I)):
-				os.remove('{0}/MCL_I{1}_summary'.format(MCLclustdir, I))
+				try:
+					os.remove('{0}/MCL_I{1}_summary'.format(MCLclustdir, I))
+				except PermissionError:
+					pass
 		elif p[0].startswith('Wicker'):
 			Wickerclustdir = '/'.join(p[1].split('/')[:-2])
 			params = '_'.join(p[0].split('_')[1:-2])
 			if os.path.exists('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params)):
-				os.remove('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params))
+				try:
+					os.remove('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params))
+				except PermissionError:
+					pass
 
 
 	headers = set() # Holds whether the header was written already for a particular file
@@ -4845,10 +4894,16 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					outputlinks_untransposed = []
 					GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CurrentTopDir'], classif, i)
 					if os.path.isfile(GFFoutPth):
-						os.remove(GFFoutPth)
+						try:
+							os.remove(GFFoutPth)
+						except PermissionError:
+							pass
 					highlights_ltrs_fl = '{0}/{1}.cluster_{2}.LTR_highlights.track'.format(paths['CurrentTopDir'], classif, i)
 					if os.path.isfile(highlights_ltrs_fl):
-						os.remove(highlights_ltrs_fl)
+						try:
+							os.remove(highlights_ltrs_fl)
+						except PermissionError:
+							pass
 					with open(paths['CurrentGFF']) as gffFl:
 						for line in gffFl:
 							if '\tLTR_retrotransposon\t' in line:
@@ -5109,7 +5164,10 @@ auto_alpha_steps  = 5'''.format(imagesize)
 						copyfile(highlights_ltrs_fl, newhlfl)
 
 						if os.path.isfile(newseqfl):
-							os.remove(newseqfl)
+							try:
+								os.remove(newseqfl)
+							except PermissionError:
+								pass
 						# Convert tile file to ideogram track
 						with open(tilefl, 'r') as inFl:
 							with open(newseqfl, 'w') as outFl:
@@ -5211,20 +5269,23 @@ auto_alpha_steps  = 5'''.format(imagesize)
 
 						# Clean up
 						if not KEEP_UNUSED_FILES:
-							if os.path.isfile(tilefl):
-								os.remove(tilefl)
-							if os.path.isfile(linksfl):
-								os.remove(linksfl)
-							if os.path.isfile(seqfl):
-								os.remove(seqfl)
-							if os.path.isfile(textfl):
-								os.remove(textfl)
-							if os.path.isfile(highlights_ltrs_fl):
-								os.remove(highlights_ltrs_fl)
-							if os.path.isfile(links_untransposedfl):
-								os.remove(links_untransposedfl)
-							if os.path.isfile(GFFoutPth):
-								os.remove(GFFoutPth)
+							try:
+								if os.path.isfile(tilefl):
+									os.remove(tilefl)
+								if os.path.isfile(linksfl):
+									os.remove(linksfl)
+								if os.path.isfile(seqfl):
+									os.remove(seqfl)
+								if os.path.isfile(textfl):
+									os.remove(textfl)
+								if os.path.isfile(highlights_ltrs_fl):
+									os.remove(highlights_ltrs_fl)
+								if os.path.isfile(links_untransposedfl):
+									os.remove(links_untransposedfl)
+								if os.path.isfile(GFFoutPth):
+									os.remove(GFFoutPth)
+							except PermissionError:
+								pass
 
 		MakeDir('plotdir', '{0}/plots.scaffolds'.format(paths['CurrentTopDir']))
 		paths['Circos_output_dir_scaffolds_{0}'.format(ClustMethod)] = paths['plotdir']
