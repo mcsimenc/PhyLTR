@@ -454,10 +454,7 @@ def addStrandToGFF(strandDct, GFFpth):
 	'''
 	newgff = '{0}.updatingstrandinprocess'.format(GFFpth)
 	if os.path.exists(newgff):
-		try:
-			os.remove(newgff)
-		except PermissionError:
-			pass
+		os.remove(newgff)
 
 	with open(GFFpth) as inFl:
 		for line in inFl:
@@ -670,10 +667,7 @@ def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None, REPEA
 	global paths
 
 	if os.path.isfile(outputGFFpth):
-		try:
-			os.remove(outputGFFpth)
-		except PermissionError:
-			pass
+		os.remove(outputGFFpth)
 
 	scriptpath = os.path.realpath(__file__)
 	lineno = getframeinfo(currentframe()).lineno + 1
@@ -707,10 +701,7 @@ def writeLTRsGFF(inputGFFpth, outputGFFpth, elementSet=None):
 	global paths
 
 	if os.path.isfile(outputGFFpth):
-		try:
-			os.remove(outputGFFpth)
-		except PermissionError:
-			pass
+		os.remove(outputGFFpth)
 
 	scriptpath = os.path.realpath(__file__)
 	lineno = getframeinfo(currentframe()).lineno + 1
@@ -866,11 +857,7 @@ def bestORFs(fasta, outdir, gff, minLen=300):
 	'''
 	outgff = '{0}/{1}.orfs.gff'.format(outdir, fasta.split('/')[-1])
 	if os.path.isfile(outgff):
-		try:
-			os.remove(outgff)
-
-		except PermissionError:
-			pass
+		os.remove(outgff)
 	# Get strandedness for each element into a dictionary
 	strands = {}
 	with open(gff, 'r') as gffFl:
@@ -883,10 +870,7 @@ def bestORFs(fasta, outdir, gff, minLen=300):
 	# Run EMBOSS getorf
 	outseq = '{0}/{1}.orfs'.format(outdir, fasta.split('/')[-1])
 	if os.path.isfile(outseq):
-		try:
-			os.remove(outseq)
-		except PermissionError:
-			pass
+		os.remove(outseq)
 	getorf_call = [ executables['getorf'], '-sequence', fasta, '-outseq', outseq ]
 	makecall(getorf_call)
 
@@ -1338,11 +1322,12 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 				gff_classified = paths['GFFwithDfamClassification']
 
 			paths['LTRdigestClassifiedNoFP'] = '{0}/{1}.LTRdigestClassifiedNoFP.gff'.format(paths['GFFOutputDir'], filenames['inputFasta'])
-			TruePositiveLTRclassificationsDct = { 'dfamClassification':paths['Dfam_ERV_LTR.list'], 'repbaseClassification':paths['Repbase_ERV_LTR.list'] }
+			TruePositiveLTRclassificationsDct = { 'dfamClassification':paths['DfamTruePosLTRlist'], 'repbaseClassification':paths['RepbaseTruePosLTRlist'] }
 			scriptpath = os.path.realpath(__file__)
 			lineno = getframeinfo(currentframe()).lineno + 2
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
 			append2logfile(paths['output_top_dir'], mainlogfile, 'Began removing false positives from LTRdigest GFF with classifications.')
+            # only elements are preseved if they have a LTR-R classification, or an unknown classification.
 			RemoveNonLTRretrotransposons(gff_classified, TruePositiveLTRclassificationsDct, outputFlName=paths['LTRdigestClassifiedNoFP'], REPORTCONFLICTS=True, KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, logFilePth='{0}/RemoveNonLTRretrotransposons.log'.format(paths['GFFOutputDir']))
 			paths['CurrentGFF'] = paths['LTRdigestClassifiedNoFP']
 
@@ -1372,13 +1357,10 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 
 			# Remove large tblastx output and Dfam output. best hits are kept
 			if not KEEP_UNUSED_FILES:
-				try:
-					#rmtree(paths['RepbaseTable'])
-					os.remove(paths['RepbaseTable'])
-					#rmtree(paths['DfamTable'])
-					os.remove(paths['DfamTable'])
-				except PermissionError:
-					pass
+				#rmtree(paths['RepbaseTable'])
+				os.remove(paths['RepbaseTable'])
+				#rmtree(paths['DfamTable'])
+				os.remove(paths['DfamTable'])
 
 
 def shortClassif(ElNames=False):
@@ -1825,10 +1807,7 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
 				paths['Wicker_{0}'.format(classif)] = '{0}/wicker_groups_{1}'.format(cOutDir, classif)
 				paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(pId, percAln, minLen, classif)] = paths['Wicker_{0}'.format(classif)]
 				if os.path.isfile(paths['Wicker_{0}'.format(classif)]):
-					try:
-						os.remove(paths['Wicker_{0}'.format(classif)])
-					except PermissionError:
-						pass
+					os.remove(paths['Wicker_{0}'.format(classif)])
 				for el in elements:
 					with open(paths['Wicker_{0}'.format(classif)], 'a') as outFl:
 						outFl.write('{0}\n'.format(el))
@@ -2049,10 +2028,7 @@ def removeRedundant(fastaPth):
 	seqnames = set()
 	tmp = '{0}.nonredundant'.format(fastaPth)
 	if os.path.isfile(tmp):
-		try:
-			os.remove(tmp)
-		except PermissionError:
-			pass
+		os.remove(tmp)
 	with open(tmp, 'w') as outFl:
 		with open(fastaPth, 'r') as inFl:
 			SKIP = False
@@ -2084,24 +2060,6 @@ def getfasta(inGFFpth, fastaRefPth, outFastaPth, headerKey='ID'):
 	removeRedundant(outFastaPth)
 
 
-# DOESN'T WORK WITH OTHER THAN blastn
-#def runblast(query, subject, out, evalue, outfmt, percid, blast='blastn', procs=1):
-#	'''
-#	runs blast programs
-#	if subject does not have a blastdb one will be created
-#	expects procs to be a global variable
-#	'''
-#	dbtypes = { 'blastn':'nucl', 'blastp':'prot', 'blastx':'prot', 'tblastx':'nucl', 'tblastn':'nucl' }
-#
-#	assert blast in dbtypes,'runblast() blast param must be one of blastn, blastp, blastx, tblastn, tblastx'
-#
-#	makeblastdb_call_string = '{0}/makeblastdb -in {1} -dbtype {2} -parse_seqids'.format(executables['blast'], subject, dbtypes[blast] )
-#	makeblastdb_call = [ '{0}/makeblastdb'.format(executables['blast']), '-in', subject, '-dbtype', dbtypes[blast], '-parse_seqids' ]
-#	makecall(makeblastdb_call)
-#	blast_call = [ '{0}/{1}'.format(executables['blast'], blast), '-db', subject, '-query', query, '-evalue', str(evalue), '-outfmt', str(outfmt), '-num_threads', str(procs), '-perc_identity', str(percid) ]
-#	blast_call_string = '{0}/{1} -db {2} -query {3} -evalue {4} -outfmt {5} -num_threads {6} -perc_identity {7} 1>{8} 2>{9}'.format(executables['blast'], blast, subject, query, evalue, outfmt, procs, percid, out, '{0}/runblast.{1}.err'.format('/'.join(out.split('/')[:-1]), blast))
-#	makecall(blast_call, stdout=out, stderr='{0}/runblast.{1}.err'.format('/'.join(out.split('/')[:-1]), blast))
-
 def runblast(query, subject, out, evalue, outfmt, percid=None, blast='blastn', procs=1):
 	'''
 	runs blast programs
@@ -2123,6 +2081,7 @@ def runblast(query, subject, out, evalue, outfmt, percid=None, blast='blastn', p
 		blast_call_string = '{0}/{1} -db {2} -query {3} -evalue {4} -outfmt {5} -num_threads {6} -perc_identity {7} 1>{8} 2>{9}'.format(executables['blast'], blast, subject, query, evalue, outfmt, procs, percid, out, '{0}/runblast.{1}.err'.format('/'.join(out.split('/')[:-1]), blast))
 	append2logfile(paths['output_top_dir'], mainlogfile, blast_call_string)
 	makecall(blast_call, stdout=out, stderr='{0}/runblast.{1}.err'.format('/'.join(out.split('/')[:-1]), blast))
+
 
 def reportpairswithhomologousflanks(blastqueryfasta, blastResults, outFlPth, bpflank, perc_len_cutoff):
 	'''
@@ -2202,10 +2161,7 @@ def reportpairswithhomologousflanks(blastqueryfasta, blastResults, outFlPth, bpf
 					matchesset.add(frozenset([rpt1, rpt2]))
 					
 	if os.path.isfile(outFlPth):
-		try:
-			os.remove(outFlPth)
-		except PermissionError:
-			pass
+		os.remove(outFlPth)
 	for match in matchesset:
 		match = list(match)
 		with open(outFlPth, 'a') as outFl:
@@ -2223,15 +2179,9 @@ def elementsWithHomologousFlanks(ingff, infasta, outdir, bpflank=None, outfmt='7
 	flankgff = '{0}/{1}.flanks.gff'.format(outdir, ingffBasename)
 	if not os.path.isfile(blastout):
 		if os.path.isfile(flankfasta):
-			try:
-				os.remove(flankfasta)
-			except PermissionError:
-				pass
+			os.remove(flankfasta)
 		if os.path.isfile(flankgff):
-			try:
-				os.remove(flankgff)
-			except PermissionError:
-				pass
+			os.remove(flankgff)
 
 		full2flankgff(inGFFpth=ingff, outGFFpth=flankgff, bpflank=bpflank)
 		getfasta(inGFFpth=flankgff, fastaRefPth=infasta, outFastaPth=flankfasta, headerKey='ID')
@@ -2255,10 +2205,7 @@ def CleanMafft(mafft_fasta):
 					if STARTFASTA == True:
 						outFl.write(line)
 		copyfile('{0}.fixingmafftdefaultoutput.tmp'.format(mafft_fasta), mafft_fasta)
-		try:
-			os.remove('{0}.fixingmafftdefaultoutput.tmp'.format(mafft_fasta))
-		except PermissionError:
-			pass
+		os.remove('{0}.fixingmafftdefaultoutput.tmp'.format(mafft_fasta))
 
 
 def aligner(elementList, OutDir, statusFlAlnKey, part):
@@ -3478,20 +3425,14 @@ def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'pe
 		for scaf in GFFoutput:
 			for classif in GFFoutput[scaf]:
 				if os.path.isfile('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif)):
-					try:
-						os.remove('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif))
-					except PermissionError:
-						pass
+					os.remove('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif))
 				clustersOut = 'SoloLTRs{0}'.format(classif)
 				#MakeDir(clustersOut, '{1}/{0}_clusters'.format(paths['SoloLTRsGFFsDir'], classif)) # Causes dirs in wrong place?
 				if classif in GFFoutput[scaf]:
 					for clust in GFFoutput[scaf][classif]:
 						if clustersOut in paths:
 							if os.path.isfile('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust)):
-								try:
-									os.remove('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust))
-								except PermissionError:
-									pass
+								os.remove('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust))
 
 		# write GFF files with coordinates and store info for summary file
 		with open(paths[SoloLTRsGFF], 'w') as outFl:
@@ -4504,18 +4445,12 @@ def clusterSummary():
 			I = p[0].split('_')[-1][1:]
 			MCLclustdir = '/'.join(p[1].split('/')[:-2])
 			if os.path.exists('{0}/MCL_I{1}_summary'.format(MCLclustdir, I)):
-				try:
-					os.remove('{0}/MCL_I{1}_summary'.format(MCLclustdir, I))
-				except PermissionError:
-					pass
+				os.remove('{0}/MCL_I{1}_summary'.format(MCLclustdir, I))
 		elif p[0].startswith('Wicker'):
 			Wickerclustdir = '/'.join(p[1].split('/')[:-2])
 			params = '_'.join(p[0].split('_')[1:-2])
 			if os.path.exists('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params)):
-				try:
-					os.remove('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params))
-				except PermissionError:
-					pass
+				os.remove('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params))
 
 
 	headers = set() # Holds whether the header was written already for a particular file
@@ -4894,16 +4829,10 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
 					outputlinks_untransposed = []
 					GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CurrentTopDir'], classif, i)
 					if os.path.isfile(GFFoutPth):
-						try:
-							os.remove(GFFoutPth)
-						except PermissionError:
-							pass
+						os.remove(GFFoutPth)
 					highlights_ltrs_fl = '{0}/{1}.cluster_{2}.LTR_highlights.track'.format(paths['CurrentTopDir'], classif, i)
 					if os.path.isfile(highlights_ltrs_fl):
-						try:
-							os.remove(highlights_ltrs_fl)
-						except PermissionError:
-							pass
+						os.remove(highlights_ltrs_fl)
 					with open(paths['CurrentGFF']) as gffFl:
 						for line in gffFl:
 							if '\tLTR_retrotransposon\t' in line:
@@ -5164,10 +5093,7 @@ auto_alpha_steps  = 5'''.format(imagesize)
 						copyfile(highlights_ltrs_fl, newhlfl)
 
 						if os.path.isfile(newseqfl):
-							try:
-								os.remove(newseqfl)
-							except PermissionError:
-								pass
+							os.remove(newseqfl)
 						# Convert tile file to ideogram track
 						with open(tilefl, 'r') as inFl:
 							with open(newseqfl, 'w') as outFl:
@@ -5269,23 +5195,20 @@ auto_alpha_steps  = 5'''.format(imagesize)
 
 						# Clean up
 						if not KEEP_UNUSED_FILES:
-							try:
-								if os.path.isfile(tilefl):
-									os.remove(tilefl)
-								if os.path.isfile(linksfl):
-									os.remove(linksfl)
-								if os.path.isfile(seqfl):
-									os.remove(seqfl)
-								if os.path.isfile(textfl):
-									os.remove(textfl)
-								if os.path.isfile(highlights_ltrs_fl):
-									os.remove(highlights_ltrs_fl)
-								if os.path.isfile(links_untransposedfl):
-									os.remove(links_untransposedfl)
-								if os.path.isfile(GFFoutPth):
-									os.remove(GFFoutPth)
-							except PermissionError:
-								pass
+							if os.path.isfile(tilefl):
+								os.remove(tilefl)
+							if os.path.isfile(linksfl):
+								os.remove(linksfl)
+							if os.path.isfile(seqfl):
+								os.remove(seqfl)
+							if os.path.isfile(textfl):
+								os.remove(textfl)
+							if os.path.isfile(highlights_ltrs_fl):
+								os.remove(highlights_ltrs_fl)
+							if os.path.isfile(links_untransposedfl):
+								os.remove(links_untransposedfl)
+							if os.path.isfile(GFFoutPth):
+								os.remove(GFFoutPth)
 
 		MakeDir('plotdir', '{0}/plots.scaffolds'.format(paths['CurrentTopDir']))
 		paths['Circos_output_dir_scaffolds_{0}'.format(ClustMethod)] = paths['plotdir']
@@ -5731,6 +5654,7 @@ if __name__ == '__main__':
 	# get executable paths from CONFIG file, which should be in the same directory as this script
 	executables = {}
 	commentPattern = re.compile('#.*$')
+    # here, the CONFIG file, specifying paths.
 	with open('{0}/CONFIG'.format(os.path.dirname(os.path.realpath(__file__)))) as config_file:
 		paths = [ re.sub(commentPattern, '', line) for line in config_file.read().strip().split('\n') ]
 		for path in paths:
@@ -6148,12 +6072,13 @@ if __name__ == '__main__':
 	#	mafft_retree = int(args[args.index('--retree')+1])
 	#else:
 	#	mafft_retree = 2
+
 	paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta'.format(paths['selfDir'])
-	paths['Repbase_ERV_LTR.list'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(paths['selfDir'])
+	paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(paths['selfDir'])
 	paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF'.format(paths['selfDir'])
 
 	paths['DfamDB'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm'.format(paths['selfDir'])
-	paths['Dfam_ERV_LTR.list'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.list'.format(paths['selfDir'])
+	paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.list'.format(paths['selfDir'])
 	paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF'.format(paths['selfDir'])
 
 	LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL', 'Tas', 'Suzu', 'Sinbad', 'Unknown']
