@@ -144,11 +144,11 @@ Internal regions are searched for ORFs that don't overlap any preexisting annota
 * EMBOSS
 ---
 ---
-## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase and remove false positives: on by default
+## 3. Classify elements using homology to LTR-Rs in Dfam and/or Repbase and keeping only elements classified as LTR-Rs is on by default. Note, some Dfam and Repbase LTR-R entries are labelled 'Unknown'.
 #### A. Turn off both Repbase and Dfam classification: `--no_classification`
 ![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/step4output.png)
 ###### Description
-Both methods use homology-based evidence for classifying elements as one of the classifications obtained from the database records: BEL, Copia, DIRS, Endogenous Retrovirus, ERV1, ERV2, ERV3, ERV4, Gypsy, Lentivirus (Repbase) and Copia, DIRS, ERV?, ERV1, ERV1?, ERV-Foamy, ERVK, ERVK?, ERVL, ERVL?, ERVL-MaLR, Gypsy, Gypsy?, Ngaro, Pao, Undefined, Unknown (Dfam Superfamily). As currently implemented, Dfam hits trump Repbase because they are expected to be longer, and only the highest scoring hits are considered. This worked well for our test genomes and classifications matched domain annotations (e.g. gypsy elements always and only had gypsy domains).
+Both methods use homology-based evidence for classifying elements as one of the classifications obtained from the database records: BEL, Copia, DIRS, Endogenous Retrovirus, ERV1, ERV2, ERV3, ERV4, Gypsy, Lentivirus (Repbase) and Copia, DIRS, ERV?, ERV1, ERV1?, ERV-Foamy, ERVK, ERVK?, ERVL, ERVL?, ERVL-MaLR, Gypsy, Gypsy?, Ngaro, Pao, Undefined, Unknown (Dfam Superfamily). As currently implemented, if both classifications are not exactly the same, the Dfam classification is used for the annotated LTR-R label. This worked well for our test genomes and classifications matched domain annotations (e.g. gypsy elements always and only had gypsy domains).
 ###### Output
 * LTR-R annotations with false positives removed and Dfam and/or Repbase annotations (GFF3)
 * LTR-R annotations separated by classification (GFF3s)
