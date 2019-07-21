@@ -1410,7 +1410,7 @@ def shortClassif(ElNames=False):
 
 						elif 'repbase' in attr:
 							if el in ElementNames:
-								if ElementNames[el] != 'Unknown': # Use Dfam classification if it's there unless it's 'Unknown'
+								if ElementNames[el] != 'Unknown': # Use Dfam classification if Repbase classification is unknown, unless it's 'Unknown'
 									continue
 							if annot in RepbaseNames: # Repbase annotation available
 								ElementNames[el] = RepbaseNames[annot]
