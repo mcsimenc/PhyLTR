@@ -5928,6 +5928,7 @@ if __name__ == '__main__':
 	# 7. LTR divergence and model testing
 	if '--ltrdivergence' in args or DEFAULT:
 		LTRDIVERGENCE = True
+		MODELTEST = True
 	else:
 		LTRDIVERGENCE = False
 	if '--model' in args:
