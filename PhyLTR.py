@@ -3719,8 +3719,8 @@ def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'p
 							modeltestResults[classif][clust] = (paupLines, model)
 					for j in range(len(clusters)):
 						for el in clusters[j]:
-                            if el == '':
-                                continue
+							if el == '':
+								continue
 							paupBlock = ''
 							#print('OK, WHAT IS IT?', file=sys.stderr))
 							#print('classif {0}, cluster {1}, element {2}'.format(classif, j, el), file=sys.stderr)
@@ -3787,6 +3787,8 @@ END;
 				else:
 					for j in range(len(clusters)):
 						for el in clusters[j]:
+							if el == '':
+								continue
 							paupBlock = ''
 							print('OK, WHAT IS IT?')
 							print('classif {0}, cluster {1}, element {2}'.format(classif, j, el))
