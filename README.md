@@ -424,7 +424,7 @@ Colors
 	copia gag	mediumblue
 	DUF4219		lime
 	rt		red
-	rnaseh		darkviolet
+	rnaseh		darkorange
 	int		magenta
 	zf-h2c2		pink
 	other		silver w/black text
