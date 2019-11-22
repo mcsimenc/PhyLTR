@@ -852,50 +852,79 @@ def writeLTRretrotransposonInternalRegions(inputGFFpth,
     all elements are written. if truncateParent=True, Parent attribute 
     has 'LTR_retrotranspson' trimmed from it
     """
+
+
     with open(inputGFFpth, 'r') as inGFF:
         currentNewElement = GFF3_line()
         for line in inGFF:
             if '\tlong_terminal_repeat\t' in line:
                 gffLine = GFF3_line(line)
-                if elementSet == None or (elementSet != None and gffLine.attributes['Parent'] in elementSet):
+                if elementSet == None or (elementSet != None 
+                                                    and gffLine.attributes[
+                                                                      'Parent'] 
+                                                        in elementSet):
                         if not currentNewElement.start == None:
                             if truncateParent == True:
-                                gffLine.attributes['Parent'] = gffLine.attributes['Parent'].lstrip('LTR_retrotransposon')
+                                gffLine.attributes[
+                                              'Parent'] = gffLine.attributes[
+                                                        'Parent'].lstrip(
+                                                         'LTR_retrotransposon')
                             currentNewElement.end = gffLine.start
 
-                            if currentNewElement.end - currentNewElement.start + 1 <= 0:
+                            if (currentNewElement.end 
+                                - currentNewElement.start 
+                                + 1) <= 0:
                                 currentNewElement = GFF3_line()
                                 continue
 
-                            assert currentNewElement.attributes['Parent'] == gffLine.attributes['Parent'], 'GFF long_terminal_repeats may be out of order. Check near {0} or {1} in {2}'.format(currentNewElement.attributes['Parent'], gffLine.attributes['Parent'], inputGFFpth)
+                            assert currentNewElement.attributes['Parent'] == \
+                                    gffLine.attributes['Parent'], \
+                                    'GFF long_terminal_repeats may be out of \
+                                    order. Check near {0} or {1} in {2}'.format(
+                                        currentNewElement.attributes['Parent'],
+                                        gffLine.attributes['Parent'],
+                                        inputGFFpth)
 
                             currentNewElement.seqid = gffLine.seqid
                             currentNewElement.source = 'PhyLTR'
-                            currentNewElement.type = 'LTR_retrotransposon_InternalRegion'
+                            currentNewElement.type = \
+                                           'LTR_retrotransposon_InternalRegion'
                             currentNewElement.score = '.'
                             currentNewElement.strand = gffLine.strand
                             currentNewElement.phase = '.'
 
                             with open(outputGFFpth, 'a') as outGFFfl:
-                                outGFFfl.write('{0}\n'.format(str(currentNewElement)))
+                                outGFFfl.write('{0}\n'.format(
+                                                       str(currentNewElement)))
                                 currentNewElement = GFF3_line()
                         else:
                             currentNewElement.start = gffLine.end
                             if truncateParent == True:
-                                currentNewElement.attributes['Parent'] = gffLine.attributes['Parent'].lstrip('LTR_retrotransposon')
+                                currentNewElement.attributes[
+                                            'Parent'] = gffLine.attributes[
+                                                        'Parent'].lstrip(
+                                                         'LTR_retrotransposon')
                             else:
-                                currentNewElement.attributes['Parent'] = gffLine.attributes['Parent']
+                                currentNewElement.attributes[
+                                       'Parent'] = gffLine.attributes['Parent']
                             currentNewElement.attributes_order.append('Parent')
                             currentNewElement.refreshAttrStr()
                                 
-def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None, REPEATREGION=False, truncateParent=True):
-    ''' 
-    Requires Class GFF3_line
-    Writes GFF3 for LTR_retrotransposon type features from a LTRharvest-type file.
-    Only for elements in elementSet if provided, if elementSet == None, all elements are written.
-    If truncateParent=True, Parent attribute has 'LTR_retrotranspson' trimmed from it.
-    If REPEATREGION==True, extract entire repeat region
-    '''
+
+def writeLTRretrotransposonGFF(inputGFFpth, 
+                               outputGFFpth, 
+                               elementSet=None, 
+                               REPEATREGION=False, 
+                               truncateParent=True):
+    """Requires Class GFF3_line
+    Writes GFF3 for LTR_retrotransposon type features from a 
+    LTRharvest-type file. Only for elements in elementSet if provided,
+    if elementSet == None, all elements are written. If 
+    truncateParent=True, Parent attribute has 'LTR_retrotranspson' 
+    trimmed from it. If REPEATREGION==True, extract entire repeat region
+    """
+
+
     global paths
 
     if os.path.isfile(outputGFFpth):
@@ -904,9 +933,24 @@ def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None, REPEA
     scriptpath = os.path.realpath(__file__)
     lineno = getframeinfo(currentframe()).lineno + 1
     if not elementSet == None:
-        append2logfile(paths['output_top_dir'], mainlogfile, 'line {3} in {4}\nWriting LTR_retrotransposon features:\n{0}\nfrom:\n{1}\nto:\n{2}'.format(','.join(sorted(list(elementSet))),inputGFFpth, outputGFFpth, lineno, scriptpath))
+        append2logfile(paths['output_top_dir'], 
+                       mainlogfile, 
+                       ('line {3} in {4}\n \
+                        Writing LTR_retrotransposon features:\n \
+                        {0}\nfrom:\n{1}\nto:\n{2}').format(
+                                            ','.join(sorted(list(elementSet))),
+                                            inputGFFpth, 
+                                            outputGFFpth, 
+                                            lineno, 
+                                            scriptpath))
     else:
-        append2logfile(paths['output_top_dir'], mainlogfile, 'line {2} in {3}\nWriting LTR_retrotransposon features:\nall elements\nfrom:\n{0}\nto:\n{1}'.format(inputGFFpth, outputGFFpth, lineno, scriptpath))
+        append2logfile(paths['output_top_dir'], 
+                       mainlogfile, 
+                       'line {2} in {3}\nWriting LTR_retrotransposon features:\n \
+                       all elements\nfrom:\n{0}\nto:\n{1}'.format(inputGFFpth, 
+                                                                  outputGFFpth, 
+                                                                  lineno, 
+                                                                  scriptpath))
     if REPEATREGION:
         feat = '\trepeat_region\t'
     else:
@@ -916,20 +960,26 @@ def writeLTRretrotransposonGFF(inputGFFpth, outputGFFpth, elementSet=None, REPEA
         for line in inGFF:
             if feat in line:
                 gffLine = GFF3_line(line)
-                if elementSet == None or (elementSet != None and gffLine.attributes['ID'] in elementSet):
+                if elementSet == None or (elementSet != None 
+                                                    and gffLine.attributes[
+                                                          'ID'] in elementSet):
                     with open(outputGFFpth, 'a') as outFl:
                         if truncateParent:
-                            gffLine.attributes['ID'] = gffLine.attributes['ID'][19:]
+                            gffLine.attributes['ID'] = gffLine.attributes[
+                                                                     'ID'][19:]
                             gffLine.refreshAttrStr()
                         outFl.write(str(gffLine)+'\n')
 
+
 def writeLTRsGFF(inputGFFpth, outputGFFpth, elementSet=None):
-    ''' 
-    Requires Class GFF3_line
+    """Requires Class GFF3_line
     Writes one GFF3 for each pair of LTRs from a LTRharvest-type file.
-    Only for elements in elementSet if provided, if elementSet == None, all elements are written.
-    if truncateParent=True, Parent attribute has 'LTR_retrotranspson' trimmed from it
-    '''
+    Only for elements in elementSet if provided, if elementSet == None,
+    all elements are written. If truncateParent=True, Parent attribute 
+    has 'LTR_retrotranspson' trimmed from it
+    """
+
+
     global paths
 
     if os.path.isfile(outputGFFpth):
@@ -937,137 +987,302 @@ def writeLTRsGFF(inputGFFpth, outputGFFpth, elementSet=None):
 
     scriptpath = os.path.realpath(__file__)
     lineno = getframeinfo(currentframe()).lineno + 1
-    append2logfile(paths['output_top_dir'], mainlogfile, 'line {3} in {4}\nWriting long_terminal_repeat features:\n{0}\nfrom:\n{1}\nto:\n{2}'.format(','.join(sorted(list(elementSet))),inputGFFpth, outputGFFpth, lineno, scriptpath))
+    append2logfile(paths['output_top_dir'], 
+                   mainlogfile, 
+                   'line {3} in {4}\nWriting long_terminal_repeat features:\n \
+                    {0}\nfrom:\n{1}\nto:\n{2}'.format(
+                                            ','.join(sorted(list(elementSet))),
+                                            inputGFFpth,
+                                            outputGFFpth, 
+                                            lineno, 
+                                            scriptpath))
     with open(inputGFFpth, 'r') as inGFF:
         currentNewElement = GFF3_line()
         LTR_counts = {}
         for line in inGFF:
             if '\tlong_terminal_repeat\t' in line:
                 gffLine = GFF3_line(line)
-                if elementSet == None or (elementSet != None and gffLine.attributes['Parent'] in elementSet):
+                if elementSet == None or (elementSet != None
+                                              and gffLine.attributes['Parent'] 
+                                                in elementSet):
                     with open(outputGFFpth, 'a') as outFl:
                         if gffLine.attributes['Parent'] in LTR_counts:
                             if LTR_counts[gffLine.attributes['Parent']] > 2:
-                                sys.exit('writeLTRsGFF found element {0} to contain more that 2 LTRs in\n{1}'.format(gffLine.attributes['Parent'], inputGFFpth))
-                            gffLine.attributes['ID'] = gffLine.attributes['Parent'] + '_R'
+                                sys.exit('writeLTRsGFF found element {0} to \
+                                      contain more that 2 LTRs in\n{1}'.format(
+                                                  gffLine.attributes['Parent'], 
+                                                  inputGFFpth))
+                            gffLine.attributes['ID'] = gffLine.attributes[
+                                                               'Parent'] + '_R'
                             LTR_counts[gffLine.attributes['Parent']] += 1
                         else:
-                            gffLine.attributes['ID'] = gffLine.attributes['Parent'] + '_L'
+                            gffLine.attributes['ID'] = gffLine.attributes[
+                                                               'Parent'] + '_L'
                             LTR_counts[gffLine.attributes['Parent']] = 1
                         gffLine.attributes_order = ['ID', 'Parent']
                         gffLine.refreshAttrStr()
                         outFl.write(str(gffLine)+'\n')
                             
+
 def ltrharvest():
-    '''
-    Runs LTRharvest. LTRharvest options can be specified on the command line.
-    See phyltr -h for defaults and phyltr -help for explanation.
-    '''
+    """Runs LTRharvest. LTRharvest options can be specified on the 
+    command line. See phyltr -h for defaults and phyltr -help for explanation.
+    """
+
+
     global paths
     global filenames
-
 
     if LTRHARVEST:
-        if not 'inputFastaSuffixArray' in paths: # If this is in paths this step has been completed. Skip
-            MakeDir('suffixerator_dir', '{0}/suffixerator'.format(paths['output_top_dir']))
-            paths['inputFastaSuffixArray'] = '{0}/{1}.index'.format(paths['suffixerator_dir'], paths['inputFasta'])
-            gt_suffixerator_call_string = 'gt suffixerator -db {1} -indexname {0} -dna -tis -suf -lcp -des -ssp 1>suffixerator.stdout 2>suffixerator.stderr'.format(paths['inputFastaSuffixArray'], paths['inputFasta'])
-            gt_suffixerator_call = [ executables['genometools'], 'suffixerator',  '-db',  paths['inputFasta'], '-indexname', paths['inputFastaSuffixArray'], '-dna', '-tis', '-suf', '-lcp', '-des', '-ssp' ]
+        # If this is in paths this step has been completed. Skip
+        if not 'inputFastaSuffixArray' in paths:
+            MakeDir('suffixerator_dir', '{0}/suffixerator'.format(
+                                                      paths['output_top_dir']))
+            paths['inputFastaSuffixArray'] = '{0}/{1}.index'.format(
+                                                     paths['suffixerator_dir'], 
+                                                     paths['inputFasta'])
+            gt_suffixerator_call_string = 'gt suffixerator -db {1} \
+                                                           -indexname {0} \
+                                                           -dna -tis -suf -lcp \
+                                                           -des -ssp \
+                                                           1>suffixerator.stdout \
+                                            2>suffixerator.stderr'.format(
+                                               paths['inputFastaSuffixArray'], 
+                                               paths['inputFasta'])
+            gt_suffixerator_call = [ executables['genometools'], 
+                                     'suffixerator', 
+                                     '-db',
+                                     paths['inputFasta'], 
+                                     '-indexname', 
+                                     paths['inputFastaSuffixArray'], 
+                                    '-dna', 
+                                    '-tis', 
+                                    '-suf', 
+                                    '-lcp', 
+                                    '-des', 
+                                    '-ssp' ]
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 1
-            append2logfile(paths['output_top_dir'], mainlogfile, 'line {2} in {3}\nBegan creating suffix array for  {0} using the call:\n{1}'.format(paths['inputFasta'], gt_suffixerator_call_string, lineno, scriptpath))
+            append2logfile(paths['output_top_dir'], 
+                           mainlogfile, 
+                           'line {2} in {3}\nBegan creating suffix array for  \
+                           {0} using the call:\n{1}'.format(
+                                                      paths['inputFasta'], 
+                                                      gt_suffixerator_call_string, 
+                                                      lineno, scriptpath))
 
             # Run suffixerator
-            makecall(gt_suffixerator_call, '{0}/suffixerator.stdout'.format(paths['suffixerator_dir']), '{0}/suffixerator.stderr'.format(paths['suffixerator_dir']))
+            makecall(gt_suffixerator_call, 
+                     '{0}/suffixerator.stdout'.format(
+                                                    paths['suffixerator_dir']), 
+                     '{0}/suffixerator.stderr'.format(
+                                                    paths['suffixerator_dir']))
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 1
-            append2logfile(paths['output_top_dir'], mainlogfile, 'line {0} in {1}\nFinished gt suffixerator'.format(lineno, scriptpath) )
-            paths['suffixeratorInputFastaCopy'] = '{0}/{1}'.format(paths['suffixerator_dir'], filenames['inputFasta'])
+            append2logfile(paths['output_top_dir'], 
+                           mainlogfile, 'line {0} in {1}\n \
+                           Finished gt suffixerator'.format(lineno, 
+                                                            scriptpath) )
+            paths['suffixeratorInputFastaCopy'] = '{0}/{1}'.format(
+                                                     paths['suffixerator_dir'], 
+                                                     filenames['inputFasta'])
             copyfile(paths['inputFasta'], paths['suffixeratorInputFastaCopy'])
             # Add suffix array path to status file (for resuming later)
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('inputFastaSuffixArray\t{0}\n'.format(paths['inputFastaSuffixArray']))
-
-        if not 'LTRharvestGFF' in paths: # If this is in paths this step has been completed. Skip
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                statusFlAppend.write('inputFastaSuffixArray\t{0}\n'.format(
+                                               paths['inputFastaSuffixArray']))
+        # If this is in paths this step has been completed, skip
+        if not 'LTRharvestGFF' in paths: 
             # Make dir for LTRharvest
-            MakeDir('ltrharvest_dir', '{0}/LTRharvest'.format(paths['output_top_dir']))
-            paths['LTRharvestGFF'] = '{0}/{1}.ltrharvest.out.gff'.format(paths['ltrharvest_dir'], filenames['inputFasta'])
+            MakeDir('ltrharvest_dir', 
+                    '{0}/LTRharvest'.format(paths['output_top_dir']))
+            paths['LTRharvestGFF'] = '{0}/{1}.ltrharvest.out.gff'.format(
+                                                       paths['ltrharvest_dir'], 
+                                                       filenames['inputFasta'])
 
             # Run LTRharvest
-            gt_ltrharvest_call = [ executables['genometools'], 'ltrharvest', '-similar', str(ltrharvest_similar), '-index', paths['inputFastaSuffixArray'], '-gff3', paths['LTRharvestGFF'], '-seqids', 'yes', '-v', 'yes', '-mintsd', str(ltrharvest_mintsd), '-maxtsd', str(ltrharvest_maxtsd), '-xdrop', str(ltrharvest_xdrop), '-mat', str(ltrharvest_mat), '-mis', str(ltrharvest_mis), '-ins', str(ltrharvest_ins), '-del', str(ltrharvest_del), '-minlenltr', str(ltrharvest_minlenltr), '-maxlenltr', str(ltrharvest_maxlenltr), '-mindistltr', str(ltrharvest_mindistltr), '-maxdistltr', str(ltrharvest_maxdistltr), '-vic', str(ltrharvest_vic) ]
-            gt_ltrharvest_call_string = '{0} {1}'.format(' '.join(gt_ltrharvest_call),  '1>ltrharvest.stdout 2>ltrharvest.stderr'.format(paths['inputFastaSuffixArray'], paths['LTRharvestGFF'], executables['genometools']))
+            gt_ltrharvest_call = [executables['genometools'], 
+                                  'ltrharvest', 
+                                  '-similar', str(ltrharvest_similar), 
+                                  '-index', paths['inputFastaSuffixArray'], 
+                                  '-gff3', paths['LTRharvestGFF'], 
+                                  '-seqids', 'yes', 
+                                  '-v', 'yes', 
+                                  '-mintsd', str(ltrharvest_mintsd), 
+                                  '-maxtsd', str(ltrharvest_maxtsd), 
+                                  '-xdrop', str(ltrharvest_xdrop), 
+                                  '-mat', str(ltrharvest_mat), 
+                                  '-mis', str(ltrharvest_mis), 
+                                  '-ins', str(ltrharvest_ins), 
+                                  '-del', str(ltrharvest_del), 
+                                  '-minlenltr', str(ltrharvest_minlenltr), 
+                                  '-maxlenltr', str(ltrharvest_maxlenltr), 
+                                  '-mindistltr', str(ltrharvest_mindistltr), 
+                                  '-maxdistltr', str(ltrharvest_maxdistltr), 
+                                  '-vic', str(ltrharvest_vic)]
+            gt_ltrharvest_call_string = '{0} {1}'.format(' '.join(
+                                                           gt_ltrharvest_call),  
+                                            '1>ltrharvest.stdout \
+                                             2>ltrharvest.stderr'.format(
+                                            paths['inputFastaSuffixArray'], 
+                                            paths['LTRharvestGFF'],
+                                            executables['genometools']))
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 1
-            append2logfile(paths['output_top_dir'], mainlogfile, 'line {2} in {3}\nBegan running LTRharvest on {0} using the call:\n{1}'.format(paths['inputFasta'], gt_ltrharvest_call_string, lineno, scriptpath))
-            makecall(gt_ltrharvest_call,  '{0}/ltrharvest.stdout'.format(paths['ltrharvest_dir']), '{0}/ltrharvest.stderr'.format(paths['ltrharvest_dir']))
+            append2logfile(paths['output_top_dir'], 
+                           mainlogfile, 
+                           'line {2} in {3}\nBegan running LTRharvest on {0} \
+                           using the call:\n{1}'.format(paths['inputFasta'], 
+                                                       gt_ltrharvest_call_string, 
+                                                       lineno, scriptpath))
+            makecall(gt_ltrharvest_call, 
+                     '{0}/ltrharvest.stdout'.format(paths['ltrharvest_dir']), 
+                     '{0}/ltrharvest.stderr'.format(paths['ltrharvest_dir']))
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 1
-            append2logfile(paths['output_top_dir'], mainlogfile, 'line {0} in {1}\nFinished gt ltrharvest'.format(lineno, scriptpath))
+            append2logfile(paths['output_top_dir'], 
+                           mainlogfile, 
+                           'line {0} in {1}\nFinished gt ltrharvest'.format(
+                                                           lineno, scriptpath))
 
-            # Need to sort GFF3, sometimes it's not sorted like LTRdigest needs it sorted
-            gt_sort_call = [ executables['genometools'], 'gff3', '-sort', '-retainids', paths['LTRharvestGFF'] ]
-            gt_sort_call_string = 'gt gff3 -sort -retainids {0} > {0}.sorted 2>{0}.gff3sort.err'.format(paths['LTRharvestGFF'])
+            # Need to sort GFF3, sometimes it's not sorted like 
+            # LTRdigest needs it sorted
+            gt_sort_call = [executables['genometools'], 'gff3', '-sort', 
+                                          '-retainids', paths['LTRharvestGFF']]
+            gt_sort_call_string = 'gt gff3 -sort -retainids {0} > {0}.sorted \
+                                    2>{0}.gff3sort.err'.format(
+                                                        paths['LTRharvestGFF'])
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 1
-            append2logfile(paths['output_top_dir'], mainlogfile, 'line {1} in {2}\nBegan sorting LTRharvest:\n{0}'.format(gt_ltrharvest_call_string, lineno, scriptpath))
-            makecall(gt_sort_call,  stdout='{0}.sorted'.format(paths['LTRharvestGFF']), stderr='{0}.gff3sort.err'.format(paths['LTRharvestGFF']))
-            os.rename('{0}.sorted'.format(paths['LTRharvestGFF']), paths['LTRharvestGFF'])
+            append2logfile(paths['output_top_dir'], 
+                           mainlogfile, 
+                           'line {1} in {2}\nBegan sorting LTRharvest:\n \
+                            {0}'.format(gt_ltrharvest_call_string, 
+                                        lineno, 
+                                        scriptpath))
+            makecall(gt_sort_call,  stdout='{0}.sorted'.format(
+                                             paths['LTRharvestGFF']), 
+                                             stderr='{0}.gff3sort.err'.format(
+                                                       paths['LTRharvestGFF']))
+            os.rename('{0}.sorted'.format(paths['LTRharvestGFF']), 
+                                          paths['LTRharvestGFF'])
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'line {0} in {1}\nFinished sorting GFF3'.format(lineno, scriptpath))
+            append2logfile(paths['output_top_dir'], 
+                           mainlogfile, 'Below log entry is from line \
+                                        {0} in {1}'.format(lineno, 
+                                                           scriptpath))
+            append2logfile(paths['output_top_dir'], 
+                           mainlogfile, 
+                           'line {0} in {1}\nFinished sorting GFF3'.format(
+                                                                   lineno, 
+                                                                   scriptpath))
 
             # Add LTRharvest GFF3 path to status file (for resuming later)
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('LTRharvestGFF\t{0}\n'.format(paths['LTRharvestGFF']))
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                statusFlAppend.write('LTRharvestGFF\t{0}\n'.format(
+                                                       paths['LTRharvestGFF']))
             paths['CurrentGFF'] = paths['LTRharvestGFF']
 
+
 def ltrdigest():
-    '''
-    Runs LTRdigest. Domains to search for can be be given as a multi HMM with the command line flag: --ltrdigest_hmms
-    '''
+    """
+    Runs LTRdigest. Domains to search for can be be given as a multi 
+    HMM with the command line flag: --ltrdigest_hmms
+    """
+
+
     global paths
     global filenames
 
-    if LTRDIGEST: # Identify parts of element internal regions with evidence of homology to LTR RT protein coding domains
-        os.environ['PATH'] = '{0}:{1}'.format(executables['hmmer'], os.environ['PATH'])
-        if not 'LTRdigestGFF' in paths: # If this is in paths this step has been completed. Skip
+    # Identify parts of element internal regions with evidence of 
+    # homology to LTR RT protein coding domains
+    if LTRDIGEST:
+        os.environ['PATH'] = '{0}:{1}'.format(executables['hmmer'], 
+                                              os.environ['PATH'])
+        # If this is in paths this step has been completed. Skip it now.
+        if not 'LTRdigestGFF' in paths:
             if not 'suffixeratorInputFastaCopy' in paths:
                 paths['suffixeratorInputFastaCopy'] = paths['inputFasta']
 
-            MakeDir('ltrdigest_dir', '{0}/LTRdigest'.format(paths['output_top_dir']))
-            paths['LTRdigestOutputPrefix'] = '{0}/{1}.LTRdigest'.format(paths['ltrdigest_dir'], paths['inputFasta'])
-            paths['LTRdigestGFF'] = '{0}.gff'.format(paths['LTRdigestOutputPrefix'])
-            filenames['LTRdigestGFF'] = '{0}.LTRdigest.gff'.format(filenames['inputFasta'])
+            MakeDir('ltrdigest_dir', '{0}/LTRdigest'.format(
+                                                      paths['output_top_dir']))
+            paths['LTRdigestOutputPrefix'] = '{0}/{1}.LTRdigest'.format(
+                                                        paths['ltrdigest_dir'], 
+                                                        paths['inputFasta'])
+            paths['LTRdigestGFF'] = '{0}.gff'.format(
+                                                paths['LTRdigestOutputPrefix'])
+            filenames['LTRdigestGFF'] = '{0}.LTRdigest.gff'.format(
+                                                       filenames['inputFasta'])
 
-            gt_ltrdigest_call = [ executables['genometools'], '-j', str(procs), 'ltrdigest', '-matchdescstart', '-outfileprefix', paths['LTRdigestOutputPrefix'], '-hmms', '{0}'.format(paths['LTRdigestHMMs']), '-seqfile', paths['suffixeratorInputFastaCopy']]
+            gt_ltrdigest_call = [executables['genometools'], 
+                                '-j', str(procs), 
+                                'ltrdigest', 
+                                '-matchdescstart', 
+                                '-outfileprefix', paths['LTRdigestOutputPrefix'], 
+                                '-hmms', '{0}'.format(paths['LTRdigestHMMs']), 
+                                '-seqfile', paths['suffixeratorInputFastaCopy']]
 
-            gt_ltrdigest_call_string = '{0} -j {1} ltrdigest -matchdescstart -outfileprefix {2} -hmms {3} -seqfile {4} < {5} > {6}'.format(executables['genometools'], procs, paths['LTRdigestOutputPrefix'], paths['LTRdigestHMMs'], paths['suffixeratorInputFastaCopy'], paths['CurrentGFF'], '{0}.gff'.format(paths['LTRdigestOutputPrefix']))
+            gt_ltrdigest_call_string = '{0} -j {1} ltrdigest -matchdescstart \
+                                        -outfileprefix {2} -hmms {3} -seqfile \
+                                        {4} < {5} > {6}'.format(
+                                           executables['genometools'], 
+                                           procs, 
+                                           paths['LTRdigestOutputPrefix'], 
+                                           paths['LTRdigestHMMs'], 
+                                           paths['suffixeratorInputFastaCopy'], 
+                                           paths['CurrentGFF'], 
+                                           '{0}.gff'.format(
+                                               paths['LTRdigestOutputPrefix']))
 
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Began running LTRdigest on {0} using the call:\n{1}'.format(paths['inputFasta'], gt_ltrdigest_call_string))
-            makecall(gt_ltrdigest_call, '{0}.gff'.format(paths['LTRdigestOutputPrefix']), '{0}/ltrdigest.stderr'.format(paths['ltrdigest_dir']), paths['CurrentGFF'])
+            append2logfile(paths['output_top_dir'], 
+                           mainlogfile, 
+                           'Below log entry is from line {0} in {1}'.format(
+                                                                   lineno, 
+                                                                   scriptpath))
+            append2logfile(paths['output_top_dir'], 
+                           mainlogfile, 
+                           'Began running LTRdigest on {0} using the call:\n \
+                           {1}'.format(paths['inputFasta'], 
+                                       gt_ltrdigest_call_string))
+            makecall(gt_ltrdigest_call, '{0}.gff'.format(
+                                               paths['LTRdigestOutputPrefix']), 
+                                               '{0}/ltrdigest.stderr'.format(
+                                                       paths['ltrdigest_dir']), 
+                                                       paths['CurrentGFF'])
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Finished gt ltrdigest' )
+            append2logfile(paths['output_top_dir'], 
+                           mainlogfile, 
+                           'Below log entry is from line {0} in {1}'.format(
+                                                                   lineno, 
+                                                                   scriptpath))
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                                                      'Finished gt ltrdigest' )
 
             # Add LTRdigest GFF3 path to status file (for resuming later)
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('LTRdigestGFF\t{0}\n'.format(paths['LTRdigestGFF']))
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                statusFlAppend.write('LTRdigestGFF\t{0}\n'.format(
+                                                        paths['LTRdigestGFF']))
             paths['CurrentGFF'] = paths['LTRdigestGFF']
 
             # Remove suffixerator-generated files
             if not KEEP_UNUSED_FILES:
                 rmtree(paths['suffixerator_dir'])
                 
+
 def Overlaps(j, k):
-    '''
-    Inputs, j and k, are tuples/lists with a start and a end coordinate as in: (start, end)
-    If they overlap True is returned, if they do not overlap, False is returned.
-    '''
+    """Inputs, j and k, are tuples/lists with a start and a end 
+    coordinate as in: (start, end). If they overlap True is returned, 
+    if they do not overlap, False is returned.
+    """
+
+
     j = sorted([int(i) for i in j])
     k = sorted([int(i) for i in k])
     jk = sorted([j,k], key=lambda x:x[0])
@@ -1076,17 +1291,21 @@ def Overlaps(j, k):
     else:
         return False
 
+
 def bestORFs(fasta, outdir, gff, minLen=300):
-    '''
-    Finds all ORFs in fasta using EMBOSS getorf and writes the best ones to a GFF3 and protein FASTA.
-    The best ORFs are the set of non-overlapping ORFs containing the longest ORF out of sets on that
-    strand,
-    given by records in gff, or, if strand is unknown, the best set out of all.
+    """Finds all ORFs in fasta using EMBOSS getorf and writes the best 
+    ones to a GFF3 and protein FASTA. The best ORFs are the set of 
+    non-overlapping ORFs containing the longest ORF out of sets on that
+    strand,given by records in gff, or, if strand is unknown, the best 
+    set out of all.
 
     The coordinates output by getorf are 1-based
 
-    Only ORFs with nucleotide sequences longer than minLen are kept. (default 300 bp = 80 aa)
-    '''
+    Only ORFs with nucleotide sequences longer than minLen are kept. 
+    (default 300 bp = 80 aa)
+    """
+
+
     outgff = '{0}/{1}.orfs.gff'.format(outdir, fasta.split('/')[-1])
     if os.path.isfile(outgff):
         os.remove(outgff)
@@ -1103,7 +1322,8 @@ def bestORFs(fasta, outdir, gff, minLen=300):
     outseq = '{0}/{1}.orfs'.format(outdir, fasta.split('/')[-1])
     if os.path.isfile(outseq):
         os.remove(outseq)
-    getorf_call = [ executables['getorf'], '-sequence', fasta, '-outseq', outseq ]
+    getorf_call = [ executables['getorf'], '-sequence', fasta, 
+                                                            '-outseq', outseq ]
     makecall(getorf_call)
 
     # Read getorf output and put info into dicts
@@ -1126,19 +1346,27 @@ def bestORFs(fasta, outdir, gff, minLen=300):
         desc = orf.description
         seq = str(orf.seq)
         if 'REVERSE' in desc:
-            if strand_gff == '+': # don't consider reverse strand ORFs if the element is already assigned to the forward strand.
+            # don't consider reverse strand ORFs if the element is 
+            # already assigned to the forward strand.
+            if strand_gff == '+':
                 continue
             strand = '-'
-            start, end = sorted([int(desc.split()[1][1:]), int(desc.split()[3][:-1])]) # coords from getorf are 1-based, need to -1 from start
+            # coords from getorf are 1-based, need to -1 from start
+            start, end = sorted([int(desc.split()[1][1:]), 
+                                 int(desc.split()[3][:-1])]) 
             start -= 1
             length = end - start + 1
             if length < minLen:
                 continue
         else:
-            if strand_gff == '-': # don't consider forward strand ORFs if the element is already assigned to the reverse strand.
+            # don't consider forward strand ORFs if the element is 
+            # already assigned to the reverse strand.
+            if strand_gff == '-':
                 continue
             strand = '+'
-            start, end = sorted([int(desc.split()[1][1:]), int(desc.split()[3][:-1])]) # coords from getorf are 1-based, need to -1 from start
+            # coords from getorf are 1-based, need to -1 from start
+            start, end = sorted([int(desc.split()[1][1:]), 
+                                 int(desc.split()[3][:-1])])
             start -= 1
             length = end - start + 1
             if length < minLen:
@@ -1184,10 +1412,13 @@ def bestORFs(fasta, outdir, gff, minLen=300):
         else:
             orfs_seqs_dct[element] = {strand:{orfnum:seq}}
 
-    # For each element, find ORFs for its strand or both strands if strand = ?
+    # For each element, find ORFs for its strand or both strands if 
+    # strand = ?
     # Order ORFs names in list from element/strand longest to shortest.
-    # Order another ORF name list with coordinate position of starts, smallest to largest
-    # Make a dict with the sequences to use after selecting which orfs to keep
+    # Order another ORF name list with coordinate position of starts, 
+    # smallest to largest
+    # Make a dict with the sequences to use after selecting which orfs 
+    # to keep
     sorted_elements = sorted(list(orfs_ordered_lengths.keys()))
     for element in sorted_elements:
         strand = strands[element]
@@ -1200,52 +1431,111 @@ def bestORFs(fasta, outdir, gff, minLen=300):
             i = 0
             if s not in orfs_ordered_lengths[element]:
                 continue
-            orfs_ordered_lengths[element][s].sort(reverse=True, key=lambda x:x[1])
+            orfs_ordered_lengths[element][s].sort(reverse=True, 
+                                                  key=lambda x:x[1])
             orfs_ordered_coords[element][s].sort(key=lambda x:x[0])
-            while len(orfs_ordered_lengths[element][s]) > i+1: # orfs_ordered_length is a list that is modified. i gets incremented
-
+            # orfs_ordered_length is a list that is modified. i gets 
+            # incremented
+            while len(orfs_ordered_lengths[element][s]) > i+1:
                 orfnum = orfs_ordered_lengths[element][s][i][0]
-                coord = orfs_coords[element][s][orfnum] # coords of the current orf
-
-                j = orfs_ordered_coords[element][s].index(coord) # current largest orf
-                k = j+1 # check for overlaps with next in proximity
-                # Compare j with successively further away orfs until a non-overlap is reached
+                # coords of the current orf
+                coord = orfs_coords[element][s][orfnum] 
+                # current largest orf
+                j = orfs_ordered_coords[element][s].index(coord)
+                # check for overlaps with next in proximity
+                k = j+1
+                # Compare j with successively further away orfs until 
+                # a non-overlap is reached
                 if not k > len(orfs_ordered_coords[element][s])-1:
-                    J = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][j]]) # corresponding occurence in lengths dict for j, the current longest ORF
-                    K = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][k]]) # corresponding occurence in lengths dict for k, the current ORF closest to j if moving toward position 0
-                    while Overlaps( orfs_ordered_coords[element][s][j], orfs_ordered_coords[element][s][k] ):
+                    # corresponding occurence in lengths dict for j, 
+                    # the current longest ORF
+                    J = orfs_ordered_lengths[element][s].index(
+                                                    coords2lenkey[element][s][
+                                                      orfs_ordered_coords[
+                                                               element][s][j]]) 
+                    # corresponding occurence in lengths dict for k, the 
+                    # current ORF closest to j if moving toward position 0
+                    K = orfs_ordered_lengths[element][s].index(coords2lenkey[
+                                              element][s][orfs_ordered_coords[
+                                                               element][s][k]])
+                    while Overlaps( orfs_ordered_coords[element][s][j], 
+                                          orfs_ordered_coords[element][s][k] ):
                         # k overlaps j. remove k. because it is shorter than j.
                         coord_removed = orfs_ordered_coords[element][s][k]
-                        orfs_ordered_coords[element][s] = [ item for item in orfs_ordered_coords[element][s] if not item == coord_removed ]
+                        orfs_ordered_coords[element][s] = [ 
+                                   item for item in orfs_ordered_coords[
+                                    element][s] if not item == coord_removed ]
                         lenkey = coords2lenkey[element][s][coord_removed]
                         orfs_ordered_lengths[element][s].remove(lenkey)
-                        j = orfs_ordered_coords[element][s].index(coord) # current largest orf
-                        k = j+1 # check for overlaps with next in proximity
+                        # current largest orf
+                        j = orfs_ordered_coords[element][s].index(coord) 
+                        # check for overlaps with next in proximity
+                        k = j+1
                         if k > len(orfs_ordered_coords[element][s])-1:
                             break
-                        J = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][j]]) # corresponding occurence in lengths dict for j, the current longest ORF
-                        K = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][k]]) # corresponding occurence in lengths dict for k, the current ORF closest to j if moving toward position 0
-                # Compare j with successively further away orfs until a non-overlap is reached
-                j = orfs_ordered_coords[element][s].index(coord) # current largest orf
-                m = j-1 # check for overlaps with previous in proximity
+                        # corresponding occurence in lengths dict for j, 
+                        # the current longest ORF
+                        J = orfs_ordered_lengths[element][s].index(
+                                           coords2lenkey[element][s][
+                                           orfs_ordered_coords[element][s][j]]) 
+                        # corresponding occurence in lengths dict for k, 
+                        # the current ORF closest to j if moving toward 
+                        # position 0
+                        K = orfs_ordered_lengths[element][s].index(
+                                           coords2lenkey[element][s][
+                                           orfs_ordered_coords[element][s][k]]) 
+                # Compare j with successively further away orfs until a
+                # non-overlap is reached
+                # current largest orf
+                j = orfs_ordered_coords[element][s].index(coord) 
+                # check for overlaps with previous in proximity
+                m = j-1 
                 if m > 0:
-                    J = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][j]]) # corresponding occurence in lengths dict for j, the current longest ORF
-                    M = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][m]]) # corresponding occurence in lengths dict for m, the current ORF closest to j if moving toward position 0
-                    while Overlaps( orfs_ordered_coords[element][s][j], orfs_ordered_coords[element][s][m] ):
+                    # corresponding occurence in lengths dict for j, 
+                    # the current longest ORF
+                    J = orfs_ordered_lengths[element][s].index(
+                                        coords2lenkey[element][s][
+                                        orfs_ordered_coords[element][s][j]])
+                    # corresponding occurence in lengths dict for m, 
+                    # the current ORF closest to j if moving toward 
+                    # position 0
+                    M = orfs_ordered_lengths[element][s].index(
+                                            coords2lenkey[element][s][
+                                            orfs_ordered_coords[element][s][m]])
+                    while Overlaps( orfs_ordered_coords[element][s][j], 
+                                    orfs_ordered_coords[element][s][m] ):
                         coord_removed = orfs_ordered_coords[element][s][m]
-                        orfs_ordered_coords[element][s] = [ item for item in orfs_ordered_coords[element][s] if not item == coord_removed ]
+                        orfs_ordered_coords[element][s] = [
+                            item for item in orfs_ordered_coords[element][s] if
+                                                     not item == coord_removed]
                         lenkey = coords2lenkey[element][s][coord_removed]
                         orfs_ordered_lengths[element][s].remove(lenkey)
-                        j = orfs_ordered_coords[element][s].index(coord) # current largest orf
-                        m = j-1 # check for overlaps with previous in proximity
+                        # current largest orf
+                        j = orfs_ordered_coords[element][s].index(coord) 
+                        # check for overlaps with previous in proximity
+                        m = j-1 
                         if m < 0:
                             break
-                        J = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][j]]) # corresponding occurence in lengths dict for j, the current longest ORF
-                        M = orfs_ordered_lengths[element][s].index(coords2lenkey[element][s][orfs_ordered_coords[element][s][m]]) # corresponding occurence in lengths dict for m, the current ORF closest to j if moving toward position 0
+                        # corresponding occurence in lengths dict for j, 
+                        # the current longest ORF
+                        J = orfs_ordered_lengths[element][s].index(
+                                        coords2lenkey[element][s][
+                                        orfs_ordered_coords[element][s][j]])
+                        # corresponding occurence in lengths dict for m, 
+                        # the current ORF closest to j if moving toward 
+                        # position 0
+                        M = orfs_ordered_lengths[element][s].index(
+                                        coords2lenkey[element][s][
+                                        orfs_ordered_coords[element][s][m]])
                 i += 1
             
             orf_ids = [ p[0] for p in orfs_ordered_lengths[element][s] ]
-            best_orfs = [ [element, s, orf_id, orfs_seqs_dct[element][s][orf_id], orfs_coords[element][s][orf_id]]  for orf_id in orf_ids ]
+            best_orfs = [[element, 
+                          s, 
+                          orf_id, 
+                          orfs_seqs_dct[element][s][orf_id], 
+                          orfs_coords[element][s][orf_id]]  for 
+                                                             orf_id in orf_ids]
             best_orf_sets[s] = best_orfs
 
         if best_orf_sets['+'] == None and best_orf_sets['-'] == None:
@@ -1257,8 +1547,8 @@ def bestORFs(fasta, outdir, gff, minLen=300):
             best_orfs = best_orf_sets['+']
             strand_used = '+'
         else:
-            lengths_plus = sum([ i[4][1]-i[4][0]+1 for i in best_orf_sets['+']])
-            lengths_minus = sum([ i[4][1]-i[4][0]+1 for i in best_orf_sets['-']])
+            lengths_plus = sum([i[4][1]-i[4][0]+1 for i in best_orf_sets['+']])
+            lengths_minus = sum([i[4][1]-i[4][0]+1 for i in best_orf_sets['-']])
             if lengths_plus > lengths_minus:
                 best_orfs = best_orf_sets['+']
                 strand_used = '+'
@@ -1271,24 +1561,38 @@ def bestORFs(fasta, outdir, gff, minLen=300):
             element, s, orf_id, seq, coords = orf
             start, end = coords
             with open(outgff, 'a') as outFl:
-                outFl.write('{0}\tgetorf\tORF\t{1}\t{2}\t.\t{3}\t.\tParent={4};translated_seq={5}\n'.format(element, start, end, strand_used, element, seq))
+                outFl.write('{0}\tgetorf\tORF\t{1}\t{2}\t.\t{3}\t.\tParent={4}; \
+                                        translated_seq={5}\n'.format(element, 
+                                                                     start, 
+                                                                     end, 
+                                                                     strand_used, 
+                                                                     element, 
+                                                                     seq))
+
 
 def addORFs(maingff, orfgff, newgff):
-    '''
-    Inserts ORFs into existing LTRdigest/LTRharvest GFF. Expects Orfs were obtained from EMBOSS getorf on output from writeLTRretrotransposonInternalRegions()
-    Existing features take precedence, and if ORFs overlap existing features, those ORFs are not included in the final output, newgff.
-    '''
+    """
+    Inserts ORFs into existing LTRdigest/LTRharvest GFF. Expects Orfs 
+    were obtained from EMBOSS getorf on output from 
+    writeLTRretrotransposonInternalRegions()
+    Existing features take precedence, and if ORFs overlap existing 
+    features, those ORFs are not included in the final output, newgff.
+    """
+
+
     # Read orf gff store lines in lists in dict with parent as key
     orfs = {}
     if newgff.endswith('.gff'):
-        orffasta = '{0}/{1}'.format('/'.join(newgff.split('/')[:-1]), '{0}.ORFs.fasta'.format(newgff.split('/')[-1][:-4]))
+        orffasta = '{0}/{1}'.format('/'.join(newgff.split('/')[:-1]), 
+                           '{0}.ORFs.fasta'.format(newgff.split('/')[-1][:-4]))
     else:
-        orffasta = '{0}/{1}'.format('/'.join(newgff.split('/')[:-1]), '{0}.ORFs.fasta'.format(newgff.split('/')[-1]))
+        orffasta = '{0}/{1}'.format('/'.join(newgff.split('/')[:-1]), 
+                                '{0}.ORFs.fasta'.format(newgff.split('/')[-1]))
 
-    scriptpath = os.path.realpath(__file__)
-    lineno = getframeinfo(currentframe()).lineno + 2
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Incorporating ORFs in {0} with GFF {1} in to {2}'.format(orfgff, maingff, newgff))
+    append2logfile(paths['output_top_dir'], 
+                   mainlogfile, 
+                   'Incorporating ORFs in {0} with GFF {1} in to {2}'.format(
+                                                      orfgff, maingff, newgff))
     with open(orfgff, 'r') as inFl:
         for line in inFl:
             if not line.startswith('#'):
@@ -1324,7 +1628,8 @@ def addORFs(maingff, orfgff, newgff):
             elif gl.type == 'LTR_retrotransposon':
                 NewGFFLines.append(gl)
             elif gl.type == 'long_terminal_repeat':
-                if firstLTRend != None: # This is the second LTR
+                # This is the second LTR
+                if firstLTRend != None:
                     if el in orfs:
                         orf_ct = 0
                         
@@ -1333,24 +1638,30 @@ def addORFs(maingff, orfgff, newgff):
                         for orf in orfs[el]:
                             orf.start = firstLTRend + int(orf.start)
                             orf.end = firstLTRend + int(orf.end)
-                            orf.seqid = gl.seqid # Change the scaffold name
+                            # Change the scaffold name
+                            orf.seqid = gl.seqid
                             OVERLAP = False
                             for part in internalparts:
-                                if Overlaps([orf.start, orf.end], [part.start, part.end]):
+                                if Overlaps([orf.start, orf.end], 
+                                                       [part.start, part.end]):
                                     OVERLAP = True
                                     break
                             if not OVERLAP:
                                 orf_ct += 1
-                                orf.attributes['ID'] = '{0}.ORF.{1:02d}'.format(orf.attributes['Parent'], orf_ct)
+                                orf.attributes['ID'] = '{0}.ORF.{1:02d}'.format(
+                                              orf.attributes['Parent'], orf_ct)
                                 orf.attributes_order.insert(0, 'ID')
                                 orf.refreshAttrStr()
-                                outFl.write('>{0}\n{1}\n'.format(orf.attributes['ID'], orf.attributes['translated_seq']))
+                                outFl.write('>{0}\n{1}\n'.format(
+                                             orf.attributes['ID'], 
+                                             orf.attributes['translated_seq']))
                                 internalparts.append(orf)
                     internalparts.sort(key=lambda x:int(x.start))
                     NewGFFLines += internalparts
                     NewGFFLines.append(gl)
                     firstLTRend = None
-                elif firstLTRend == None: # This is the first LTR
+                # This is the first LTR
+                elif firstLTRend == None:
                     firstLTRend = int(gl.end)
                     NewGFFLines.append(gl)
             else:
@@ -1363,11 +1674,14 @@ def addORFs(maingff, orfgff, newgff):
                 outFl.write('###\n')
             outFl.write('{0}\n'.format(str(gl)))
 
+
 def AnnotateORFs(minLen):
-    '''
+    """
     Uses bestORFs() and addORFs() to add ORFs of length > minLen
     to the GFF3 if they don't overlap existing features.
-    '''
+    """
+
+
     global paths
 
     if not checkStatusFl('WithORFsGFF'):
@@ -1397,9 +1711,6 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
         if not 'LTRharvest_LTR_retrotransposons_fasta' in paths: # If this is in paths this step has been completed. Skip
             paths['LTRharvest_LTR_retrotransposons_GFF'] = '{0}/LTRharvest_LTR_retrotransposons.gff'.format(paths['GFFOutputDir'])
             paths['LTRharvest_LTR_retrotransposons_fasta'] = '{0}/LTRharvest_LTR_retrotransposons.fasta'.format(paths['FastaOutputDir'])
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting LTR_retrotransposons from LTRharvest GFF')
             # Write GFF for just LTR_retrotransposon features
             with open(paths['LTRharvestGFF'], 'r') as harvestFl:
@@ -1410,26 +1721,14 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
                             with open(paths['LTRharvest_LTR_retrotransposons_GFF'], 'a') as LTRharvest_LTR_retrotransposons_GFF:
                                 LTRharvest_LTR_retrotransposons_GFF.write('{0}\n'.format(str(gffLine)))
 
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting LTR_retrotransposons from LTRharvest GFF')
             getfasta_ltrretrotransposons_call = [  executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', '{0}'.format(paths['LTRharvest_LTR_retrotransposons_GFF']) ]
             getfasta_ltrretrotransposons_call_string = 'bedtools getfasta -fi {0} -s -bed {1} > {2} 2> {3}'.format(paths['inputFasta'], paths['LTRharvest_LTR_retrotransposons_GFF'], paths['LTRharvest_LTR_retrotransposons_fasta'], '{0}/bedtools_getfasta.stderr'.format(paths['FastaOutputDir']))
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting LTR_retrotransposon sequences from LTRharvest GFF:\n{0}'.format(getfasta_ltrretrotransposons_call_string))
             makecall(getfasta_ltrretrotransposons_call, paths['LTRharvest_LTR_retrotransposons_fasta'], '{0}/bedtools_getfasta.stderr'.format(paths['FastaOutputDir']))
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting LTR_retrotransposon sequences from LTRharvest GFF')
             append2logfile(paths['output_top_dir'], mainlogfile, 'Changing FASTA headers from bedtools getfasta-style to LTR_retrotransposon ID')
             ChangeFastaHeaders(paths['LTRharvest_LTR_retrotransposons_fasta'], paths['LTRharvest_LTR_retrotransposons_GFF'])
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Done changing FASTA headers from bedtools getfasta-style to LTR_retrotransposon ID')
             with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
                 statusFlAppend.write('LTRharvest_LTR_retrotransposons_fasta\t{0}\n'.format(paths['LTRharvest_LTR_retrotransposons_fasta']))
@@ -1444,9 +1743,6 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
             paths['nhmmer_DfamHits_table'] = '{0}/{1}.nhmmer_DfamHits.table'.format(paths['DfamClassificationDir'], filenames['inputFasta'])
             nhmmer_dfam_call = [ '{0}/nhmmer'.format(executables['hmmer']), '--tblout', paths['nhmmer_DfamHits_table'], '--incE', str(nhmmer_inclusion_evalue), '-E', str(nhmmer_reporting_evalue), '--cpu', str(procs), paths['DfamDB'], paths['LTRharvest_LTR_retrotransposons_fasta'] ]
             nhmmer_dfam_call_string = '{0} {1}'.format(' '.join(nhmmer_dfam_call), '1>/dev/null 2>{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Began nhmmer of Dfam:\n{0}'.format(nhmmer_dfam_call_string))
             makecall(nhmmer_dfam_call, '/dev/null', '{0}.nhmmer_DfamHits.stderr'.format('{0}/{1}'.format(paths['DfamClassificationDir'], filenames['inputFasta'])))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Finished nhmmer of Dfam')
@@ -1460,9 +1756,6 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
             paths['DfamResultsTableParsed'] = '{0}/{1}.LTR_retrotransposon_DfamBestHits.tab'.format(paths['DfamClassificationDir'], filenames['inputFasta'])
             dfam_results_parse_call_string = '{0}/nhmmer_table2columns.py < {1} > {2} 2>{3}/nhmmer_table2columns.py.stderr'.format(paths['scriptsDir'], paths['DfamTable'], paths['DfamResultsTableParsed'], paths['DfamClassificationDir'])
             dfam_results_parse_call = ['{0}/nhmmer_table2columns.py'.format(paths['scriptsDir']) ]
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting best hits from  nhmmer on Dfam results:\n{0}'.format(dfam_results_parse_call_string))
             makecall(dfam_results_parse_call, paths['DfamResultsTableParsed'], '{0}/nhmmer_table2columns.py.stderr'.format(paths['DfamClassificationDir']), stdin=paths['DfamTable'])
             append2logfile(paths['output_top_dir'], mainlogfile, 'Finished extracting best hits from  nhmmer on Dfam results')
@@ -1496,9 +1789,6 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
             paths['tblastx_RepbaseHits_table'] = '{0}/{1}.tblastx_Repbase.tab'.format(paths['RepbaseClassificationDir'], filenames['inputFasta'])
             tblastx_repbase_call = [ '{0}/tblastx'.format(executables['blast']), '-db', 'Repbase_ERV_LTR.fasta', '-query', paths['LTRharvest_LTR_retrotransposons_fasta'], '-evalue', str(repbase_tblastx_evalue), '-outfmt', '7 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore sstrand', '-num_threads', str(procs), '-max_hsps', '25' ]
             tblastx_repbase_call_string = '{0} -db {1} -query {2} -evalue {5} -outfmt "7 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore sstrand" -num_threads {3} -max_hsps 25 1>{4} 2>{4}.stderr'.format('{0}/tblastx'.format(executables['blast']), 'Repbase_ERV_LTR.fasta', paths['LTRharvest_LTR_retrotransposons_fasta'], procs, paths['tblastx_RepbaseHits_table'], repbase_tblastx_evalue)
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Began tblastx of Repbase:\n{0}'.format(tblastx_repbase_call_string))
             makecall(tblastx_repbase_call, paths['tblastx_RepbaseHits_table'], '{0}.stderr'.format(paths['tblastx_RepbaseHits_table']))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Finished tblastx of Repbase')
@@ -1514,9 +1804,6 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
             paths['RepbaseResultsTableParsed'] = '{0}/{1}.LTR_retrotransposon_RepbaseBestHits.tab'.format(paths['RepbaseClassificationDir'], filenames['inputFasta'])
             repbase_results_parse_call_string = '{0}/best_blast_hit.py < {1} > {2} 2>{3}/best_blast_hit.py.stderr'.format(paths['scriptsDir'], paths['RepbaseTable'], paths['RepbaseResultsTableParsed'], paths['RepbaseClassificationDir'])
             repbase_results_parse_call = ['{0}/best_blast_hit.py'.format(paths['scriptsDir']) ]
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting best hits from  tblastx on Repbase results:\n{0}'.format(repbase_results_parse_call_string))
             makecall(repbase_results_parse_call, paths['RepbaseResultsTableParsed'], '{0}/best_blast_hit.py.stderr'.format(paths['RepbaseClassificationDir']), stdin=paths['RepbaseTable'])
             with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
@@ -1533,9 +1820,6 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 
             add_repbase_hits_to_ltrdigest_gff_call_string = '{0}/gffAddAttr.py -gff {1} -attr repbaseClassification -map {2} -mapKey ID -restrictType LTR_retrotransposon -replaceIfNone > {3} 2>{4}/gffAddAttr.py.RepbaseHits.stderr'.format(paths['scriptsDir'], gff_for_repbase_classification, paths['RepbaseResultsTableParsed'], paths['GFFwithRepbaseClassification'], paths['GFFOutputDir'])
             add_repbase_hits_to_ltrdigest_gff_call = [ '{0}/gffAddAttr.py'.format(paths['scriptsDir']), '-gff', gff_for_repbase_classification, '-attr', 'repbaseClassification', '-map', paths['RepbaseResultsTableParsed'], '-mapKey', 'ID', '-restrictType', 'LTR_retrotransposon', '-replaceIfNone' ]
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Began adding best hits from tblastx on Repbase results to LTRdigest GFF:\n{0}'.format(add_repbase_hits_to_ltrdigest_gff_call_string))
             makecall(add_repbase_hits_to_ltrdigest_gff_call, paths['GFFwithRepbaseClassification'], '{0}/gffAddAttr.py.RepbaseHits.stderr'.format(paths['GFFOutputDir']))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Finished adding best hits from tblastx on Repbase results to LTRdigest GFF')
@@ -1555,9 +1839,6 @@ def classify_by_homology(KEEPCONFLICTS=False, KEEPNOCLASSIFICATION=False, repbas
 
             paths['LTRdigestClassifiedNoFP'] = '{0}/{1}.LTRdigestClassifiedNoFP.gff'.format(paths['GFFOutputDir'], filenames['inputFasta'])
             TruePositiveLTRclassificationsDct = { 'dfamClassification':paths['DfamTruePosLTRlist'], 'repbaseClassification':paths['RepbaseTruePosLTRlist'] }
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
             append2logfile(paths['output_top_dir'], mainlogfile, 'Began removing false positives from LTRdigest GFF with classifications.')
             # only elements are preseved if they have a LTR-R classification, or an unknown classification.
             RemoveNonLTRretrotransposons(gff_classified, TruePositiveLTRclassificationsDct, outputFlName=paths['LTRdigestClassifiedNoFP'], REPORTCONFLICTS=True, KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, logFilePth='{0}/RemoveNonLTRretrotransposons.log'.format(paths['GFFOutputDir']))
