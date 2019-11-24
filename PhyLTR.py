@@ -2116,10 +2116,11 @@ def classify_by_homology(KEEPCONFLICTS=False,
                 strands = {}
                 with open(paths['RepbaseResultsTableParsed'], 'r') as inFl:
                     for line in inFl:
-                        el, hit, strand = line.strip().split()
+                        #el, hit, strand = line.strip().split()
+                        el, hit = line.strip().split()
                         el = el.lstrip('LTR_retrotransposon')
-                        strands[el] = strand
-                addStrandToGFF(strands, paths['CurrentGFF'])
+                        #strands[el] = strand
+                #addStrandToGFF(strands, paths['CurrentGFF'])
 
             append2logfile(paths['output_top_dir'], mainlogfile, 
              'Update strandedness in GFF3 based on Dfam and/or Repbase results')
