@@ -561,10 +561,10 @@ def addStrandToGFF(strandDct, GFFpth):
                                           gffLine.attributes['ID']
                                           ).group(0)
                     else:
-                        print(('WARNING:\taddStrandToGFF() found the following \
-                                GFF file to contain the following line where \
-                                strand is unknown and the attributes lack ID or \
-                                Parent keys\n{0}\n{1}').format(GFFpth, 
+                        print(('WARNING:\taddStrandToGFF() found the following '
+                                'GFF file to contain the following line where '
+                                'strand is unknown and the attributes lack ID or '
+                                'Parent keys\n{0}\n{1}').format(GFFpth, 
                                                                line.strip()), 
                                 file=sys.stderr)
 
@@ -632,9 +632,9 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl,
                                                                 [line.strip()])
 
     logfile = open(logFilePth, 'a')
-    logfile.write('#Conflicting annotations (e.g. Dfam->Copia Repbase->Gypsy) \
-                   are reported. If an annotation is Unknown it does not count \
-                   as a conflict\n')
+    logfile.write(('#Conflicting annotations (e.g. Dfam->Copia Repbase->Gypsy) '
+                   'are reported. If an annotation is Unknown it does not count '
+                   'as a conflict\n'))
     with open(LTRdigestGFFfl) as gffFl:
         for line in gffFl:
             if line.startswith('#'):
@@ -737,8 +737,8 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl,
                     parent = 'repeat_region{0}'.format(parent.lstrip(
                                                         'LTR_retrotransposon'))
                 if not parent in LTR_retrotransposon_GFF_lines:
-                    sys.exit('Line\n{0}\nParent attribute not in LTR \
-                              retrotransposon dictionary'.format(line.strip()))
+                    sys.exit(('Line\n{0}\nParent attribute not in LTR '
+                              'retrotransposon dictionary').format(line.strip()))
 
                 LTR_retrotransposon_GFF_lines[parent].append(line.strip())
 
@@ -785,10 +785,9 @@ def writeLTRretrotransposonInternalRegions(inputGFFpth,
                                 currentNewElement = GFF3_line()
                                 continue
 
-                            assert currentNewElement.attributes['Parent'] == \
-                                    gffLine.attributes['Parent'], \
-                                    'GFF long_terminal_repeats may be out of \
-                                    order. Check near {0} or {1} in {2}'.format(
+                            assert currentNewElement.attributes['Parent'] == gffLine.attributes['Parent'], (
+                                    'GFF long_terminal_repeats may be out of '
+                                    'order. Check near {0} or {1} in {2}').format(
                                         currentNewElement.attributes['Parent'],
                                         gffLine.attributes['Parent'],
                                         inputGFFpth)
@@ -841,9 +840,9 @@ def writeLTRretrotransposonGFF(inputGFFpth,
     if not elementSet == None:
         append2logfile(paths['output_top_dir'], 
                        mainlogfile, 
-                       ('line {3} in {4}\n \
-                        Writing LTR_retrotransposon features:\n \
-                        {0}\nfrom:\n{1}\nto:\n{2}').format(
+                       (('line {3} in {4}\n '
+                        'Writing LTR_retrotransposon features:\n '
+                        '{0}\nfrom:\n{1}\nto:\n{2}')).format(
                                             ','.join(sorted(list(elementSet))),
                                             inputGFFpth, 
                                             outputGFFpth, 
@@ -852,8 +851,8 @@ def writeLTRretrotransposonGFF(inputGFFpth,
     else:
         append2logfile(paths['output_top_dir'], 
                        mainlogfile, 
-                       'line {2} in {3}\nWriting LTR_retrotransposon features:\n \
-                       all elements\nfrom:\n{0}\nto:\n{1}'.format(inputGFFpth, 
+                       ('line {2} in {3}\nWriting LTR_retrotransposon features:\n '
+                       'all elements\nfrom:\n{0}\nto:\n{1}').format(inputGFFpth, 
                                                                   outputGFFpth, 
                                                                   lineno, 
                                                                   scriptpath))
@@ -893,8 +892,8 @@ def writeLTRsGFF(inputGFFpth, outputGFFpth, elementSet=None):
     lineno = getframeinfo(currentframe()).lineno + 1
     append2logfile(paths['output_top_dir'], 
                    mainlogfile, 
-                   'line {3} in {4}\nWriting long_terminal_repeat features:\n \
-                    {0}\nfrom:\n{1}\nto:\n{2}'.format(
+                   ('line {3} in {4}\nWriting long_terminal_repeat features:\n '
+                    '{0}\nfrom:\n{1}\nto:\n{2}').format(
                                             ','.join(sorted(list(elementSet))),
                                             inputGFFpth,
                                             outputGFFpth, 
@@ -912,8 +911,8 @@ def writeLTRsGFF(inputGFFpth, outputGFFpth, elementSet=None):
                     with open(outputGFFpth, 'a') as outFl:
                         if gffLine.attributes['Parent'] in LTR_counts:
                             if LTR_counts[gffLine.attributes['Parent']] > 2:
-                                sys.exit('writeLTRsGFF found element {0} to \
-                                      contain more that 2 LTRs in\n{1}'.format(
+                                sys.exit(('writeLTRsGFF found element {0} to '
+                                      'contain more that 2 LTRs in\n{1}').format(
                                                   gffLine.attributes['Parent'], 
                                                   inputGFFpth))
                             gffLine.attributes['ID'] = gffLine.attributes[
@@ -943,12 +942,12 @@ def ltrharvest():
             paths['inputFastaSuffixArray'] = '{0}/{1}.index'.format(
                                                      paths['suffixerator_dir'], 
                                                      paths['inputFasta'])
-            gt_suffixerator_call_string = 'gt suffixerator -db {1} \
-                                                           -indexname {0} \
-                                                           -dna -tis -suf -lcp \
-                                                           -des -ssp \
-                                                           1>suffixerator.stdout \
-                                            2>suffixerator.stderr'.format(
+            gt_suffixerator_call_string = ('gt suffixerator -db {1} '
+                                                           '-indexname {0} '
+                                                           '-dna -tis -suf -lcp '
+                                                           '-des -ssp '
+                                                           '1>suffixerator.stdout '
+                                            '2>suffixerator.stderr').format(
                                                paths['inputFastaSuffixArray'], 
                                                paths['inputFasta'])
             gt_suffixerator_call = [ executables['genometools'], 
@@ -967,8 +966,8 @@ def ltrharvest():
             lineno = getframeinfo(currentframe()).lineno + 1
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'line {2} in {3}\nBegan creating suffix array for  \
-                           {0} using the call:\n{1}'.format(
+                           ('line {2} in {3}\nBegan creating suffix array for  '
+                           '{0} using the call:\n{1}').format(
                                                       paths['inputFasta'], 
                                                       gt_suffixerator_call_string, 
                                                       lineno, scriptpath))
@@ -982,8 +981,8 @@ def ltrharvest():
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 1
             append2logfile(paths['output_top_dir'], 
-                           mainlogfile, 'line {0} in {1}\n \
-                           Finished gt suffixerator'.format(lineno, 
+                           mainlogfile, ('line {0} in {1}\n '
+                           'Finished gt suffixerator').format(lineno, 
                                                             scriptpath) )
             paths['suffixeratorInputFastaCopy'] = '{0}/{1}'.format(
                                                      paths['suffixerator_dir'], 
@@ -1025,8 +1024,8 @@ def ltrharvest():
                                   '-vic', str(ltrharvest_vic)]
             gt_ltrharvest_call_string = '{0} {1}'.format(' '.join(
                                                            gt_ltrharvest_call),  
-                                            '1>ltrharvest.stdout \
-                                             2>ltrharvest.stderr'.format(
+                                            ('1>ltrharvest.stdout '
+                                             '2>ltrharvest.stderr').format(
                                             paths['inputFastaSuffixArray'], 
                                             paths['LTRharvestGFF'],
                                             executables['genometools']))
@@ -1034,8 +1033,8 @@ def ltrharvest():
             lineno = getframeinfo(currentframe()).lineno + 1
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'line {2} in {3}\nBegan running LTRharvest on {0} \
-                           using the call:\n{1}'.format(paths['inputFasta'], 
+                           ('line {2} in {3}\nBegan running LTRharvest on {0} '
+                           'using the call:\n{1}').format(paths['inputFasta'], 
                                                        gt_ltrharvest_call_string, 
                                                        lineno, scriptpath))
             makecall(gt_ltrharvest_call, 
@@ -1052,15 +1051,15 @@ def ltrharvest():
             # LTRdigest needs it sorted
             gt_sort_call = [executables['genometools'], 'gff3', '-sort', 
                                           '-retainids', paths['LTRharvestGFF']]
-            gt_sort_call_string = 'gt gff3 -sort -retainids {0} > {0}.sorted \
-                                    2>{0}.gff3sort.err'.format(
+            gt_sort_call_string = ('gt gff3 -sort -retainids {0} > {0}.sorted '
+                                    '2>{0}.gff3sort.err').format(
                                                         paths['LTRharvestGFF'])
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 1
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'line {1} in {2}\nBegan sorting LTRharvest:\n \
-                            {0}'.format(gt_ltrharvest_call_string, 
+                           ('line {1} in {2}\nBegan sorting LTRharvest:\n '
+                            '{0}').format(gt_ltrharvest_call_string, 
                                         lineno, 
                                         scriptpath))
             makecall(gt_sort_call,  stdout='{0}.sorted'.format(
@@ -1072,8 +1071,8 @@ def ltrharvest():
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 2
             append2logfile(paths['output_top_dir'], 
-                           mainlogfile, 'Below log entry is from line \
-                                        {0} in {1}'.format(lineno, 
+                           mainlogfile, ('Below log entry is from line '
+                                        '{0} in {1}').format(lineno, 
                                                            scriptpath))
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
@@ -1125,9 +1124,9 @@ def ltrdigest():
                                 '-hmms', '{0}'.format(paths['LTRdigestHMMs']), 
                                 '-seqfile', paths['suffixeratorInputFastaCopy']]
 
-            gt_ltrdigest_call_string = '{0} -j {1} ltrdigest -matchdescstart \
-                                        -outfileprefix {2} -hmms {3} -seqfile \
-                                        {4} < {5} > {6}'.format(
+            gt_ltrdigest_call_string = ('{0} -j {1} ltrdigest -matchdescstart '
+                                        '-outfileprefix {2} -hmms {3} -seqfile '
+                                        '{4} < {5} > {6}').format(
                                            executables['genometools'], 
                                            procs, 
                                            paths['LTRdigestOutputPrefix'], 
@@ -1146,8 +1145,8 @@ def ltrdigest():
                                                                    scriptpath))
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'Began running LTRdigest on {0} using the call:\n \
-                           {1}'.format(paths['inputFasta'], 
+                           ('Began running LTRdigest on {0} using the call:\n '
+                           '{1}').format(paths['inputFasta'], 
                                        gt_ltrdigest_call_string))
             makecall(gt_ltrdigest_call, '{0}.gff'.format(
                                                paths['LTRdigestOutputPrefix']), 
@@ -1457,8 +1456,8 @@ def bestORFs(fasta, outdir, gff, minLen=300):
             element, s, orf_id, seq, coords = orf
             start, end = coords
             with open(outgff, 'a') as outFl:
-                outFl.write('{0}\tgetorf\tORF\t{1}\t{2}\t.\t{3}\t.\tParent={4}; \
-                                        translated_seq={5}\n'.format(element, 
+                outFl.write(('{0}\tgetorf\tORF\t{1}\t{2}\t.\t{3}\t.\tParent={4}; '
+                                        'translated_seq={5}\n').format(element, 
                                                                      start, 
                                                                      end, 
                                                                      strand_used, 
@@ -1631,8 +1630,8 @@ def classify_by_homology(KEEPCONFLICTS=False,
     if CLASSIFYDFAM or CLASSIFYREPBASE:
         # If this is in paths this step has been completed. Skip
         if not 'LTRharvest_LTR_retrotransposons_fasta' in paths: 
-            paths['LTRharvest_LTR_retrotransposons_GFF'] = \
-                        '{0}/LTRharvest_LTR_retrotransposons.gff'.format(
+            paths['LTRharvest_LTR_retrotransposons_GFF'] = (
+                        '{0}/LTRharvest_LTR_retrotransposons.gff').format(
                                                          paths['GFFOutputDir'])
             paths['LTRharvest_LTR_retrotransposons_fasta'] = \
                         '{0}/LTRharvest_LTR_retrotransposons.fasta'.format(
@@ -1670,8 +1669,8 @@ def classify_by_homology(KEEPCONFLICTS=False,
                                                       paths['FastaOutputDir']))
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'Began extracting LTR_retrotransposon sequences \
-                              from LTRharvest GFF:\n{0}'.format(
+                           ('Began extracting LTR_retrotransposon sequences '
+                              'from LTRharvest GFF:\n{0}').format(
                                      getfasta_ltrretrotransposons_call_string))
             makecall(getfasta_ltrretrotransposons_call, 
                      paths['LTRharvest_LTR_retrotransposons_fasta'], 
@@ -1679,18 +1678,18 @@ def classify_by_homology(KEEPCONFLICTS=False,
                                                       paths['FastaOutputDir']))
             append2logfile(paths['output_top_dir'], 
                           mainlogfile, 
-                         'Finished extracting LTR_retrotransposon sequences \
-                            from LTRharvest GFF')
+                         ('Finished extracting LTR_retrotransposon sequences '
+                            'from LTRharvest GFF'))
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'Changing FASTA headers from bedtools getfasta-style \
-                              to LTR_retrotransposon ID')
+                           ('Changing FASTA headers from bedtools getfasta-style '
+                              'to LTR_retrotransposon ID'))
             ChangeFastaHeaders(paths['LTRharvest_LTR_retrotransposons_fasta'], 
                                paths['LTRharvest_LTR_retrotransposons_GFF'])
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'Done changing FASTA headers from bedtools \
-                                getfasta-style to LTR_retrotransposon ID')
+                           ('Done changing FASTA headers from bedtools '
+                                'getfasta-style to LTR_retrotransposon ID'))
             with open('{0}/status'.format(
                               paths['output_top_dir']), 'a') as statusFlAppend:
                 statusFlAppend.write(
@@ -1707,9 +1706,10 @@ def classify_by_homology(KEEPCONFLICTS=False,
                               paths['output_top_dir']), 'a') as statusFlAppend:
                 statusFlAppend.write('DfamClassificationDir\t{0}\n'.format(
                                                paths['DfamClassificationDir']))
-            # run hmmsearch of LTR_retrotransposon features from LTRdigest or LTRharvest on Dfam
-            paths['nhmmer_DfamHits_table'] = \
-                                    '{0}/{1}.nhmmer_DfamHits.table'.format(
+            # run hmmsearch of LTR_retrotransposon features from 
+            # LTRdigest or LTRharvest on Dfam
+            paths['nhmmer_DfamHits_table'] = (
+                                    '{0}/{1}.nhmmer_DfamHits.table').format(
                                                 paths['DfamClassificationDir'], 
                                                 filenames['inputFasta'])
             nhmmer_dfam_call = ['{0}/nhmmer'.format(executables['hmmer']), 
@@ -1745,12 +1745,12 @@ def classify_by_homology(KEEPCONFLICTS=False,
         # If this is in paths this step has been completed. Skip
         if not 'GFFwithDfamClassification' in paths:
             # Extract best hits for each query seq
-            paths['DfamResultsTableParsed'] = \
-                    '{0}/{1}.LTR_retrotransposon_DfamBestHits.tab'.format(
+            paths['DfamResultsTableParsed'] = (
+                    '{0}/{1}.LTR_retrotransposon_DfamBestHits.tab').format(
                                                 paths['DfamClassificationDir'], 
                                                 filenames['inputFasta'])
-            dfam_results_parse_call_string = '{0}/nhmmer_table2columns.py < \
-                       {1} > {2} 2>{3}/nhmmer_table2columns.py.stderr'.format(
+            dfam_results_parse_call_string = ('{0}/nhmmer_table2columns.py < '
+                       '{1} > {2} 2>{3}/nhmmer_table2columns.py.stderr').format(
                                                paths['scriptsDir'], 
                                                paths['DfamTable'], 
                                                paths['DfamResultsTableParsed'], 
@@ -1759,8 +1759,8 @@ def classify_by_homology(KEEPCONFLICTS=False,
                                                          paths['scriptsDir'])]
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'Began extracting best hits from  nhmmer on Dfam \
-                         results:\n{0}'.format(dfam_results_parse_call_string))
+                           ('Began extracting best hits from  nhmmer on Dfam '
+                         'results:\n{0}').format(dfam_results_parse_call_string))
             makecall(dfam_results_parse_call, 
                      paths['DfamResultsTableParsed'], 
                      '{0}/nhmmer_table2columns.py.stderr'.format(
@@ -1768,21 +1768,21 @@ def classify_by_homology(KEEPCONFLICTS=False,
                                                stdin=paths['DfamTable'])
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'Finished extracting best hits from  nhmmer on Dfam \
-                                                                      results')
+                           ('Finished extracting best hits from  nhmmer on Dfam '
+                                                                      'results'))
             with open('{0}/status'.format(
                               paths['output_top_dir']), 'a') as statusFlAppend:
                 statusFlAppend.write('DfamResultsTableParsed\t{0}\n'.format(
                                               paths['DfamResultsTableParsed']))
 
             # Add best hits to GFF
-            paths['GFFwithDfamClassification'] = \
-                 '{0}/{1}.LTRdigest.withDfam.gff'.format(paths['GFFOutputDir'], 
+            paths['GFFwithDfamClassification'] = (
+                 '{0}/{1}.LTRdigest.withDfam.gff').format(paths['GFFOutputDir'], 
                                                          filenames['inputFasta'])
-            add_dfam_hits_to_ltrdigest_gff_call_string = '{0}/gffAddAttr.py \
-                        -gff {1} -attr dfamClassification -map {2} -mapKey ID \
-                        -restrictType LTR_retrotransposon -replaceIfNone > {3} \
-                         2>{4}/gffAddAttr.py.DfamHits.stderr'.format(
+            add_dfam_hits_to_ltrdigest_gff_call_string = ('{0}/gffAddAttr.py '
+                        '-gff {1} -attr dfamClassification -map {2} -mapKey ID '
+                        '-restrictType LTR_retrotransposon -replaceIfNone > {3} '
+                         '2>{4}/gffAddAttr.py.DfamHits.stderr').format(
                                              paths['scriptsDir'], 
                                              paths['CurrentGFF'], 
                                              paths['DfamResultsTableParsed'], 
@@ -1798,8 +1798,8 @@ def classify_by_homology(KEEPCONFLICTS=False,
                                        '-replaceIfNone']
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'Began adding best hits from nhmmer on Dfam results \
-                           to LTRdigest GFF:\n{0}'.format(
+                           ('Began adding best hits from nhmmer on Dfam results '
+                           'to LTRdigest GFF:\n{0}').format(
                                    add_dfam_hits_to_ltrdigest_gff_call_string))
             makecall(add_dfam_hits_to_ltrdigest_gff_call, 
                      paths['GFFwithDfamClassification'], 
@@ -1807,8 +1807,8 @@ def classify_by_homology(KEEPCONFLICTS=False,
                                                         paths['GFFOutputDir']))
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'Finished adding best hits from nhmmer on Dfam \
-                                                     results to LTRdigest GFF')
+                           ('Finished adding best hits from nhmmer on Dfam '
+                                                     'results to LTRdigest GFF'))
 
             # Add LTRdigest GFF3 with Dfam classifications path to 
             # status file (for resuming later)
@@ -1833,8 +1833,8 @@ def classify_by_homology(KEEPCONFLICTS=False,
 
             # run tblastx of LTR_retrotransposon features from LTRdigest 
             # or LTRharvest on Repbase
-            paths['tblastx_RepbaseHits_table'] = \
-                                '{0}/{1}.tblastx_Repbase.tab'.format(
+            paths['tblastx_RepbaseHits_table'] = (
+                                '{0}/{1}.tblastx_Repbase.tab').format(
                                              paths['RepbaseClassificationDir'], 
                                              filenames['inputFasta'])
             tblastx_repbase_call = ['{0}/tblastx'.format(executables['blast']), 
@@ -1842,16 +1842,16 @@ def classify_by_homology(KEEPCONFLICTS=False,
                                 '-query', 
                                 paths['LTRharvest_LTR_retrotransposons_fasta'], 
                                 '-evalue', str(repbase_tblastx_evalue), 
-                                '-outfmt', '7 qseqid sseqid pident length \
-                                                mismatch gapopen qstart qend \
-                                                sstart send evalue bitscore \
-                                                sstrand', 
+                                '-outfmt', ('7 qseqid sseqid pident length '
+                                                'mismatch gapopen qstart qend '
+                                                'sstart send evalue bitscore '
+                                                'sstrand'), 
                                 '-num_threads', str(procs), 
                                 '-max_hsps', '25']
-            tblastx_repbase_call_string = '{0} -db {1} -query {2} -evalue {5} \
-                    -outfmt "7 qseqid sseqid pident length mismatch gapopen \
-                    qstart qend sstart send evalue bitscore sstrand" \
-                    -num_threads {3} -max_hsps 25 1>{4} 2>{4}.stderr'.format(
+            tblastx_repbase_call_string = ('{0} -db {1} -query {2} -evalue {5} '
+                    '-outfmt "7 qseqid sseqid pident length mismatch gapopen '
+                    'qstart qend sstart send evalue bitscore sstrand" '
+                    '-num_threads {3} -max_hsps 25 1>{4} 2>{4}.stderr').format(
                                     '{0}/tblastx'.format(executables['blast']), 
                                     'Repbase_ERV_LTR.fasta', 
                                     paths['LTRharvest_LTR_retrotransposons_fasta'],
@@ -1877,12 +1877,12 @@ def classify_by_homology(KEEPCONFLICTS=False,
         # If this is in paths this step has been completed. Skip
         if not 'GFFwithRepbaseClassification' in paths:
             # Extract best hits for each query seq
-            paths['RepbaseResultsTableParsed'] = \
-                    '{0}/{1}.LTR_retrotransposon_RepbaseBestHits.tab'.format(
+            paths['RepbaseResultsTableParsed'] = (
+                    '{0}/{1}.LTR_retrotransposon_RepbaseBestHits.tab').format(
                                              paths['RepbaseClassificationDir'], 
                                              filenames['inputFasta'])
-            repbase_results_parse_call_string = '{0}/best_blast_hit.py < {1} > \
-                                    {2} 2>{3}/best_blast_hit.py.stderr'.format(
+            repbase_results_parse_call_string = ('{0}/best_blast_hit.py < {1} > '
+                                    '{2} 2>{3}/best_blast_hit.py.stderr').format(
                                             paths['scriptsDir'], 
                                             paths['RepbaseTable'], 
                                             paths['RepbaseResultsTableParsed'], 
@@ -1890,8 +1890,8 @@ def classify_by_homology(KEEPCONFLICTS=False,
             repbase_results_parse_call = ['{0}/best_blast_hit.py'.format(
                                                           paths['scriptsDir'])]
             append2logfile(paths['output_top_dir'], mainlogfile, 
-                                    'Began extracting best hits from  tblastx \
-                                        on Repbase results:\n{0}'.format(
+                                    ('Began extracting best hits from  tblastx '
+                                        'on Repbase results:\n{0}').format(
                                             repbase_results_parse_call_string))
             makecall(repbase_results_parse_call, 
                      paths['RepbaseResultsTableParsed'], 
@@ -1910,21 +1910,21 @@ def classify_by_homology(KEEPCONFLICTS=False,
             if CLASSIFYDFAM:
                 gff_for_repbase_classification = paths[
                                                    'GFFwithDfamClassification']
-                paths['GFFwithRepbaseClassification'] = \
-                        '{0}/{1}.LTRdigest.withDfam.withRepbase.gff'.format(
+                paths['GFFwithRepbaseClassification'] = (
+                        '{0}/{1}.LTRdigest.withDfam.withRepbase.gff').format(
                                                         paths['GFFOutputDir'], 
                                                         filenames['inputFasta'])
             else:
                 gff_for_repbase_classification = paths['LTRdigestGFF']
-                paths['GFFwithRepbaseClassification'] = \
-                                '{0}/{1}.LTRdigest.withRepbase.gff'.format(
+                paths['GFFwithRepbaseClassification'] = (
+                                '{0}/{1}.LTRdigest.withRepbase.gff').format(
                                                         paths['GFFOutputDir'], 
                                                         filenames['inputFasta'])
 
-            add_repbase_hits_to_ltrdigest_gff_call_string = '{0}/gffAddAttr.py \
-                     -gff {1} -attr repbaseClassification -map {2} -mapKey ID \
-                     -restrictType LTR_retrotransposon -replaceIfNone > {3} \
-                     2>{4}/gffAddAttr.py.RepbaseHits.stderr'.format(
+            add_repbase_hits_to_ltrdigest_gff_call_string = ('{0}/gffAddAttr.py '
+                     '-gff {1} -attr repbaseClassification -map {2} -mapKey ID '
+                     '-restrictType LTR_retrotransposon -replaceIfNone > {3} '
+                     '2>{4}/gffAddAttr.py.RepbaseHits.stderr').format(
                                     paths['scriptsDir'], 
                                     gff_for_repbase_classification, 
                                     paths['RepbaseResultsTableParsed'], 
@@ -1939,8 +1939,8 @@ def classify_by_homology(KEEPCONFLICTS=False,
                                     '-restrictType', 'LTR_retrotransposon', 
                                     '-replaceIfNone']
             append2logfile(paths['output_top_dir'], mainlogfile, 
-                            'Began adding best hits from tblastx on Repbase \
-                            results to LTRdigest GFF:\n{0}'.format(
+                            ('Began adding best hits from tblastx on Repbase '
+                            'results to LTRdigest GFF:\n{0}').format(
                                 add_repbase_hits_to_ltrdigest_gff_call_string))
             makecall(add_repbase_hits_to_ltrdigest_gff_call, 
                         paths['GFFwithRepbaseClassification'], 
@@ -1948,8 +1948,8 @@ def classify_by_homology(KEEPCONFLICTS=False,
                                                         paths['GFFOutputDir']))
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'Finished adding best hits from tblastx on Repbase \
-                                                     results to LTRdigest GFF')
+                           ('Finished adding best hits from tblastx on Repbase '
+                                                     'results to LTRdigest GFF'))
 
             # Add LTRdigest GFF3 with Repbase classifications path to 
             # status file (for resuming later)
@@ -1970,8 +1970,8 @@ def classify_by_homology(KEEPCONFLICTS=False,
             else:
                 gff_classified = paths['GFFwithDfamClassification']
 
-            paths['LTRdigestClassifiedNoFP'] = \
-                                '{0}/{1}.LTRdigestClassifiedNoFP.gff'.format(
+            paths['LTRdigestClassifiedNoFP'] = (
+                                '{0}/{1}.LTRdigestClassifiedNoFP.gff').format(
                                                         paths['GFFOutputDir'], 
                                                         filenames['inputFasta'])
             TruePositiveLTRclassificationsDct = {
@@ -1979,8 +1979,8 @@ def classify_by_homology(KEEPCONFLICTS=False,
                         'repbaseClassification':paths['RepbaseTruePosLTRlist']}
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'Began removing false positives from LTRdigest GFF \
-                                                        with classifications.')
+                           ('Began removing false positives from LTRdigest GFF '
+                                                        'with classifications.'))
             # only elements are preseved if they have a LTR-R 
             # classification, or an unknown classification.
             RemoveNonLTRretrotransposons(gff_classified, 
@@ -2015,8 +2015,8 @@ def classify_by_homology(KEEPCONFLICTS=False,
             append2logfile(paths['output_top_dir'], mainlogfile, 
              'Update strandedness in GFF3 based on Dfam and/or Repbase results')
             append2logfile(paths['output_top_dir'], mainlogfile, 
-                'Finished removing false positives from LTRdigest GFF with \
-                                    classifications. TP file at:\n{0}'.format(
+                ('Finished removing false positives from LTRdigest GFF with '
+                                    'classifications. TP file at:\n{0}').format(
                                              paths['LTRdigestClassifiedNoFP']))
             # Add LTRdigest GFF3 with FP removed path to status file 
             # (for resuming later)
@@ -2304,8 +2304,8 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                                 '-fi', paths['inputFasta'], 
                                 '-s', 
                                 '-bed', paths['InternalelementsGFF']]
-                getfasta_call_string = 'bedtools getfasta -fi {0} -s -bed {1} \
-                                        > {2} 2> {3}'.format(paths['inputFasta'], 
+                getfasta_call_string = ('bedtools getfasta -fi {0} -s -bed {1} '
+                                        '> {2} 2> {3}').format(paths['inputFasta'], 
                                                   paths['InternalelementsGFF'], 
                                                   paths['InternalelementsFasta'], 
                         '{0}/bedtools_getfasta_InternalRegions.stderr'.format(
@@ -2325,8 +2325,8 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                 elements = list(internal_seq_lengths.keys())
 
                 # blast all by all internals
-                paths['Internals_{0}_selfBlastnOut'.format(classif)] = '\
-                                  {0}/Internals_selfBlastn.tab'.format(cOutDir)
+                paths['Internals_{0}_selfBlastnOut'.format(classif)] = (
+                                  '{0}/Internals_selfBlastn.tab').format(cOutDir)
                 runblast(query=paths['InternalelementsFasta'], 
                                subject=paths['InternalelementsFasta'], 
                                out=paths['Internals_{0}_selfBlastnOut'.format(
@@ -2401,8 +2401,8 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                                  '-fi', paths['inputFasta'], 
                                  '-s', 
                                  '-bed', paths['LTRs_{0}_GFF'.format(classif)]]
-                getfasta_call_string = 'bedtools getfasta -fi {0} -s -bed {1} \
-                                    > {2} 2> {3}'.format(paths['inputFasta'],
+                getfasta_call_string = ('bedtools getfasta -fi {0} -s -bed {1} '
+                                    '> {2} 2> {3}').format(paths['inputFasta'],
                                          paths['LTRs_{0}_GFF'.format(classif)], 
                                        paths['LTRs_{0}_Fasta'.format(classif)], 
                        '{0}/bedtools_getfasta_InternalRegions.stderr'.format(
@@ -2428,8 +2428,8 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                         element_combined_ltr_lengths[el] = ltrs_seq_lengths[ltr]
                 elements = list(element_combined_ltr_lengths.keys())
                 # blast all by all LTRs
-                paths['LTRs_{0}_selfBlastnOut'.format(classif)] = \
-                                      '{0}/LTRs_selfBlastn.tab'.format(cOutDir)
+                paths['LTRs_{0}_selfBlastnOut'.format(classif)] = (
+                                      '{0}/LTRs_selfBlastn.tab').format(cOutDir)
                 runblast(query=paths['LTRs_{0}_Fasta'.format(classif)], 
                          subject=paths['LTRs_{0}_Fasta'.format(classif)], 
                          out=paths['LTRs_{0}_selfBlastnOut'.format(classif)], 
@@ -2579,8 +2579,8 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                         group_num += 1
                         wicker_groups[group_num] = [el]
 
-                paths['Wicker_{0}'.format(classif)] = \
-                               '{0}/wicker_groups_{1}'.format(cOutDir, classif)
+                paths['Wicker_{0}'.format(classif)] = (
+                               '{0}/wicker_groups_{1}').format(cOutDir, classif)
                 paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(
                                               pId, percAln, minLen, classif)] = \
                                             paths['Wicker_{0}'.format(classif)]
@@ -2642,11 +2642,11 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
         if not 'LTRdigest_LTR_retrotransposons_fasta' in paths:
 
             MakeDir('MCLdir', '{0}/MCL'.format(paths['output_top_dir'], I))
-            paths['LTRdigest_LTR_retrotransposons_GFF'] = \
-                              '{0}/LTRdigest_LTR_retrotransposons.gff'.format(
+            paths['LTRdigest_LTR_retrotransposons_GFF'] = (
+                              '{0}/LTRdigest_LTR_retrotransposons.gff').format(
                                                          paths['GFFOutputDir'])
-            paths['LTRdigest_LTR_retrotransposons_fasta'] = \
-                            '{0}/LTRdigest_LTR_retrotransposons.fasta'.format(
+            paths['LTRdigest_LTR_retrotransposons_fasta'] = (
+                            '{0}/LTRdigest_LTR_retrotransposons.fasta').format(
                                                        paths['FastaOutputDir'])
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 2
@@ -2689,9 +2689,9 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                     paths['LTRdigest_LTR_retrotransposons_fasta'], 
                                     '{0}/bedtools_getfasta.stderr'.format(
                                                       paths['FastaOutputDir']))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Began extracting \
-                                          LTR_retrotransposon sequences from \
-                                          LTRdigest_TruePositives GFF:\n{0}'.format(
+            append2logfile(paths['output_top_dir'], mainlogfile, ('Began extracting '
+                                          'LTR_retrotransposon sequences from '
+                                          'LTRdigest_TruePositives GFF:\n{0}').format(
                                      getfasta_ltrretrotransposons_call_string))
             makecall(getfasta_ltrretrotransposons_call, 
                      paths['LTRdigest_LTR_retrotransposons_fasta'],
@@ -2699,16 +2699,16 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                                       paths['FastaOutputDir']))
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
-                           'Finished extracting LTR_retrotransposon sequences \
-                                    from LTRdigest_TruePositives GFF')
+                           ('Finished extracting LTR_retrotransposon sequences '
+                                    'from LTRdigest_TruePositives GFF'))
             append2logfile(paths['output_top_dir'], 
-                           mainlogfile, 'Changing FASTA headers from bedtools \
-                                     getfasta-style to LTR_retrotransposon ID')
+                           mainlogfile, ('Changing FASTA headers from bedtools '
+                                     'getfasta-style to LTR_retrotransposon ID'))
             ChangeFastaHeaders(paths['LTRdigest_LTR_retrotransposons_fasta'], 
                                paths['LTRdigest_LTR_retrotransposons_GFF'])
             append2logfile(paths['output_top_dir'], mainlogfile, 
-                                    'Done changing FASTA headers from bedtools \
-                                     getfasta-style to LTR_retrotransposon ID')
+                                    ('Done changing FASTA headers from bedtools '
+                                     'getfasta-style to LTR_retrotransposon ID'))
 
             with open('{0}/status'.format(
                               paths['output_top_dir']), 'a') as statusFlAppend:
@@ -2739,8 +2739,8 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                 
                 newRecord = 'MCL_{0}_I{1}'.format(classif, I)
                 if not checkStatusFl(newRecord):
-                    paths['MCL_{0}_I{1}'.format(classif, I)] = \
-                                     '{0}/out.allClust'.format(paths['MCLdir'])
+                    paths['MCL_{0}_I{1}'.format(classif, I)] = (
+                                     '{0}/out.allClust').format(paths['MCLdir'])
                     with open('{0}/status'.format(paths['output_top_dir']), 
                                                         'a') as statusFlAppend:
                         statusFlAppend.write('{0}\t{1}\n'.format(
@@ -2770,8 +2770,8 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                                 clusters_by_classif[classif])))
 
                     if 'MCL_{0}_I{1}'.format(classif, I) not in paths:
-                        paths['MCL_{0}_I{1}'.format(classif, I)] = \
-                                           '{0}/{1}_MCL_clusters.I{2}'.format(
+                        paths['MCL_{0}_I{1}'.format(classif, I)] = (
+                                           '{0}/{1}_MCL_clusters.I{2}').format(
                                                          outputPth, classif, I)
                         with open('{0}/status'.format(paths['output_top_dir']), 
                                                         'a') as statusFlAppend:
@@ -2786,8 +2786,8 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                                  clusters_by_classif[classif]], 
                                 classifFastas[classif], 'fasta')
                     # make blast db for all-by-all blast
-                    makeblastdb_AllByAll_call_string = \
-                                '{0}/makeblastdb -in {1} -dbtype nucl'.format(
+                    makeblastdb_AllByAll_call_string = (
+                                '{0}/makeblastdb -in {1} -dbtype nucl').format(
                                   executables['blast'], classifFastas[classif])
                     makeblastdb_AllByAll_call = ['{0}/makeblastdb'.format(
                                                          executables['blast']), 
@@ -2802,9 +2802,9 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                                            lineno, scriptpath))
                     append2logfile(paths['output_top_dir'], 
                                    mainlogfile, 
-                                   'Began creating blast db for all-by-all \
-                                        blast of LTR_retrotransposon sequences \
-                                        using the call:\n{0}'.format(
+                                   ('Began creating blast db for all-by-all '
+                                        'blast of LTR_retrotransposon sequences '
+                                        'using the call:\n{0}').format(
                                              makeblastdb_AllByAll_call_string))
                     makecall(makeblastdb_AllByAll_call, 
                             '{0}.makeblastdb.stdout'.format(
@@ -2813,13 +2813,13 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                                         classifFastas[classif]))
                     append2logfile(paths['output_top_dir'], 
                                    mainlogfile, 
-                                  'Finished creating blast db for all-by-all \
-                         blast of {0} LTR_retrotransposon sequences.'.format(
+                                  ('Finished creating blast db for all-by-all '
+                         'blast of {0} LTR_retrotransposon sequences.').format(
                                                                       classif))
                     # Perform all-by-all blastn of true positive 
                     # LTR_retrotransposon sequences
-                    paths['LTR_retrotransposonAllByAllblastnTable'] = \
-        '{0}/{1}.LTRdigest_LTR_retrotransposon_{2}_AllByAll.blastn.tab'.format(
+                    paths['LTR_retrotransposonAllByAllblastnTable'] = (
+        '{0}/{1}.LTRdigest_LTR_retrotransposon_{2}_AllByAll.blastn.tab').format(
                                    outputPth, filenames['inputFasta'], classif)
                     blastn_AllByAll_call = ['{0}/blastn'.format(executables['blast']), 
                                             '-db', classifFastas[classif], 
@@ -2828,17 +2828,17 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                             '-outfmt', '6', 
                                             '-num_threads', str(procs), 
                                             '-max_hsps', '25']
-                    blastn_AllByAll_call_string = '{0} -db {1} -query {1} \
-                         -evalue 1e-5 -outfmt 6 -num_threads {2} -max_hsps 25 \
-                           1>{3} 2>{3}.stderr'.format(
+                    blastn_AllByAll_call_string = ('{0} -db {1} -query {1} '
+                         '-evalue 1e-5 -outfmt 6 -num_threads {2} -max_hsps 25 '
+                           '1>{3} 2>{3}.stderr').format(
                                     '{0}/blastn'.format(executables['blast']),  
                                               classifFastas[classif], procs, 
                                paths['LTR_retrotransposonAllByAllblastnTable'])
                     append2logfile(paths['output_top_dir'], 
                                    mainlogfile, 
-                                   'Began blastn all-by-all blast of \
-                                      LTR_retrotransposon sequences using the \
-                                        call:\n{0}'.format(
+                                   ('Began blastn all-by-all blast of '
+                                      'LTR_retrotransposon sequences using the '
+                                        'call:\n{0}').format(
                                                   blastn_AllByAll_call_string))
                     makecall(blastn_AllByAll_call, 
                              paths['LTR_retrotransposonAllByAllblastnTable'], 
@@ -2846,24 +2846,24 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                               paths['LTR_retrotransposonAllByAllblastnTable']))
                     append2logfile(paths['output_top_dir'], 
                                    mainlogfile, 
-                                   'Finished blastn all-by-all blast of {0} \
-                               LTR_retrotransposon sequences.'.format(classif))
+                                   ('Finished blastn all-by-all blast of {0} '
+                               'LTR_retrotransposon sequences.').format(classif))
 
                     # Perform MCL clustering based on all-by-all blast 
                     # results convert blastn output  to abc format for mcl
-                    paths['MCL_{0}_abc'.format(classif)] = \
-                            '{0}/LTR_retrotransposon.AllByAllblastn.abc'.format(
+                    paths['MCL_{0}_abc'.format(classif)] = (
+                            '{0}/LTR_retrotransposon.AllByAllblastn.abc').format(
                                                                      outputPth)
                     blasttable2abc_call = ['cut', '-f', '1,2,11', 
                                paths['LTR_retrotransposonAllByAllblastnTable']]
-                    blasttable2abc_call_string = 'cut -f 1,2,11 {0} > {1} \
-                                                    2>{1}.stderr'.format(
+                    blasttable2abc_call_string = ('cut -f 1,2,11 {0} > {1} '
+                                                    '2>{1}.stderr').format(
                                paths['LTR_retrotransposonAllByAllblastnTable'], 
                                paths['MCL_{0}_abc'.format(classif)])
                     append2logfile(paths['output_top_dir'], 
                                    mainlogfile, 
-                                   'Began converting blastn tabular output to \
-                              abc format for MCL using the call:\n{0}'.format(
+                                   ('Began converting blastn tabular output to '
+                              'abc format for MCL using the call:\n{0}').format(
                                                    blasttable2abc_call_string))
                     makecall(blasttable2abc_call, 
                              paths['MCL_{0}_abc'.format(classif)], 
@@ -2879,12 +2879,12 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                          paths['MCL_{0}_abc'.format(classif)]))
 
                 # create network for mcl
-                paths['LTRretrotransposonNetworkmci'] = \
-                                '{0}/LTR_retrotransposon_{1}.mci'.format(
+                paths['LTRretrotransposonNetworkmci'] = (
+                                '{0}/LTR_retrotransposon_{1}.mci').format(
                                             paths['MCL_{0}_I{1}_dir'.format(
                                                          classif, I)], classif)
-                paths['LTRretrotransposonNetworktab'] = \
-                                    '{0}/LTR_retrotransposon_{1}.tab'.format(
+                paths['LTRretrotransposonNetworktab'] = (
+                                    '{0}/LTR_retrotransposon_{1}.tab').format(
                                             paths['MCL_{0}_I{1}_dir'.format(
                                                          classif, I)], classif)
                 mcxload_call = ['{0}/mcxload'.format(executables['mcl']), 
@@ -2894,10 +2894,10 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                 '-stream-tf', 'ceil(200)', 
                                 '-o', paths['LTRretrotransposonNetworkmci'], 
                                 '-write-tab', paths['LTRretrotransposonNetworktab']]
-                mcxload_call_string = '{0}/mcxload -abc {1} --stream-mirror \
-                                         --stream-neg-log10 -stream-tf ceil(200) \
-                                         -o {2} -write-tab {3} > {4}/mcxload.stdout \
-                                         2>{4}mcxload.stderr'.format(
+                mcxload_call_string = ('{0}/mcxload -abc {1} --stream-mirror '
+                                         '--stream-neg-log10 -stream-tf ceil(200) '
+                                         '-o {2} -write-tab {3} > {4}/mcxload.stdout '
+                                         '2>{4}mcxload.stderr').format(
                                                             executables['mcl'], 
                                          paths['MCL_{0}_abc'.format(classif)], 
                                          paths['LTRretrotransposonNetworkmci'], 
@@ -2919,8 +2919,8 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                          paths['MCL_{0}_I{1}_dir'.format(classif, I)]))
                 append2logfile(paths['output_top_dir'], 
                                mainlogfile, 
-                               'Finished creating network for {0} LTR RTs \
-                                    using mcxload.'.format(classif))
+                               ('Finished creating network for {0} LTR RTs '
+                                    'using mcxload.').format(classif))
                 
                 # cluster using MCL
                 current_wd = os.getcwd()
@@ -2930,8 +2930,8 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                             '-use-tab', 
                             'LTR_retrotransposon_{0}.tab'.format(classif), 
                             '-te', str(procs) ]
-                mcl_call_string = '{0}/mcl {1} -I {2} -use-tab {3} -te {4} > \
-                            mcl.stdout 2>mcl.stderr'.format(executables['mcl'], 
+                mcl_call_string = ('{0}/mcl {1} -I {2} -use-tab {3} -te {4} > '
+                            'mcl.stdout 2>mcl.stderr').format(executables['mcl'], 
                               'LTR_retrotransposon_{0}.mci'.format(classif), I, 
                               'LTR_retrotransposons_{0}.tab'.format(classif), 
                               str(procs))
@@ -2953,8 +2953,8 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                 for fl in os.listdir(paths['MCL_{0}_I{1}_dir'.format(
                                                                  classif, I)]):
                     if fl.startswith('out'):
-                        paths['MCL_{0}_I{1}'.format(classif, I)] = \
-                             '{0}/{1}'.format(paths['MCL_{0}_I{1}_dir'.format(
+                        paths['MCL_{0}_I{1}'.format(classif, I)] = (
+                             '{0}/{1}').format(paths['MCL_{0}_I{1}_dir'.format(
                                                               classif, I)], fl)
                         
                 with open('{0}/status'.format(paths['output_top_dir']), 
@@ -3000,8 +3000,8 @@ def full2flankgff(inGFFpth, outGFFpth, bpflank):
                     leftFlankGFFline.score = '.'
                     leftFlankGFFline.strand = gffLine.strand
                     leftFlankGFFline.phase = '.'
-                    leftFlankGFFline.attributes['ID'] = \
-                                    '{0}_leftflank_{1}_bp'.format(
+                    leftFlankGFFline.attributes['ID'] = (
+                                    '{0}_leftflank_{1}_bp').format(
                                             gffLine.attributes['ID'], bpflank)
                     leftFlankGFFline.attributes['Parent'] = \
                                                        gffLine.attributes['ID']
@@ -3019,8 +3019,8 @@ def full2flankgff(inGFFpth, outGFFpth, bpflank):
                     rightFlankGFFline.score = '.'
                     rightFlankGFFline.strand = gffLine.strand
                     rightFlankGFFline.phase = '.'
-                    rightFlankGFFline.attributes['ID'] = \
-                                    '{0}_rightflank_{1}_bp'.format(
+                    rightFlankGFFline.attributes['ID'] = (
+                                    '{0}_rightflank_{1}_bp').format(
                                              gffLine.attributes['ID'], bpflank)
                     rightFlankGFFline.attributes['Parent'] = \
                                                        gffLine.attributes['ID']
