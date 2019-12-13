@@ -1,5 +1,5 @@
 # PhyLTR scripts
-Some of these scripts are called during PhyLTR's execution and some are not, but all are standalone and contain helps.
+Some of these scripts are called during PhyLTR's execution.
 ## External scripts
 ---
 ## For preparing the LTR-R databases
