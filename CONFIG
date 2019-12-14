@@ -1,8 +1,6 @@
 bedtools=/share/apps/genomics/bedtools2/bin/bedtools
 mafft=/home/derstudent/software/mafft-7.310-with-extensions/bin/mafft
 samtools=/share/apps/genomics/samtools-1.3/samtools
-transdecoder_longorfs=/home/derstudent/software/TransDecoder-3.0.1/TransDecoder.LongOrfs
-transdecoder_predict=/home/derstudent/software/TransDecoder-3.0.1/TransDecoder.Predict
 fasttree=/home/derstudent/software/FastTree/FastTree
 trimal=/home/derstudent/software/trimAl/source/trimal
 jmodeltest2=/home/derstudent/software/jmodeltest2-2.1.9r20160115/dist/jModelTest.jar
