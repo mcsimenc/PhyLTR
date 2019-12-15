@@ -30,35 +30,41 @@ class GFF3_line:
     ------------
     str()               Outputs GFF3 line
     repr()              Outputs GFF3 line
+    addAttr()           Adds new GFF3 attribute
+    delAttr()           Delete a GFF3 attribute
     refreshAttrStr()    This needs to be called if changes were made to
                         any of the attributes. It refreshes
     """
-
-    def __init__(self, line):
+    def __init__(self, line=None, **kwargs):
         """GFF3_line is initialized to contain the fields of the GFF3
         line provided as attributes. The attributes are kept in a
         dictionary and a the keys are ordered in a list to preserve
         the order of attributes upon getting the sring representation
         of the line from the GFF3_line object.
         """
-        (self.seqid, 
-         self.source, 
-         self.type, 
-         self.start, 
-         self.end, 
-         self.score, 
-         self.strand, 
-         self.phase, 
-         self.attributes_str) = line.strip().split('\t')
-        # preserve attribute order as a list of keys (attributes_order)
-        attributes_list = self.attributes_str.split(';')
-        self.attributes_order = [attr.split('=')[0] for attr in 
-                                                               attributes_list]
-        # store attribute keys and their values in a dictionary
-        self.attributes = {attr.split('=')[0]:attr.split('=')[1] for attr in 
-                                                               attributes_list}
-        # rename the name attribute key to Name so it conforms to the
-        # GFF3 specification, where Name is a reserved attribute key
+        if line == None:
+            (self.seqid, self.source, self.type, self.start, self.end, self.score, 
+                self.strand, self.phase, self.attributes_str) = [None]*9
+            self.attributes_order = []
+            self.attributes = {}
+            
+        else:
+            (self.seqid, self.source, self.type, self.start, self.end, self.score, self.strand, self.phase, self.attributes_str) = line.strip().split('\t')
+            self.start = int(self.start)
+            self.end = int(self.end)
+            assert self.start <= self.end
+            self.coords = (self.start, self.end)
+            self.length = self.end - self.start + 1
+            attributes_list = self.attributes_str.split(';')
+            self.attributes_order = [ attr.split('=')[0] for attr in attributes_list ]
+            self.attributes = { attr.split('=')[0]:attr.split('=')[1] for attr in attributes_list }
+
+        self.line_number = None
+
+        if 'line_number' in kwargs:    
+            self.line_number = kwargs['line_number']
+
+        # rename the name attribute so it conforms to GFF3 specifications, where Name is a reserved attribute key. The version of LTRDigest makes attribute key name
         if 'name' in self.attributes:
             self.attributes['Name'] = self.attributes.pop('name')
             self.attributes_order[self.attributes_order.index('name')] = 'Name'
@@ -81,6 +87,32 @@ class GFF3_line:
         """
         self.attributes_str = ';'.join(['='.join(
              [attr, self.attributes[attr]]) for attr in self.attributes_order])
+
+    def addAttr(self, attr_key, attr_val, replace=False, attr_pos=0):
+        """ds attribute, default is at the start of the list.
+        Default behavior is to add attr_val to a growing
+        comma-sep list if attr_key exists. Set replace=True to
+        replace existing attr_val.
+        """
+        if attr_key in self.attributes:
+            if replace:
+                delAttr(attr_key)
+                self.attributes[attr_key] = attr_val
+                self.attributes_order.insert(attr_pos, attr_key)
+                self.refreshAttrStr()
+            else: # grow list
+                self.attributes[attr_key] = '{0},{1}'.format(self.attributes[attr_key], attr_val)
+                self.refreshAttrStr()
+        else:
+            self.attributes[attr_key] = attr_val
+            self.attributes_order.insert(attr_pos, attr_key)
+            self.refreshAttrStr()
+
+    def delAttr(self, attr_key):
+        """Deletes attribute."""
+        del self.attributes[attr_key]
+        self.attributes_order.pop(self.attributes_order.index(attr_key))
+        self.refreshAttrStr()
 
 
 def rename_fasta_seq_headers(in_flpath, 
@@ -1201,10 +1233,14 @@ def bestORFs(fasta, outdir, gff, minLen=300):
     Only ORFs with nucleotide sequences longer than minLen are kept. 
     (default 300 bp = 80 aa)
     """
+    # the name of the gff file which is the final output of this
+    # function
     outgff = '{0}/{1}.orfs.gff'.format(outdir, fasta.split('/')[-1])
+    # remove output file if it exists
     if os.path.isfile(outgff):
         os.remove(outgff)
-    # Get strandedness for each element into a dictionary
+    # read all LTR_retrotransposon features from the gff and record
+    # strandedness for all elements
     strands = {}
     with open(gff, 'r') as gffFl:
         for line in gffFl:
@@ -1213,15 +1249,14 @@ def bestORFs(fasta, outdir, gff, minLen=300):
                 el = gffLine.attributes['ID']
                 strand = gffLine.strand
                 strands[el] = strand
-    # Run EMBOSS getorf
+    # run EMBOSS getorf
     outseq = '{0}/{1}.orfs'.format(outdir, fasta.split('/')[-1])
     if os.path.isfile(outseq):
         os.remove(outseq)
     getorf_call = [ executables['getorf'], '-sequence', fasta, 
                                                             '-outseq', outseq ]
     makecall(getorf_call)
-
-    # Read getorf output and put info into dicts
+    # read orf sequences into list of nonredundant orfs
     orfs = list(SeqIO.parse(outseq, 'fasta'))
     nonredundant_orfs = list()
     unique_orfs = set()
@@ -1423,7 +1458,6 @@ def bestORFs(fasta, outdir, gff, minLen=300):
                                         coords2lenkey[element][s][
                                         orfs_ordered_coords[element][s][m]])
                 i += 1
-            
             orf_ids = [ p[0] for p in orfs_ordered_lengths[element][s] ]
             best_orfs = [[element, 
                           s, 
@@ -1432,7 +1466,6 @@ def bestORFs(fasta, outdir, gff, minLen=300):
                           orfs_coords[element][s][orf_id]]  for 
                                                              orf_id in orf_ids]
             best_orf_sets[s] = best_orfs
-
         if best_orf_sets['+'] == None and best_orf_sets['-'] == None:
             sys.exit('bestORFs() did not populate best_orf_sets')
         if best_orf_sets['+'] == None:
@@ -1450,13 +1483,12 @@ def bestORFs(fasta, outdir, gff, minLen=300):
             else:
                 best_orfs = best_orf_sets['-']
                 strand_used = '-'
-        
         best_orfs.sort(key=lambda x:x[4][0])
         for orf in best_orfs:
             element, s, orf_id, seq, coords = orf
             start, end = coords
             with open(outgff, 'a') as outFl:
-                outFl.write(('{0}\tgetorf\tORF\t{1}\t{2}\t.\t{3}\t.\tParent={4}; '
+                outFl.write(('{0}\tgetorf\tORF\t{1}\t{2}\t.\t{3}\t.\tParent={4};'
                                         'translated_seq={5}\n').format(element, 
                                                                      start, 
                                                                      end, 
@@ -1481,11 +1513,11 @@ def addORFs(maingff, orfgff, newgff):
     else:
         orffasta = '{0}/{1}'.format('/'.join(newgff.split('/')[:-1]), 
                                 '{0}.ORFs.fasta'.format(newgff.split('/')[-1]))
-
     append2logfile(paths['output_top_dir'], 
                    mainlogfile, 
                    'Incorporating ORFs in {0} with GFF {1} in to {2}'.format(
                                                       orfgff, maingff, newgff))
+    # read gff containing just ORF features output by bestORFs()
     with open(orfgff, 'r') as inFl:
         for line in inFl:
             if not line.startswith('#'):
@@ -1505,7 +1537,6 @@ def addORFs(maingff, orfgff, newgff):
             else:
                 gffLine = GFF3_line(line)
                 GFFLines.append(gffLine)
-
     with open(orffasta, 'w') as outFl:
         internalparts = []
         el = None
@@ -1525,7 +1556,6 @@ def addORFs(maingff, orfgff, newgff):
                 if firstLTRend != None:
                     if el in orfs:
                         orf_ct = 0
-                        
                         with open('ERR','a') as errFl:
                             errFl.write('GOING IN\n')
                         for orf in orfs[el]:
@@ -1587,10 +1617,16 @@ def AnnotateORFs(minLen):
                                       paths['inputFasta'], '-bed', internalGFF]
         makecall(getfasta_call, internalFASTA)
         ChangeFastaHeaders(internalFASTA, internalGFF, attribute='Parent')
+        # run EMBOSS getorf
         bestORFs(fasta=internalFASTA, outdir=paths['ORFsDir'], 
                                         gff=paths['CurrentGFF'], minLen=minLen)
+        # name of the file output by bestORFs() in the previous call.
+        # this file contains gff lines for only the ORF features
         orfgff = '{0}/{1}.orfs.gff'.format(paths['ORFsDir'], 
                                            internalFASTA.split('/')[-1])
+        # name of the file to be output by addORFs() in the subsequent
+        # call, which will contain the LTRdigest-output gff plus
+        # ORF features
         withorfsgff='{0}/FullWithORFs_gt_{1}bp.gff'.format(paths['ORFsDir'], 
                                                            minLen)
         addORFs(maingff=paths['CurrentGFF'], orfgff=orfgff, newgff=withorfsgff)
