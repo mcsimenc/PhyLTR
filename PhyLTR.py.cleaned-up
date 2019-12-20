@@ -3403,9 +3403,11 @@ def CleanMafft(mafft_fasta):
 
 
 def aligner(elementList, OutDir, statusFlAlnKey, part):
-    """Generic aligner to work with internal and whole elements from LTRharvest GFF3. Called by AutoAlign()
+    """Generic aligner to work with internal and whole elements from 
+    LTRharvest GFF3. Called by AutoAlign()
     1. Writes GFF for elements requested (elementList)
-    2. Extracts sequences using bedtools getfasta and converts the headers to reflect the GFF3 ID attributes.
+    2. Extracts sequences using bedtools getfasta and converts the 
+       headers to reflect the GFF3 ID attributes.
     3. Aligns using mafft with given settings.
     4. Trims alignment using trimal -automated1
     5. Adds statsFlAlnKey to the status file.
@@ -3426,11 +3428,25 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
         if INTERNAL:
             paths['InternalelementsGFF'] = '{0}/elements.gff'.format(OutDir)
             paths['InternalelementsFasta'] = '{1}/elements.fasta'.format(OutDir)
-            writeLTRretrotransposonInternalRegions(paths['CurrentGFF'], paths['InternalelementsGFF'], elementSet=set(elementList), truncateParent=True)
-            getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', paths['InternalelementsGFF'] ]
-            getfasta_call_string = 'bedtools getfasta -fi {0} -s -bed {1} > {2} 2> {3}'.format(paths['inputFasta'], paths['InternalelementsGFF'], paths['InternalelementsFasta'], '{0}/bedtools_getfasta_InternalRegions.stderr'.format(OutDir))
-            makecall(getfasta_call, paths['InternalelementsFasta'], '{0}/bedtools_getfasta_InternalRegions.stderr'.format(OutDir))
-            ChangeFastaHeaders(paths['InternalelementsFasta'], paths['InternalelementsGFF'], attribute='Parent')
+            writeLTRretrotransposonInternalRegions(paths['CurrentGFF'],
+                                                   paths['InternalelementsGFF'], 
+                                                   elementSet=set(elementList), 
+                                                   truncateParent=True)
+            getfasta_call = [executables['bedtools'], 'getfasta', 
+                             '-fi', paths['inputFasta'], 
+                             '-s', 
+                             '-bed', paths['InternalelementsGFF']]
+            getfasta_call_string = ('bedtools getfasta -fi {0} -s -bed {1} > '
+                                    '{2} 2> {3}').format(paths['inputFasta'], 
+                                                  paths['InternalelementsGFF'], 
+                                                  paths['InternalelementsFasta'], 
+                 '{0}/bedtools_getfasta_InternalRegions.stderr'.format(OutDir))
+            makecall(getfasta_call, 
+                     paths['InternalelementsFasta'], 
+                 '{0}/bedtools_getfasta_InternalRegions.stderr'.format(OutDir))
+            ChangeFastaHeaders(paths['InternalelementsFasta'], 
+                               paths['InternalelementsGFF'], 
+                               attribute = 'Parent')
             paths['AlnFasta'] = paths['InternalelementsFasta']
             paths['AlnPth'] = '{0}.aln'.format(paths['InternalelementsFasta'])
 
@@ -3438,95 +3454,164 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
 
             paths['EntireelementsGFF'] = '{0}/elements.gff'.format(OutDir)
             paths['EntireelementsFasta'] = '{0}/elements.fasta'.format(OutDir)
-            writeLTRretrotransposonGFF(inputGFFpth=paths['CurrentGFF'], outputGFFpth=paths['EntireelementsGFF'], elementSet=set(elementList))
-            getfasta_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', paths['EntireelementsGFF'] ]
-            getfasta_call_string = 'bedtools getfasta -fi {0} -s -bed {1} > {2} 2> {3}'.format(paths['inputFasta'], paths['EntireelementsGFF'], paths['EntireelementsFasta'], '{0}/bedtools_getfasta_Entire.stderr'.format(OutDir))
-            makecall(getfasta_call, paths['EntireelementsFasta'], '{0}/bedtools_getfasta_Entire.stderr'.format(OutDir))
-            ChangeFastaHeaders(paths['EntireelementsFasta'], paths['EntireelementsGFF'], attribute='ID')
+            writeLTRretrotransposonGFF(inputGFFpth = paths['CurrentGFF'], 
+                                       outputGFFpth = paths['EntireelementsGFF'], 
+                                       elementSet=set(elementList))
+            getfasta_call = [executables['bedtools'], 'getfasta', 
+                             '-fi', paths['inputFasta'], 
+                             '-s', 
+                             '-bed', paths['EntireelementsGFF']]
+            getfasta_call_string = ('bedtools getfasta -fi {0} -s -bed {1} > '
+                                    '{2} 2> {3}').format(paths['inputFasta'], 
+                                                   paths['EntireelementsGFF'], 
+                                                   paths['EntireelementsFasta'], 
+                          '{0}/bedtools_getfasta_Entire.stderr'.format(OutDir))
+            makecall(getfasta_call, paths['EntireelementsFasta'], 
+                          '{0}/bedtools_getfasta_Entire.stderr'.format(OutDir))
+            ChangeFastaHeaders(paths['EntireelementsFasta'], 
+                               paths['EntireelementsGFF'], 
+                               attribute='ID')
             paths['AlnFasta'] = paths['EntireelementsFasta']
             paths['AlnPth'] = '{0}.aln'.format(paths['EntireelementsFasta'])
 
         # Align regions from selected elements
         if len(elementList) <= mafft_smallAln_maxclustsize:
-            mafft_call = [ executables['mafft'], '--quiet', '--retree', '2', '--thread', str(procs), '--maxiterate', str(mafft_smallAln_maxiterate), paths['AlnFasta'] ]
-        elif len(elementList) > mafft_smallAln_maxclustsize and len(elementList) <= mafft_mediumAln_maxclustsize:
-            mafft_call = [ executables['mafft'], '--quiet', '--retree', '2','--thread', str(procs), '--maxiterate', str(mafft_mediumAln_maxiterate), paths['AlnFasta'] ]
-        elif len(elementList) > mafft_mediumAln_maxclustsize and len(elementList) <= mafft_largeAln_maxclustsize:
-            #mafft_call = [ executables['mafft'], '--memsave', '--memsavetree', '--quiet', '--retree', '1', '--thread', str(procs), paths['AlnFasta'] ]
-            mafft_call = [ executables['mafft'], '--quiet', '--retree', '1', '--thread', str(procs), paths['AlnFasta'] ]
+            mafft_call = [executables['mafft'], 
+                          '--quiet', 
+                          '--retree', '2', 
+                          '--thread', str(procs), 
+                          '--maxiterate', str(mafft_smallAln_maxiterate), 
+                          paths['AlnFasta']]
+        elif (len(elementList) > mafft_smallAln_maxclustsize 
+               and len(elementList) <= mafft_mediumAln_maxclustsize):
+            mafft_call = [executables['mafft'], 
+                          '--quiet', 
+                          '--retree', '2',
+                          '--thread', str(procs), 
+                          '--maxiterate', str(mafft_mediumAln_maxiterate), 
+                          paths['AlnFasta']]
+        elif (len(elementList) > mafft_mediumAln_maxclustsize 
+               and len(elementList) <= mafft_largeAln_maxclustsize):
+            mafft_call = [executables['mafft'], 
+                         '--quiet', 
+                         '--retree', '1', 
+                         '--thread', str(procs), 
+                         paths['AlnFasta']]
         elif len(elementList) > mafft_largeAln_maxclustsize:
             # Write would-be alignment path to status file
             paths['ClusterTrimmedAln'] = '{0}.trimal'.format(paths['AlnPth'])
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
                 paths[statusFlAlnKey] = paths['ClusterTrimmedAln']
                 if os.path.isfile(paths[statusFlAlnKey]):
-                    statusFlAppend.write('{0}\t{1}\n'.format(statusFlAlnKey, paths['ClusterTrimmedAln']))
-            return # break out of function
-
-        mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
-
+                    statusFlAppend.write('{0}\t{1}\n'.format(statusFlAlnKey, 
+                                                   paths['ClusterTrimmedAln']))
+            return
+        mafft_call_string = '{0} {1}'.format(' '.join(mafft_call),
+                                  ' >{0} 2>{0}.stderr'.format(paths['AlnPth']))
         scriptpath = os.path.realpath(__file__)
         lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Aligning\n{0}'.format(mafft_call_string))
-        makecall(mafft_call, paths['AlnPth'], '{0}.stderr'.format(paths['AlnPth']))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Cleaning MAFFT output\n{0}'.format(paths['AlnPth']))
+        append2logfile(paths['output_top_dir'], 
+                       mainlogfile, 
+                       'Below log entry is from line {0} in {1}'.format(lineno, 
+                                                                   scriptpath))
+        append2logfile(paths['output_top_dir'], 
+                       mainlogfile, 
+                       'Aligning\n{0}'.format(mafft_call_string))
+        makecall(mafft_call, paths['AlnPth'], 
+                                          '{0}.stderr'.format(paths['AlnPth']))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                          'Cleaning MAFFT output\n{0}'.format(paths['AlnPth']))
         CleanMafft(paths['AlnPth'])
-        ## MAFFT outputs some non-FASTA text along with the FASTA alignment. The text is first, then the alignment.
-        #if os.path.exists(paths['AlnPth']):
-        #    with open('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']), 'w') as outFl:
-        #        with open(paths['AlnPth'], 'r') as inFl:
-        #            STARTFASTA = False
-        #            for line in inFl:
-        #                if line.startswith('>'):
-        #                    STARTFASTA = True
-        #                if STARTFASTA == True:
-        #                    outFl.write(line)
-        #    copyfile('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']), paths['AlnPth'])
-        #    os.remove('{0}.fixingmafftdefaultoutput.tmp'.format(paths['AlnPth']))
-
         append2logfile(paths['output_top_dir'], mainlogfile, 'Finished aligning')
-
         # Trim alignment
         paths['ClusterTrimmedAln'] = '{0}.trimal'.format(paths['AlnPth'])
-        trimal_Aln_call =  [ executables['trimal'], '-in', paths['AlnPth'], '-out', paths['ClusterTrimmedAln'], '-automated1' ]
-        trimal_Aln_call_string = '{0} -in {1} -out {2} -automated1 >{2}.stdout 2>{2}.stderr'.format(executables['trimal'], paths['AlnPth'], paths['ClusterTrimmedAln'])
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Began cleaning alignment using TrimAl:\n{0}'.format(trimal_Aln_call_string))
-        makecall(trimal_Aln_call, '{0}.stdout'.format(paths['ClusterTrimmedAln'], '{0}.stdout'.format(paths['ClusterTrimmedAln'])))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Finished cleaning alignment using TrimAl')
-        
+        trimal_Aln_call =  [executables['trimal'], 
+                            '-in', paths['AlnPth'], 
+                            '-out', paths['ClusterTrimmedAln'], 
+                            '-automated1']
+        trimal_Aln_call_string = ('{0} -in {1} -out {2} -automated1 '
+                        '>{2}.stdout 2>{2}.stderr').format(executables['trimal'], 
+                                                    paths['AlnPth'], 
+                                                    paths['ClusterTrimmedAln'])
+        append2logfile(paths['output_top_dir'],
+                       mainlogfile, 
+                       'Began cleaning alignment using TrimAl:\n{0}'.format(
+                                                       trimal_Aln_call_string))
+        makecall(trimal_Aln_call, 
+                 '{0}.stdout'.format(paths['ClusterTrimmedAln'], 
+                                     '{0}.stdout'.format(
+                                                  paths['ClusterTrimmedAln'])))
+        append2logfile(paths['output_top_dir'], 
+                       mainlogfile, 
+                       'Finished cleaning alignment using TrimAl')
         paths[dirKey] = OutDir
-        if os.path.isfile(paths['ClusterTrimmedAln']): # If the cluster has one element only then there will be no alignment and writing to status could cause problems later
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+        if os.path.isfile(paths['ClusterTrimmedAln']):
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
                 paths[statusFlAlnKey] = paths['ClusterTrimmedAln']
                 if os.path.isfile(paths[statusFlAlnKey]):
-                    statusFlAppend.write('{0}\t{1}\n'.format(statusFlAlnKey, paths['ClusterTrimmedAln']))
+                    statusFlAppend.write('{0}\t{1}\n'.format(statusFlAlnKey, 
+                                                   paths['ClusterTrimmedAln']))
 
 
-def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, auto_outgroup=False, bpflank=None, flank_pId=None, flank_evalue=None, flank_plencutoff=None, combine_and_do_small_clusters=True, LTRSONLY=False):
-    """
-    AutoAlign handles aligning whole or internal regions of LTRharvest GFF3 LTR RTs that had been clustered
-    using MCL() or WickerFam().
+def AutoAlign(I=6, 
+              part='entire', 
+              rmgeneconv=False, 
+              minClustSize=4, 
+              align='clusters', 
+              rmhomologflank=False, 
+              clustering_method='WickerFam', 
+              WickerParams={'pId':80,'percAln':80,'minLen':80}, 
+              auto_outgroup=False, 
+              bpflank=None, 
+              flank_pId=None, 
+              flank_evalue=None, 
+              flank_plencutoff=None, 
+              combine_and_do_small_clusters=True, 
+              LTRSONLY=False):
+    """AutoAlign handles aligning whole or internal regions of LTRharvest GFF3 
+    LTR RTs that had been clustered using MCL() or WickerFam().
 
     Options:
     -------------
-    I                4        inflation parameter used for MCL
-    part                'entire'    'entire' or 'internal', referring to the part of the LTR RTs to align.
-    rmgeneconv            False        Remove elements within cluster that show evidence of inter-element gene conversion.
-    minClustSize            4        The minimum cluster size to align. If combine_and_do_small_clusters=True, clusters smaller than minClustSize will be aligned together.
-    align                'clusters'    'clusters' (align clusters separately) or 'classif' (align all clusters for a given superfamily together)
-    rmhomologflank            False        Identify and remove one of every pair of elements from a given cluster whose flanking regions are homologous.
-    clustering_method        'WickerFam'    'WickerFam' or 'MCL'. Clustering needs to have been done already.
-    WickerParams                    Parameters used with the WickerFam() clustering to be aligned.
-    auto_outgroup            False        Automatically pick an ougroup and align with cluster. This option is not available for align='classif'
-    bpflank                None        If rmhomologflank=True, this specifies how many bp beyond the edge of each element to test for homology.
-    flank_pId            None        Minimum percent identity in flank alignment to consider as evidence of homology.
-    flank_evalue            None        Minimum E-value of flank alignment to consider as evidence of homology.
-    flank_plencutoff        None        Minimum percentage of flanking region required to participate in alignment to consider as evidence of homology.
-    combine_and_do_small_clusters    True        Align all elements in clusters smaller than minClustSize together.
+    I                           Inflation parameter used for MCL
+    part                        'entire' or 'internal', referring to the 
+                                part of the LTR RTs to align.
+    rmgeneconv                  Remove elements within cluster that show 
+                                evidence of inter-element gene conversion.
+    minClustSize                The minimum cluster size to align. If 
+                                combine_and_do_small_clusters=True, 
+                                clusters smaller than minClustSize will 
+                                be aligned together.
+    align                       'clusters' (align clusters separately)
+                                or 'classif' (align all clusters for a 
+                                given superfamily together)
+    rmhomologflank              Identify and remove one of every pair of 
+                                elements from a given cluster whose 
+                                flanking regions are homologous.
+    clustering_method           'WickerFam' or 'MCL'. Clustering needs 
+                                to have been done already.
+    WickerParams                Parameters used with the WickerFam() 
+                                clustering to be aligned.
+    auto_outgroup               Automatically pick an ougroup and align 
+                                with cluster. This option is not 
+                                available for align='classif'
+    bpflank                     If rmhomologflank=True, this specifies 
+                                how many bp beyond the edge of each 
+                                element to test for homology.
+    flank_pId                   Minimum percent identity in flank 
+                                alignment to consider as evidence of 
+                                homology.
+    flank_evalue                Minimum E-value of flank alignment to 
+                                consider as evidence of homology.
+    flank_plencutoff            Minimum percentage of flanking region 
+                                required to participate in alignment 
+                                to consider as evidence of homology.
+    combine_and_do_small_clusters    Align all elements in clusters 
+                                     smaller than minClustSize together.
     """
     global paths
-
     ENTIRE = False
     INTERNAL = False
     AUTO_OUTGROUP = auto_outgroup
@@ -3537,7 +3622,8 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
         ALIGNCLASSIFS = True
         ALIGNCLUSTERS = False
     else:
-        sys.exit("AutoAlign() parameter 'align' needs to be either 'clusters' or 'classifs', and it is {0}".format(align))
+        sys.exit(("AutoAlign() parameter 'align' needs to be either "
+                    "'clusters' or 'classifs', and it is {0}").format(align))
     if rmhomologflank:
         REMOVEHOMOLOGOUSFLANK = True
     else:
@@ -3553,12 +3639,15 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
     elif part == 'internal':
         INTERNAL = True
     else:
-        sys.exit('part parameter to AutoAlign() is invalid: {0}. Must be either "entire" or "internal"'.format(part))
-
+        sys.exit(('part parameter to AutoAlign() is invalid: {0}. '
+                'Must be either "entire" or "internal"').format(part))
     WICKERCLUST=False
     MCLCLUST=False
     if clustering_method == 'WickerFam':
-        clusterDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
+        clusterDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                    WickerParams['pId'], 
+                                                    WickerParams['percAln'], 
+                                                    WickerParams['minLen'])]
         MakeDir('WickerAlignments', '{0}/Alignments'.format(clusterDir))
         paths['Alignments'] = paths['WickerAlignments']
         WICKERCLUST=True
@@ -3568,50 +3657,58 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
         paths['Alignments'] = paths['MCLAlignments']
         MCLCLUST=True
     else:
-        sys.exit('AutoAlign() parameter clustering_method needs to be either WickerFam or MCL, and it is {0}'.format(clustering_method))
-
+        sys.exit(('AutoAlign() parameter clustering_method needs to be either '
+                   'WickerFam or MCL, and it is {0}').format(clustering_method))
     if INTERNAL:
-        MakeDir('InternalRegionsAlignments', '{0}/InternalRegions'.format(paths['Alignments']))
+        MakeDir('InternalRegionsAlignments', 
+                '{0}/InternalRegions'.format(paths['Alignments']))
         paths['AlnDir'] = paths['InternalRegionsAlignments']
     elif ENTIRE:
-        MakeDir('WholeElementAlignments', '{0}/WholeElements'.format(paths['Alignments']))
+        MakeDir('WholeElementAlignments', 
+                '{0}/WholeElements'.format(paths['Alignments']))
         paths['AlnDir'] = paths['WholeElementAlignments']
-
     if ALIGNCLASSIFS:
         MakeDir('Superfamilies', '{0}/Superfamilies'.format(paths['AlnDir']))
         if REMOVEHOMOLOGOUSFLANK:
             strHomoflank = 'homoflank'
-            MakeDir('HomoFlankDir', '{0}/NoPairsWithHomologousFlanks'.format(paths['Superfamilies']))
+            MakeDir('HomoFlankDir', '{0}/NoPairsWithHomologousFlanks'.format(
+                                                       paths['Superfamilies']))
         else:
             strHomoflank = 'nohomoflank'
-            MakeDir('HomoFlankDir', '{0}/AllElements'.format(paths['Superfamilies']))
+            MakeDir('HomoFlankDir', '{0}/AllElements'.format(
+                                                       paths['Superfamilies']))
         paths['AlnDir'] = paths['HomoFlankDir']
-
     elif ALIGNCLUSTERS:
         if REMOVEGENECONV:
-            MakeDir('GCDir', '{0}/GeneconversionDisallowed'.format(paths['AlnDir']))
+            MakeDir('GCDir', '{0}/GeneconversionDisallowed'.format(
+                                                              paths['AlnDir']))
         else:
             MakeDir('GCDir', '{0}/NoGCFiltering'.format(paths['AlnDir']))
         if REMOVEHOMOLOGOUSFLANK:
             strHomoflank = 'homoflank'
-            MakeDir('HomoFlankDir', '{0}/NoPairsWithHomologousFlanks'.format(paths['GCDir']))
+            MakeDir('HomoFlankDir', '{0}/NoPairsWithHomologousFlanks'.format(
+                                                               paths['GCDir']))
         else:
             strHomoflank = 'nohomoflank'
             MakeDir('HomoFlankDir', '{0}/AllElements'.format(paths['GCDir']))
         if AUTO_OUTGROUP:
             strOutgroup = 'withOutgroup'
-            MakeDir('OutgroupDir', '{0}/WithOutgroup'.format(paths['HomoFlankDir']))
+            MakeDir('OutgroupDir', '{0}/WithOutgroup'.format(
+                                                        paths['HomoFlankDir']))
         else:
             strOutgroup = 'noOutgroup'
-            MakeDir('OutgroupDir', '{0}/NoOutgroup'.format(paths['HomoFlankDir']))
+            MakeDir('OutgroupDir', '{0}/NoOutgroup'.format(
+                                                        paths['HomoFlankDir']))
         paths['AlnDir'] = paths['OutgroupDir']
-
     gcDct = {}
     if REMOVEGENECONV:
         if MCLCLUST:
             gcSummaryPth = 'MCL_I{0}_GENECONV_summary'.format(I)
         elif WICKERCLUST:
-            gcSummaryPth = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+            gcSummaryPth = ('Wicker_{0}_pId_{1}_percAln_{2}_minLen'
+                            '_GENECONV_summary').format(WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
         if os.path.isfile(paths[gcSummaryPth]):
             with open(paths[gcSummaryPth], 'r') as gcFl:
                 for line in gcFl:
@@ -3627,10 +3724,11 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
                     else:
                         gcDct[classif] = {clust:[el]}
         else:
-            print('modeltest(removegeneconv=True) used but {0} not found'.format(paths[gcSummaryPth]), file=sys.stderr)
-
+            print(('modeltest(removegeneconv=True) used '
+                   'but {0} not found').format(paths[gcSummaryPth]), 
+                                               file=sys.stderr)
     for classif in classifs:
-        if LTRSONLY: # Align only clusters from superfamilies with identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+        if LTRSONLY:
             YESLTRS = False
             for SF in LTR_SFs:
                 if classif.startswith(SF):
@@ -3639,19 +3737,34 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
             if not YESLTRS:
                 continue
         if clustering_method == 'WickerFam':
-            clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
+            clusterPath = paths[('WickerFamDir_{0}_pId_{1}_'
+                                 'percAln_{2}_minLen_{3}').format(
+                                                      WickerParams['pId'], 
+                                                      WickerParams['percAln'], 
+                                                      WickerParams['minLen'], 
+                                                      classif)]
         elif clustering_method == 'MCL':
             clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
         smallClusters = []
-        MakeDir('AlnDir_{0}'.format(classif), '{0}/{1}'.format(paths['AlnDir'], classif))
-        clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
-
+        MakeDir('AlnDir_{0}'.format(classif), '{0}/{1}'.format(paths['AlnDir'], 
+                                                               classif))
+        clusters = [clust.split('\t') for clust 
+                           in open(clusterPath,'r').read().strip().split('\n')]
         if ALIGNCLASSIFS:
             if WICKERCLUST:
-                statusFlKey = 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_all.{4}.{5}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, strHomoflank)
+                statusFlKey = ('WickerAln_{0}_pId_{1}_percAln_'
+                               '{2}_minLen_{3}_cluster_all.{4}.{5}').format(
+                                                       WickerParams['pId'], 
+                                                       WickerParams['percAln'], 
+                                                       WickerParams['minLen'], 
+                                                       classif, 
+                                                       strHomoflank)
             if MCLCLUST:
-                statusFlKey = 'Aln_{0}_I{1}_cluster_all.{2}.{3}'.format(classif, I, strHomoflank)
-            elementlist = [ el for clust in clusters for el in clust ]
+                statusFlKey = 'Aln_{0}_I{1}_cluster_all.{2}.{3}'.format(
+                                                                 classif, 
+                                                                 I,
+                                                                 strHomoflank)
+            elementlist = [el for clust in clusters for el in clust]
             # No gene conversion implemented for this step
             if REMOVEHOMOLOGOUSFLANK:
                 outDir = paths['AlnDir_{0}'.format(classif)]
@@ -3668,45 +3781,71 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
                                 gffLine = GFF3_line(line)
                                 if gffLine.attributes['ID'] in elements:
                                     outFl.write(line)
-
-                elementsWithHomologousFlanks(ingff=repeat_region_gff, infasta=paths['inputFasta'], outdir=outDir, bpflank=bpflank, outfmt='7', percid=flank_pId, evalue=flank_evalue, perc_len_cutoff=flank_plencutoff, procs=procs)
-
-                if 'LTR_element_pairs_with_homologous_flanks' in os.listdir(outDir):
+                elementsWithHomologousFlanks(ingff = repeat_region_gff, 
+                                             infasta = paths['inputFasta'], 
+                                             outdir = outDir, 
+                                             bpflank = bpflank, 
+                                             outfmt = '7', 
+                                             percid = flank_pId, 
+                                             evalue = flank_evalue, 
+                                             perc_len_cutoff = flank_plencutoff, 
+                                             procs = procs)
+                if 'LTR_element_pairs_with_homologous_flanks' in os.listdir(
+                                                                       outDir):
                     print('Found some homologous flankings', file=sys.stderr)
-                    print('{0}/LTR_element_pairs_with_homologous_flanks'.format(outDir), file=sys.stderr)
+                    print('{0}/LTR_element_pairs_with_homologous_flanks'.format(
+                                                      outDir), file=sys.stderr)
                     # parse file and choose LTR RTs to leave out
-                    with open('{0}/LTR_element_pairs_with_homologous_flanks'.format(outDir), 'r') as pairsFl:
-                        to_remove = [ line.strip().split('\t')[0] for line in pairsFl ]
-                        write2summary('These elments were found have homologous flanking sequences with another {0} element and were therefore removed:\n{1}\n'.format(classif, '\n'.join(to_remove)))
-                        elementlist = [ el for el in elementlist if not el in to_remove ]
-
+                    with open(('{0}/LTR_element_pairs_with_'
+                          'homologous_flanks').format(outDir), 'r') as pairsFl:
+                        to_remove = [line.strip().split('\t')[0] for line 
+                                                                    in pairsFl]
+                        write2summary(('These elments were found have '
+                                       'homologous flanking sequences with '
+                                       'another {0} element and were therefore '
+                                       'removed:\n{1}\n').format(classif, 
+                                                         '\n'.join(to_remove)))
+                        elementlist = [el for el 
+                                         in elementlist if not el in to_remove]
                 else:
                     print('Found no homologous flankings', file=sys.stderr)
                     print(outDir, file=sys.stderr)
-
-                aligner(elementList=elementlist, OutDir=outDir, statusFlAlnKey=statusFlKey.format(classif), part=part)
-
+                aligner(elementList = elementlist, 
+                        OutDir = outDir, 
+                        statusFlAlnKey = statusFlKey.format(classif), part = part)
         elif ALIGNCLUSTERS:
             if AUTO_OUTGROUP:
                 # Write header for record of outgroups file, overwriting an old file if it exisits.
                 if clustering_method == 'WickerFam':
-                    OutgroupSummaryKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.OutgroupSummary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc, strHomoflank)
+                    OutgroupSummaryKey = ('WickerOutgroups_{0}_pId_{1}_percAln'
+                            '_{2}_minLen_{3}_{4}.{5}.OutgroupSummary').format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif, 
+                                                        gc, 
+                                                        strHomoflank)
                 elif clustering_method == 'MCL':
-                    OutgroupSummaryKey = 'MCLOutgroups_{0}_I{1}_{2}.{3}.OutgroupSummary'.format(classif, I, gc, strHomoflank)
-                outgroupFile = '{0}/Outgroups'.format(paths['AlnDir_{0}'.format(classif)])
+                    OutgroupSummaryKey = ('MCLOutgroups_{0}_I{1}_{2}.{3}.'
+                                          'OutgroupSummary').format(classif, 
+                                                                   I, 
+                                                                   gc, 
+                                                                   strHomoflank)
+                outgroupFile = '{0}/Outgroups'.format(
+                                                paths['AlnDir_{0}'.format(
+                                                                     classif)])
                 paths[OutgroupSummaryKey] = outgroupFile
-
                 if not checkStatusFl(OutgroupSummaryKey):
                     with open(outgroupFile, 'w') as outFl:
                         outFl.write('Alignment\toutgroup\toutgroup_cluster\n')
-
             for j in range(len(clusters)):
                 elementlist = clusters[j]
                 if REMOVEGENECONV:
                     if os.path.isfile(paths[gcSummaryPth]):
                         try:
                             if j in gcDct[classif]:
-                                elementlist = [ el for el in clusters[j] if not el in gcDct[classif][j] ]
+                                elementlist = [el for el in clusters[j] 
+                                                if not el in gcDct[classif][j]]
                         except KeyError:
                             pass
                     else:
@@ -3718,10 +3857,20 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
                     if combine_and_do_small_clusters:
                         smallClusters += elementlist
                 else:
-                    MakeDir('AlnDir_{0}_I{1}-cluster{2}_{3}'.format(classif, I, j, gc), '{0}/cluster_{1}'.format(paths['AlnDir_{0}'.format(classif)], j))
-                    outDir = paths['AlnDir_{0}_I{1}-cluster{2}_{3}'.format(classif, I, j, gc)]
+                    MakeDir('AlnDir_{0}_I{1}-cluster{2}_{3}'.format(classif, 
+                                                                    I, 
+                                                                    j, 
+                                                                    gc), 
+                                    '{0}/cluster_{1}'.format(
+                                       paths['AlnDir_{0}'.format(classif)], j))
+                    outDir = paths['AlnDir_{0}_I{1}-cluster{2}_{3}'.format(
+                                                                       classif, 
+                                                                       I, 
+                                                                       j, 
+                                                                       gc)]
                     if REMOVEHOMOLOGOUSFLANK:
-                        repeat_region_gff = '{0}/repeat_regions.gff'.format(outDir)
+                        repeat_region_gff = '{0}/repeat_regions.gff'.format(
+                                                                        outDir)
                         elements = set()
                         for el in elementlist:
                             el = el.lstrip('LTR_retrotransposon')
@@ -3734,27 +3883,66 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
                                         gffLine = GFF3_line(line)
                                         if gffLine.attributes['ID'] in elements:
                                             outFl.write(line)
-
-                        elementsWithHomologousFlanks(ingff=repeat_region_gff, infasta=paths['inputFasta'], outdir=outDir, bpflank=bpflank, outfmt='7', percid=flank_pId, evalue=flank_evalue, perc_len_cutoff=flank_plencutoff, procs=procs)
-                        if 'LTR_element_pairs_with_homologous_flanks' in os.listdir(outDir):
-                            write2summary('Found some homologous flankings among cluster {0}, clustering {1}'.format(j, clustering_method))
+                        elementsWithHomologousFlanks(ingff = repeat_region_gff, 
+                                                     infasta = paths['inputFasta'], 
+                                                     outdir = outDir, 
+                                                     bpflank = bpflank, 
+                                                     outfmt = '7', 
+                                                     percid = flank_pId, 
+                                                     evalue = flank_evalue, 
+                                                     perc_len_cutoff = flank_plencutoff, 
+                                                     procs = procs)
+                        if ('LTR_element_pairs_with_homologous_flanks' 
+                                                        in os.listdir(outDir)):
+                            write2summary(('Found some homologous flankings '
+                             'among cluster {0}, clustering {1}').format(j, 
+                                                            clustering_method))
                             # parse file and choose LTR RTs to leave out
-                            with open('{0}/LTR_element_pairs_with_homologous_flanks'.format(outDir), 'r') as pairsFl:
-                                to_remove = [ line.strip().split('\t')[0] for line in pairsFl ]
-                                write2summary('These elments were found have homologous flanking sequences with another {0} element and were therefore removed:\n{1}\n'.format(classif, '\n'.join(to_remove)))
-                                elementlist = [ el for el in elementlist if not el in to_remove ]
+                            with open(('{0}/LTR_element_pairs_with_'
+                                       'homologous_flanks').format(
+                                                      outDir), 'r') as pairsFl:
+                                to_remove = [line.strip().split('\t')[0] for 
+                                                               line in pairsFl]
+                                write2summary(('These elments were found have '
+                                               'homologous flanking sequences '
+                                               'with another {0} element and '
+                                               'were therefore '
+                                               'removed:\n{1}\n').format(
+                                                         classif, 
+                                                         '\n'.join(to_remove)))
+                                elementlist = [el for el in elementlist if 
+                                                           not el in to_remove]
                         else:
-                            write2summary('Found no homologous flankings among cluster {0}, clustering {1}'.format(j, clustering_method))
+                            write2summary(('Found no homologous flankings '
+                                'among cluster {0}, clustering {1}').format(j, 
+                                                            clustering_method))
                     if clustering_method == 'WickerFam':
-                        statusFlKey = 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_{4}_{5}.{6}.{7}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, j, gc, strHomoflank, strOutgroup)
+                        statusFlKey = ('WickerAln_{0}_pId_{1}_percAln_{2}_'
+                               'minLen_{3}_cluster_{4}_{5}.{6}.{7}').format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif, 
+                                                        j, 
+                                                        gc, 
+                                                        strHomoflank, 
+                                                        strOutgroup)
                     elif clustering_method == 'MCL':
-                        statusFlKey = 'Aln_{0}_I{1}_cluster{2}_{3}.{4}.{5}'.format(classif, I, j, gc, strHomoflank, strOutgroup)
+                        statusFlKey = ('Aln_{0}_I{1}_cluster{2}_'
+                                       '{3}.{4}.{5}').format(classif, 
+                                                             I, 
+                                                             j, 
+                                                             gc, 
+                                                             strHomoflank, 
+                                                             strOutgroup)
                     if not statusFlKey in paths:
                         if AUTO_OUTGROUP:
-                            # the outgroup shall be a random element from cluster k
-                            # where cluster k is the largest of the clusters that is not j
-                            # if j is the first cluster then the next smallest cluster is k
-                            # if there is no other cluster, no outgroup is used
+                            # the outgroup shall be a random element 
+                            # from cluster k where cluster k is the 
+                            # largest of the clusters that is not j if
+                            # j is the first cluster then the next 
+                            # smallest cluster is k if there is no other 
+                            # cluster, no outgroup is used
                             OUTGROUP_POSSIBLE = True
                             if j==0:
                                 try:
@@ -3762,53 +3950,83 @@ def AutoAlign(I=6, part='entire', rmgeneconv=False, minClustSize=4, align='clust
                                     k = j+1
                                 except KeyError:
                                     OUTGROUP_POSSIBLE = False
-                                    print('statusFlKey: {0}\nj: {1}\nclusters: {2}\nclusters_len: {3}\n'.format(statusFlKey, j, clusters, len(clusters)))
+                                    print(('statusFlKey: {0}\nj: {1}\nclusters:'
+                                            ' {2}\nclusters_len: {3}\n').format(
+                                                                 statusFlKey, 
+                                                                 j, 
+                                                                 clusters, 
+                                                                 len(clusters)))
                                     print('KeyError, line 2178')
                                     sys.exit()
                             elif j > 0:
                                 k = 0
-
                             if OUTGROUP_POSSIBLE:
                                 outgroup = random.choice(clusters[k])
                                 clustAndOutgroup = clusters[j] + [outgroup]
                                 with open(outgroupFile, 'a') as outFl:
-                                    outFl.write('{0}\t{1}\t{2}\n'.format(statusFlKey, outgroup, k))
+                                    outFl.write('{0}\t{1}\t{2}\n'.format(
+                                                                  statusFlKey, 
+                                                                  outgroup, 
+                                                                  k))
                                 elementlist = clustAndOutgroup
-
-                        aligner(elementlist, OutDir=outDir, statusFlAlnKey=statusFlKey, part=part)
+                        aligner(elementlist, 
+                                OutDir = outDir, 
+                                statusFlAlnKey = statusFlKey, 
+                                part = part)
             if AUTO_OUTGROUP:
                 if not checkStatusFl(OutgroupSummaryKey):
-                    with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+                    with open('{0}/status'.format(paths['output_top_dir']), 
+                                                        'a') as statusFlAppend:
                         if os.path.isfile(paths[OutgroupSummaryKey]):
-                            statusFlAppend.write('{0}\t{1}\n'.format(OutgroupSummaryKey, paths[OutgroupSummaryKey]))
-
+                            statusFlAppend.write('{0}\t{1}\n'.format(
+                                                   OutgroupSummaryKey, 
+                                                   paths[OutgroupSummaryKey]))
             if combine_and_do_small_clusters:
-
                 if len(smallClusters) > 1:
-                    MakeDir('AlnDir_{0}_I{1}-cluster{2}_{3}'.format(classif, I, 'small', gc), '{0}/cluster_{1}'.format(paths['AlnDir_{0}'.format(classif)], 'small'))
-                    outDir = paths['AlnDir_{0}_I{1}-cluster{2}_{3}'.format(classif, I, 'small', gc)]
+                    MakeDir('AlnDir_{0}_I{1}-cluster{2}_{3}'.format(classif, 
+                                                                    I, 
+                                                                    'small', 
+                                                                    gc), 
+                            '{0}/cluster_{1}'.format(paths['AlnDir_{0}'.format(
+                                                           classif)], 'small'))
+                    outDir = paths['AlnDir_{0}_I{1}-cluster{2}_{3}'.format(
+                                                                       classif, 
+                                                                       I, 
+                                                                       'small', 
+                                                                       gc)]
                     if clustering_method == 'WickerFam':
-                        statusFlKey = 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_clustersmall_{4}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc)
+                        statusFlKey = ('WickerAln_{0}_pId_{1}_percAln_{2}_'
+                                       'minLen_{3}_clustersmall_{4}').format(
+                                                       WickerParams['pId'], 
+                                                       WickerParams['percAln'], 
+                                                       WickerParams['minLen'], 
+                                                       classif, 
+                                                       gc)
                     elif clustering_method == 'MCL':
-                        statusFlKey = 'Aln_{0}_I{1}_clustersmall_{2}'.format(classif, I, gc)
+                        statusFlKey = 'Aln_{0}_I{1}_clustersmall_{2}'.format(
+                                                                classif, I, gc)
                     if not statusFlKey in paths:
-                        aligner(smallClusters, OutDir=outDir, statusFlAlnKey=statusFlKey, part=part)
+                        aligner(smallClusters, 
+                                OutDir = outDir, 
+                                statusFlAlnKey = statusFlKey, 
+                                part = part)
 
 
-def geneconvClusters(g='/g0', clust=None, I=6, minClustSize=4, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, combine_and_do_small_clusters=True, LTRSONLY=True):
+def geneconvClusters(g = '/g0', 
+                     clust = None, 
+                     I = 6, 
+                     minClustSize = 4, 
+                     clustering_method = 'WickerFam', 
+                     WickerParams = {'pId':80,'percAln':80,'minLen':80}, 
+                     combine_and_do_small_clusters = True, 
+                     LTRSONLY = True):
+    """g can be one of /g0, /g1, or /g2
+    g is proportional to the tolerance for mismatches in fragments by 
+    geneconv
     """
-    g can be one of /g0, /g1, or /g2
-    g is proportional to the tolerance for mismatches in fragments by geneconv
-    """
-    # GENECONV output:
-    ##   Names                                                                                                    Pvalue  Pvalue   Begin  End   Len  Poly Dif  Difs Pen.
-    #GI      LTR_retrotransposon4189;LTR_retrotransposon4189 0.0001  0.01017 26      100     75      75      0       10      None
-    ##
     global paths
     global filenames
-    
     if GENECONVCLUSTERS:
-
         WICKERCLUST = False
         MCLCLUST = False
         if clustering_method == 'WickerFam':
@@ -3817,9 +4035,7 @@ def geneconvClusters(g='/g0', clust=None, I=6, minClustSize=4, clustering_method
             MCLCLUST = True
         else:
             sys.exit('geneconvClusters() parameter clustering_method needs to be either WickerFam or MCL, and it is: {0}'.format(clustering_method))
-
         if WICKERCLUST:
-
             WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
             paths['Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/GENECONV'.format(WickerDir)
             WickerGCdirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
@@ -3828,9 +4044,7 @@ def geneconvClusters(g='/g0', clust=None, I=6, minClustSize=4, clustering_method
                     statusFlAppend.write('{0}\t{1}\n'.format(WickerGCdirkey, paths[WickerGCdirkey]))
             geneconvOutputDir = WickerGCdirkey
             gcSummaryFl = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_{3}_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], g[1:])
-
         elif MCLCLUST:
-
             MCLdir = paths['MCL_I{0}'.format(I)]
             paths['MCL_I{0}_GENECONVdir'.format(I)] = '{0}/GENECONV'.format(MCLdir)
             if not checkStatusFl('MCL_I{0}_GENECONVdir'.format(I)):
@@ -3838,9 +4052,7 @@ def geneconvClusters(g='/g0', clust=None, I=6, minClustSize=4, clustering_method
                     statusFlAppend.write('{0}\t{1}\n'.format('MCL_I{0}_GENECONVdir'.format(I), paths['MCL_I{0}_GENECONVdir'.format(I)]))
             geneconvOutputDir = 'MCL_I{0}_GENECONVdir'.format(I)
             gcSummaryFl = 'MCL_I{0}_GENECONV_{1}_summary'.format(I, g[1:])
-
         if not gcSummaryFl in paths:
-
             geneconv_calls = []
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 2
@@ -3859,12 +4071,10 @@ def geneconvClusters(g='/g0', clust=None, I=6, minClustSize=4, clustering_method
 
                 MakeDir('GENECONV_{0}_dir'.format(classif), '{0}/{1}'.format(paths[geneconvOutputDir], classif))
                 MakeDir('GENECONV_{0}_{1}_dir'.format(classif, g[1:]), '{0}/{1}'.format(paths['GENECONV_{0}_dir'.format(classif)], g[1:]))
-
                 if MCLCLUST:
                     clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
                 elif WICKERCLUST:
                     clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
-
                 clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
                 smalls = []
                 for j in range(len(clusters)):
@@ -3886,7 +4096,6 @@ def geneconvClusters(g='/g0', clust=None, I=6, minClustSize=4, clustering_method
                     else:
                         if combine_and_do_small_clusters:
                             smalls += clusters[j]
-
                 if combine_and_do_small_clusters:
                     if smalls != []:
                         if MCLCLUST:
@@ -4034,6 +4243,7 @@ def geneconvClusters(g='/g0', clust=None, I=6, minClustSize=4, clustering_method
                     if not checkStatusFl('Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])):
                         statusFlAppend.write('{0}\t{1}\n'.format('Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen']), '{0}/ElementsWithEvidenceOfGeneConversion'.format(paths[geneconvOutputDir])))
         
+
 def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, minClustSize=4, bpflank=None, combine_and_do_small_clusters=True):
 
     """
