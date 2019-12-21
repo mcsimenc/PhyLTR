@@ -4020,9 +4020,12 @@ def geneconvClusters(g = '/g0',
                      WickerParams = {'pId':80,'percAln':80,'minLen':80}, 
                      combine_and_do_small_clusters = True, 
                      LTRSONLY = True):
-    """g can be one of /g0, /g1, or /g2
+    """Searches each cluster for evidence of inter-element gene
+    conversion using GENECONV.
+    
+    g can be one of /g0, /g1, or /g2
     g is proportional to the tolerance for mismatches in fragments by 
-    geneconv
+    GENECONV.
     """
     global paths
     global filenames
@@ -4034,33 +4037,61 @@ def geneconvClusters(g = '/g0',
         elif clustering_method == 'MCL':
             MCLCLUST = True
         else:
-            sys.exit('geneconvClusters() parameter clustering_method needs to be either WickerFam or MCL, and it is: {0}'.format(clustering_method))
+            sys.exit(('geneconvClusters() parameter clustering_method needs to'
+                      ' be either WickerFam or MCL, and it is: {0}').format(
+                                                            clustering_method))
         if WICKERCLUST:
-            WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
-            paths['Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/GENECONV'.format(WickerDir)
-            WickerGCdirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+            WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                       WickerParams['pId'], 
+                                                       WickerParams['percAln'], 
+                                                       WickerParams['minLen'])]
+            paths['Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(
+                         WickerParams['pId'], 
+                         WickerParams['percAln'], 
+                         WickerParams['minLen'])] = '{0}/GENECONV'.format(
+                                                                     WickerDir)
+            WickerGCdirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(
+                                                      WickerParams['pId'], 
+                                                      WickerParams['percAln'], 
+                                                      WickerParams['minLen'])
             if not checkStatusFl(WickerGCdirkey):
-                with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                    statusFlAppend.write('{0}\t{1}\n'.format(WickerGCdirkey, paths[WickerGCdirkey]))
+                with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                    statusFlAppend.write('{0}\t{1}\n'.format(
+                                                        WickerGCdirkey, 
+                                                        paths[WickerGCdirkey]))
             geneconvOutputDir = WickerGCdirkey
-            gcSummaryFl = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_{3}_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], g[1:])
+            gcSummaryFl = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_{3}_summary'.format(
+                                                    WickerParams['pId'], 
+                                                    WickerParams['percAln'], 
+                                                    WickerParams['minLen'], 
+                                                    g[1:])
         elif MCLCLUST:
             MCLdir = paths['MCL_I{0}'.format(I)]
-            paths['MCL_I{0}_GENECONVdir'.format(I)] = '{0}/GENECONV'.format(MCLdir)
+            paths['MCL_I{0}_GENECONVdir'.format(I)] = '{0}/GENECONV'.format(
+                                                                        MCLdir)
             if not checkStatusFl('MCL_I{0}_GENECONVdir'.format(I)):
                 with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                    statusFlAppend.write('{0}\t{1}\n'.format('MCL_I{0}_GENECONVdir'.format(I), paths['MCL_I{0}_GENECONVdir'.format(I)]))
+                    statusFlAppend.write('{0}\t{1}\n'.format(
+                                      'MCL_I{0}_GENECONVdir'.format(I), 
+                                      paths['MCL_I{0}_GENECONVdir'.format(I)]))
             geneconvOutputDir = 'MCL_I{0}_GENECONVdir'.format(I)
             gcSummaryFl = 'MCL_I{0}_GENECONV_{1}_summary'.format(I, g[1:])
         if not gcSummaryFl in paths:
             geneconv_calls = []
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Checking directory structure for GENECONV using {0}'.format(g) )
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                            'Below log entry is from line {0} in {1}'.format(
+                                                                   lineno, 
+                                                                   scriptpath))
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+              'Checking directory structure for GENECONV using {0}'.format(g))
 
             for classif in classifs:
-                if LTRSONLY: # Align only clusters from superfamilies with identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+                # Align only clusters from superfamilies with identical 
+                # LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+                if LTRSONLY:
                     YESLTRS = False
                     for SF in LTR_SFs:
                         if classif.startswith(SF):
@@ -4069,28 +4100,59 @@ def geneconvClusters(g = '/g0',
                 if not YESLTRS:
                     continue
 
-                MakeDir('GENECONV_{0}_dir'.format(classif), '{0}/{1}'.format(paths[geneconvOutputDir], classif))
-                MakeDir('GENECONV_{0}_{1}_dir'.format(classif, g[1:]), '{0}/{1}'.format(paths['GENECONV_{0}_dir'.format(classif)], g[1:]))
+                MakeDir('GENECONV_{0}_dir'.format(classif), 
+                           '{0}/{1}'.format(paths[geneconvOutputDir], classif))
+                MakeDir('GENECONV_{0}_{1}_dir'.format(classif, g[1:]), 
+                       '{0}/{1}'.format(paths['GENECONV_{0}_dir'.format(
+                                                             classif)], g[1:]))
                 if MCLCLUST:
                     clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
                 elif WICKERCLUST:
-                    clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
-                clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
+                    clusterPath = paths[('WickerFamDir_{0}_pId_{1}_percAln'
+                                                       '_{2}_minLen_{3}').format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif)]
+                clusters = [clust.split('\t') for clust in open(
+                                   clusterPath,'r').read().strip().split('\n')]
                 smalls = []
                 for j in range(len(clusters)):
                     if len(clusters[j]) >= minClustSize:
                         if MCLCLUST:
-                            alnPth = paths['Aln_{0}_I{1}_cluster{2}_NoGCfiltering.nohomoflank.noOutgroup'.format(classif, I, j)]
+                            alnPth = paths[('Aln_{0}_I{1}_cluster{2}_NoGCfiltering'
+                                '.nohomoflank.noOutgroup').format(classif, I, j)]
                         elif WICKERCLUST:
-                            alnPth = paths['WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_{4}_NoGCfiltering.nohomoflank.noOutgroup'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, j)]
+                            alnPth = paths[('WickerAln_{0}_pId_{1}_percAln_{2}'
+                                        '_minLen_{3}_cluster_{4}_NoGCfiltering.'
+                                        'nohomoflank.noOutgroup').format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif, 
+                                                        j)]
                         if os.path.isfile(alnPth):
-                            if not os.stat(alnPth).st_size == 0: # if alignment file is non-empty
+                            # if alignment file is non-empty
+                            if not os.stat(alnPth).st_size == 0:
                                 scriptpath = os.path.realpath(__file__)
                                 lineno = getframeinfo(currentframe()).lineno + 2
-                                append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-                                append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run GENECONV on:\n{0}'.format(alnPth))
-                                call = [ executables['geneconv'], alnPth, '/w124', g, '-include_monosites', '-nolog', '-Dumptab', '-Fancy' ]
-                                geneconv_calls.append((call, '/dev/null', None, None))
+                                append2logfile(paths['output_top_dir'], 
+                                               mainlogfile, 
+                                  'Below log entry is from line {0} in {1}'.format(
+                                                           lineno, scriptpath))
+                                append2logfile(paths['output_top_dir'], 
+                                               mainlogfile, 
+                               'Preparing to run GENECONV on:\n{0}'.format(alnPth))
+                                call = [executables['geneconv'], 
+                                        alnPth, 
+                                        '/w124', 
+                                        g, 
+                                        '-include_monosites', 
+                                        '-nolog', 
+                                        '-Dumptab', 
+                                        '-Fancy']
+                                geneconv_calls.append(
+                                               (call, '/dev/null', None, None))
                         else:
                             continue
                     else:
@@ -4099,39 +4161,75 @@ def geneconvClusters(g = '/g0',
                 if combine_and_do_small_clusters:
                     if smalls != []:
                         if MCLCLUST:
-                            if 'Aln_{0}_I{1}_clustersmall_NoGCfiltering'.format(classif, I) in paths:
-                                alnPth = paths['Aln_{0}_I{1}_clustersmall_NoGCfiltering'.format(classif, I)]
+                            if 'Aln_{0}_I{1}_clustersmall_NoGCfiltering'.format(
+                                                          classif, I) in paths:
+                                alnPth = paths[('Aln_{0}_I{1}_clustersmall_'
+                                             'NoGCfiltering'.format(classif, I)]
                             else:
                                 continue
                         elif WICKERCLUST:
-                            if 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_clustersmall_NoGCfiltering'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif) in paths:
-                                alnPth = paths['WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_clustersmall_NoGCfiltering'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
+                            if (('WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}'
+                                 '_clustersmall_NoGCfiltering').format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif) in paths):
+                                alnPth = paths[('WickerAln_{0}_pId_{1}_percAln'
+                                                '_{2}_minLen_{3}_clustersmall_'
+                                                'NoGCfiltering').format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif)]
                             else:
                                 continue
                         if os.path.isfile(alnPth):
-                            if not os.stat(alnPth).st_size == 0: # if alignment file is non-empty
+                            # if alignment file is non-empty
+                            if not os.stat(alnPth).st_size == 0:
                                 scriptpath = os.path.realpath(__file__)
                                 lineno = getframeinfo(currentframe()).lineno + 2
-                                append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-                                append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run GENECONV on:\n{0}'.format(alnPth))
-                                call = [ executables['geneconv'], alnPth, '/w124', g, '-include_monosites', '-nolog', '-Dumptab', '-Fancy' ]
-                                geneconv_calls.append((call, '/dev/null', '{0}.geneconv.err'.format(alnPth), None))
+                                append2logfile(paths['output_top_dir'], 
+                                               mainlogfile, 
+                                  'Below log entry is from line {0} in {1}'.format(
+                                                           lineno, scriptpath))
+                                append2logfile(paths['output_top_dir'], 
+                                               mainlogfile, 
+                                  'Preparing to run GENECONV on:\n{0}'.format(
+                                                                       alnPth))
+                                call = [executables['geneconv'], 
+                                        alnPth, j
+                                        '/w124', 
+                                        g, j 
+                                        '-include_monosites',
+                                        '-nolog',
+                                        '-Dumptab', j
+                                        '-Fancy']
+                                geneconv_calls.append((call, '/dev/null', 
+                                                '{0}.geneconv.err'.format(
+                                                                alnPth), None))
                         else:
                             continue
             if geneconv_calls == []:
                 return
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Running GENECONV, example call:\n{0}'.format(' '.join(geneconv_calls[0][0] )))
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                  'Below log entry is from line {0} in {1}'.format(
+                                                           lineno, scriptpath))
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                  'Running GENECONV, example call:\n{0}'.format(
+                                              ' '.join(geneconv_calls[0][0])))
             chunk_size = ceil(len(geneconv_calls)/procs)
             with Pool(processes=procs) as p:
-                p.map(makecallMultiprocessing, geneconv_calls, chunksize=chunk_size)
+                p.map(makecallMultiprocessing, geneconv_calls, 
+                                                          chunksize=chunk_size)
             p.join()
 
             hasEvidenceOfGC = set()
             for classif in classifs:
-                if LTRSONLY: # Align only clusters from superfamilies with identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+                # Align only clusters from superfamilies with identical 
+                # LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+                if LTRSONLY:
                     YESLTRS = False
                     for SF in LTR_SFs:
                         if classif.startswith(SF):
@@ -4142,66 +4240,119 @@ def geneconvClusters(g = '/g0',
                 if MCLCLUST:
                     clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
                 elif WICKERCLUST:
-                    clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
-
-                clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
+                    clusterPath = paths[('WickerFamDir_{0}_pId_{1}_percAln_{2}'
+                                        '_minLen_{3}').format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif)]
+                clusters = [clust.split('\t') for clust 
+                              in open(clusterPath,'r').read().strip().split('\n')]
                 for j in range(len(clusters)):
                     if len(clusters[j]) >= minClustSize: 
                         if MCLCLUST:
-                            trimalOutput = paths['Aln_{0}_I{1}_cluster{2}_NoGCfiltering.nohomoflank.noOutgroup'.format(classif, I, j)].split('.')
+                            trimalOutput = paths[('Aln_{0}_I{1}_cluster{2}_'
+                                'NoGCfiltering.nohomoflank.noOutgroup').format(
+                                                     classif, I, j)].split('.')
                         elif WICKERCLUST:
-                            trimalOutput = paths['WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_{4}_NoGCfiltering.nohomoflank.noOutgroup'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, j)].split('.')
+                            trimalOutput = paths[('WickerAln_{0}_pId_{1}_'
+                                              'percAln_{2}_minLen_{3}_'
+                                              'cluster_{4}_NoGCfiltering.'
+                                              'nohomoflank.noOutgroup').format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif, 
+                                                        j)].split('.')
                         # GENECONV runs and creates the file were the alignment is
                         gcOutput = copy(trimalOutput)
                         gcOutput[-1] = 'tab'
                         geneconvOutputPth = '.'.join(gcOutput)
-
                         if not os.path.isfile(geneconvOutputPth):
                             continue
                         with open(geneconvOutputPth, 'r') as gcFl:
                             for line in gcFl:
                                 if line.startswith('GI'):
-                                    ## Add parsing of new format here and make Circos plots.
-                                #    #   Seq       Sim     BC KA    Aligned Offsets         In Seq1            In Seq2        Num  Num  Tot  MisM
-                                #    #   Names    Pvalue   Pvalue   Begin  End   Len    Begin  End   Len   Begin  End   Len   Poly Dif  Difs Pen.
-                                #    GI  S18;S37  0.0000  4.73e-41   235   1605 1371     235   1605 1371    229   1599 1371    213   0  229  None
-                                #    GI  S21;S37  0.0000  3.32e-38   235   1383 1149     235   1383 1149    229   1377 1149    179   0  249  None
-                                #    GI  S34;S37  0.0000  6.18e-37   322   1605 1284     322   1605 1284    316   1599 1284    206   0  218  None
-                                #    GI  S26;S37  0.0000  1.33e-33   426   1383  958     426   1383  958    420   1377  958    157   0  252  None
-                                    GI, els, sim_p_val, bc_ka_p_val, aln_start, aln_end, aln_len, el1_start, el1_end, el1_len, el2_start, el2_end, el2_len, num_polys, num_difs, tot_difs, mism_pen = line.strip().split('\t')
-                                    element1, element2 = [ i[1:] for i in els.split(';') ]
-                                #    totDifs = int(line.strip().split()[9])
+    ## Add parsing of new format here and make Circos plots.
+#    #   Seq       Sim     BC KA    Aligned Offsets         In Seq1            In Seq2        Num  Num  Tot  MisM
+#    #   Names    Pvalue   Pvalue   Begin  End   Len    Begin  End   Len   Begin  End   Len   Poly Dif  Difs Pen.
+#    GI  S18;S37  0.0000  4.73e-41   235   1605 1371     235   1605 1371    229   1599 1371    213   0  229  None
+#    GI  S21;S37  0.0000  3.32e-38   235   1383 1149     235   1383 1149    229   1377 1149    179   0  249  None
+#    GI  S34;S37  0.0000  6.18e-37   322   1605 1284     322   1605 1284    316   1599 1284    206   0  218  None
+#    GI  S26;S37  0.0000  1.33e-33   426   1383  958     426   1383  958    420   1377  958    157   0  252  None
+                                    GI, 
+                                    els, 
+                                    sim_p_val, 
+                                    bc_ka_p_val, 
+                                    aln_start, 
+                                    aln_end, 
+                                    aln_len, 
+                                    el1_start, 
+                                    el1_end, 
+                                    el1_len, 
+                                    el2_start, 
+                                    el2_end, 
+                                    el2_len, 
+                                    num_polys, 
+                                    num_difs, 
+                                    tot_difs, 
+                                    mism_pen  = line.strip().split('\t')
+                                    element1, element2 = [i[1:] for i in 
+                                                                els.split(';')]
                                     if int(tot_difs) < 3:
                                         continue
-                                    #element1 = line.strip().split()[1].split(';')[0]
-                                    #element2 = line.strip().split()[1].split(';')[1]
-                                    hasEvidenceOfGC.add((element1, j, classif, g[1:]))
-                                    hasEvidenceOfGC.add((element2, j, classif, g[1:]))
-                                    line='{0}\t{1}\t{2}\n'.format(line.strip(), classif, j)
-                                    with open('{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, g[1:]), 'a') as outFl:
+                                    hasEvidenceOfGC.add((element1, j, 
+                                                               classif, g[1:]))
+                                    hasEvidenceOfGC.add((element2, j, 
+                                                               classif, g[1:]))
+                                    line='{0}\t{1}\t{2}\n'.format(
+                                                      line.strip(), classif, j)
+                                    with open('{0}/{1}_{2}.summary'.format(
+                                       paths['GENECONV_{0}_dir'.format(
+                                                             classif)],
+                                                classif, g[1:]), 'a') as outFl:
                                         outFl.write(line)
 
                         fName = geneconvOutputPth.split('/')[-1]
-                        os.rename(geneconvOutputPth, '{0}/clust{1}_{2}'.format(paths['GENECONV_{0}_{1}_dir'.format(classif, g[1:])], j, fName))
-
+                        os.rename(geneconvOutputPth, '{0}/clust{1}_{2}'.format(
+                           paths['GENECONV_{0}_{1}_dir'.format(
+                                                   classif, g[1:])], j, fName))
                 trimalOutput = None
                 if combine_and_do_small_clusters:
                     if MCLCLUST:
-                        if 'Aln_{0}_I{1}_clustersmall_NoGCfiltering'.format(classif, I) in paths:
-                            if os.path.isfile(paths['Aln_{0}_I{1}_clustersmall_NoGCfiltering'.format(classif, I)]):
-                                trimalOutput = paths['Aln_{0}_I{1}_clustersmall_NoGCfiltering'.format(classif, I)].split('.')
+                        if ('Aln_{0}_I{1}_clustersmall_NoGCfiltering'.format(
+                                                          classif, I) in paths):
+                            if os.path.isfile(paths[('Aln_{0}_I{1}_clustersmall'
+                                          '_NoGCfiltering').format(classif, I)]):
+                                trimalOutput = paths[('Aln_{0}_I{1}_clustersmall'
+                                 '_NoGCfiltering').format(classif, I)].split('.')
                     elif WICKERCLUST:
-                        if 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_clustersmall_NoGCfiltering'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif) in paths:
-                            if os.path.isfile(paths['WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_clustersmall_NoGCfiltering'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]): # 1 sequence, no alignment
-                                trimalOutput = paths['WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_clustersmall_NoGCfiltering'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)].split('.')
-
+                        if ('WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_'
+                               'clustersmall_NoGCfiltering').format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'],
+                                                        WickerParams['minLen'], 
+                                                        classif) in paths:
+                            # 1 sequence, no alignment
+                            if os.path.isfile(paths[('WickerAln_{0}_pId_{1}_'
+                                    'percAln_{2}_minLen_{3}_clustersmall_'
+                                    'NoGCfiltering'.format(
+                                                       WickerParams['pId'], 
+                                                       WickerParams['percAln'], 
+                                                       WickerParams['minLen'], 
+                                                       classif)]):
+                                trimalOutput = paths[('WickerAln_{0}_pId_{1}_'
+                                    'percAln_{2}_minLen_{3}_clustersmall_'
+                                    'NoGCfiltering'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif)].split('.')
                 if not trimalOutput == None:
-
                     # GENECONV runs and creates the file were the alignment is
                     gcOutput = copy(trimalOutput)
                     gcOutput[-1] = 'tab'
                     geneconvOutputPth = '.'.join(gcOutput)
-
                     if not os.path.isfile(geneconvOutputPth):
                         continue
                     with open(geneconvOutputPth, 'r') as gcFl:
@@ -4212,36 +4363,86 @@ def geneconvClusters(g = '/g0',
                                     continue
                                 element1 = line.strip().split()[1].split(';')[0]
                                 element2 = line.strip().split()[1].split(';')[1]
-                                hasEvidenceOfGC.add((element1.lstrip('S'), j, classif, g[1:]))
-                                hasEvidenceOfGC.add((element2.lstrip('S'), j, classif, g[1:]))
-                                line='{0}\t{1}\t{2}\n'.format(line.strip(), classif, j)
-                                with open('{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, g[1:]), 'a') as outFl:
+                                hasEvidenceOfGC.add(
+                                      (element1.lstrip('S'), j, classif, g[1:]))
+                                hasEvidenceOfGC.add(
+                                      (element2.lstrip('S'), j, classif, g[1:]))
+                                line='{0}\t{1}\t{2}\n'.format(
+                                                      line.strip(), classif, j)
+                                with open('{0}/{1}_{2}.summary'.format(
+                                            paths['GENECONV_{0}_dir'.format(
+                                                                classif)], 
+                                                                classif, 
+                                                                g[1:]), 
+                                                                'a') as outFl:
                                     outFl.write(line)
-
                     fName = geneconvOutputPth.split('/')[-1]
-                    os.rename(geneconvOutputPth, '{0}/clust{1}_{2}'.format(paths['GENECONV_{0}_{1}_dir'.format(classif, g[1:])], j, fName))
-
-            for el in sorted(list(hasEvidenceOfGC), key=lambda x:(x[2], x[1], x[3])):
-                with open('{0}/ElementsWithEvidenceOfGeneConversion'.format(paths[geneconvOutputDir]), 'a') as outFl:
-                    outFl.write('{0}\t{1}\t{2}\t{3}\n'.format(el[0], el[1], el[2], g[1:]))
-            paths['GENECONV_clusters_I{0}_summary'.format(I)] = '{0}/ElementsWithEvidenceOfGeneConversion'.format(paths[geneconvOutputDir])
-
+                    os.rename(geneconvOutputPth, 
+                              '{0}/clust{1}_{2}'.format(
+                                    paths['GENECONV_{0}_{1}_dir'.format(
+                                                              classif, g[1:])], 
+                                    j, fName))
+            for el in sorted(list(
+                            hasEvidenceOfGC), key=lambda x:(x[2], x[1], x[3])):
+                with open('{0}/ElementsWithEvidenceOfGeneConversion'.format(
+                                      paths[geneconvOutputDir]), 'a') as outFl:
+                    outFl.write('{0}\t{1}\t{2}\t{3}\n'.format(
+                                                   el[0], el[1], el[2], g[1:]))
+            paths['GENECONV_clusters_I{0}_summary'.format(I)] = ('{0}/'
+                            'ElementsWithEvidenceOfGeneConversion').format(
+                                                      paths[geneconvOutputDir])
             if MCLCLUST:
-                paths['MCL_I{0}_GENECONV_summary'.format(I)] = '{0}/ElementsWithEvidenceOfGeneConversion'.format(paths[geneconvOutputDir])
+                paths['MCL_I{0}_GENECONV_summary'.format(I)] = ('{0}/'
+                                 'ElementsWithEvidenceOfGeneConversion').format(
+                                                      paths[geneconvOutputDir])
             elif WICKERCLUST:
-                paths['Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/ElementsWithEvidenceOfGeneConversion'.format(paths[geneconvOutputDir])
-
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+                paths['Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_summary'.format(
+                                           WickerParams['pId'], 
+                                           WickerParams['percAln'], 
+                                           WickerParams['minLen'])] = ('{0}/'
+                                 'ElementsWithEvidenceOfGeneConversion').format(
+                                                      paths[geneconvOutputDir])
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
                 if MCLCLUST:
-                    if not checkStatusFl('MCL_I{0}_GENECONV_{1}_summary'.format(I, g[1:])):
-                        statusFlAppend.write('{0}\t{1}\n'.format('MCL_I{0}_GENECONV_{1}_summary'.format(I, g[1:]), '{0}/ElementsWithEvidenceOfGeneConversion'.format(paths[geneconvOutputDir])))
+                    if not checkStatusFl('MCL_I{0}_GENECONV_{1}_summary'.format(
+                                                                    I, g[1:])):
+                        statusFlAppend.write('{0}\t{1}\n'.format(
+                            'MCL_I{0}_GENECONV_{1}_summary'.format(I, g[1:]), 
+                            '{0}/ElementsWithEvidenceOfGeneConversion'.format(
+                                                    paths[geneconvOutputDir])))
                     if not checkStatusFl('MCL_I{0}_GENECONV_summary'.format(I)):
-                        statusFlAppend.write('{0}\t{1}\n'.format('MCL_I{0}_GENECONV_summary'.format(I), '{0}/ElementsWithEvidenceOfGeneConversion'.format(paths[geneconvOutputDir])))
+                        statusFlAppend.write('{0}\t{1}\n'.format(
+                            'MCL_I{0}_GENECONV_summary'.format(I), 
+                            '{0}/ElementsWithEvidenceOfGeneConversion'.format(
+                                                    paths[geneconvOutputDir])))
                 elif WICKERCLUST:
-                    if not checkStatusFl('Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_{3}_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], g[1:])):
-                        statusFlAppend.write('{0}\t{1}\n'.format('Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_{3}_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], g[1:]), '{0}/ElementsWithEvidenceOfGeneConversion'.format(paths[geneconvOutputDir])))
-                    if not checkStatusFl('Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])):
-                        statusFlAppend.write('{0}\t{1}\n'.format('Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen']), '{0}/ElementsWithEvidenceOfGeneConversion'.format(paths[geneconvOutputDir])))
+                    if not checkStatusFl(('Wicker_{0}_pId_{1}_percAln_{2}_'
+                                          'minLen_GENECONV_{3}_summary').format(
+                                                       WickerParams['pId'], 
+                                                       WickerParams['percAln'], 
+                                                       WickerParams['minLen'], 
+                                                       g[1:])):
+                        statusFlAppend.write('{0}\t{1}\n'.format(
+                            ('Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_'
+                             '{3}_summary').format(WickerParams['pId'], 
+                                                   WickerParams['percAln'], 
+                                                   WickerParams['minLen'], 
+                                                   g[1:]), 
+                           '{0}/ElementsWithEvidenceOfGeneConversion'.format(
+                                                    paths[geneconvOutputDir])))
+                    if not checkStatusFl(('Wicker_{0}_pId_{1}_percAln_{2}_'
+                            'minLen_GENECONV_summary').format(
+                                                        WickerParams['pId'],
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])):
+                        statusFlAppend.write('{0}\t{1}\n'.format(
+                            ('Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_'
+                             'summary').format(WickerParams['pId'], 
+                                               WickerParams['percAln'], 
+                                               WickerParams['minLen']), 
+                            '{0}/ElementsWithEvidenceOfGeneConversion'.format(
+                                                    paths[geneconvOutputDir])))
         
 
 def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, minClustSize=4, bpflank=None, combine_and_do_small_clusters=True):
