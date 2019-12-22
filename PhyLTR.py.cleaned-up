@@ -4164,7 +4164,7 @@ def geneconvClusters(g = '/g0',
                             if 'Aln_{0}_I{1}_clustersmall_NoGCfiltering'.format(
                                                           classif, I) in paths:
                                 alnPth = paths[('Aln_{0}_I{1}_clustersmall_'
-                                             'NoGCfiltering'.format(classif, I)]
+                                             'NoGCfiltering').format(classif, I)]
                             else:
                                 continue
                         elif WICKERCLUST:
@@ -4197,12 +4197,12 @@ def geneconvClusters(g = '/g0',
                                   'Preparing to run GENECONV on:\n{0}'.format(
                                                                        alnPth))
                                 call = [executables['geneconv'], 
-                                        alnPth, j
+                                        alnPth,
                                         '/w124', 
-                                        g, j 
+                                        g,
                                         '-include_monosites',
                                         '-nolog',
-                                        '-Dumptab', j
+                                        '-Dumptab',
                                         '-Fancy']
                                 geneconv_calls.append((call, '/dev/null', 
                                                 '{0}.geneconv.err'.format(
@@ -4336,14 +4336,14 @@ def geneconvClusters(g = '/g0',
                             # 1 sequence, no alignment
                             if os.path.isfile(paths[('WickerAln_{0}_pId_{1}_'
                                     'percAln_{2}_minLen_{3}_clustersmall_'
-                                    'NoGCfiltering'.format(
+                                    'NoGCfiltering').format(
                                                        WickerParams['pId'], 
                                                        WickerParams['percAln'], 
                                                        WickerParams['minLen'], 
                                                        classif)]):
                                 trimalOutput = paths[('WickerAln_{0}_pId_{1}_'
                                     'percAln_{2}_minLen_{3}_clustersmall_'
-                                    'NoGCfiltering'.format(
+                                    'NoGCfiltering').format(
                                                         WickerParams['pId'], 
                                                         WickerParams['percAln'], 
                                                         WickerParams['minLen'], 
@@ -4445,16 +4445,20 @@ def geneconvClusters(g = '/g0',
                                                     paths[geneconvOutputDir])))
         
 
-def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, minClustSize=4, bpflank=None, combine_and_do_small_clusters=True):
-
-    """
-    iters    number of times to run jModeltest2. default 10
-    part refers to what portion of the element to align. possible values are:
-    entire or internal
+def modeltest(iters=1, 
+              I=6, 
+              removegeneconv=True, 
+              part='entire', 
+              clustering_method='WickerFam', 
+              WickerParams={'pId':80,'percAln':80,'minLen':80}, 
+              minClustSize=4, 
+              bpflank=None, 
+              combine_and_do_small_clusters=True):
+    """Runs jModeltest2 on each cluster and writes information for PAUP
+    to summary files.
     """
     global paths
     global fileames
-
     REMOVEGENECONV = removegeneconv
     WICKERCLUST = False
     MCLCLUST = False
@@ -4463,52 +4467,131 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
     elif clustering_method == 'MCL':
         MCLCLUST = True
     else:
-        sys.exit('modeltest() parameter clustering_method needs to be either WickerFam or MCL, and it is: {0}'.format(clustering_method))
-    
+        sys.exit(('modeltest() parameter clustering_method needs to be either'
+            ' WickerFam or MCL, and it is: {0}').format(clustering_method))
     if REMOVEGENECONV:
         gc = 'GCfiltered'
     else:
         gc = 'NoGCfiltering'
     keySuffix = '{0}.nohomoflank.noOutgroup'.format(gc)
-
     if LTRDIVERGENCE:
         if WICKERCLUST:
-            WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
-            WickerMTdirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_modeltestDir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+            WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])]
+            WickerMTdirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_modeltestDir'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
             paths[WickerMTdirkey] = '{0}/Modeltest'.format(WickerDir)
             paths['ModelTestDir'] = paths[WickerMTdirkey]
             if not checkStatusFl(WickerMTdirkey):
-                with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                    statusFlAppend.write('{0}\t{1}\n'.format(WickerMTdirkey, paths[WickerMTdirkey]))
+                with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                    statusFlAppend.write('{0}\t{1}\n'.format(
+                                        WickerMTdirkey, paths[WickerMTdirkey]))
             if REMOVEGENECONV:
-                AutoAlign(I=None, part='entire', rmgeneconv=True, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'], 'percAln':WickerParams['percAln'], 'minLen':WickerParams['minLen']}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
-                MakeDir('ModelTestDir_{0}'.format(keySuffix), '{0}/GeneconversionDisallowed'.format(paths['ModelTestDir']))
+                AutoAlign(I=None, 
+                          part='entire', 
+                          rmgeneconv=True, 
+                          minClustSize=minClustSize, 
+                          align='clusters', 
+                          rmhomologflank=False, 
+                          clustering_method='WickerFam', 
+                          WickerParams={'pId':WickerParams['pId'], 
+                          'percAln':WickerParams['percAln'], 
+                          'minLen':WickerParams['minLen']}, 
+                          auto_outgroup=False, 
+                          bpflank=bpflank, 
+                          combine_and_do_small_clusters=combine_and_do_small_clusters, 
+                          flank_pId=flank_pId, 
+                          flank_evalue=flank_evalue, 
+                          flank_plencutoff=flank_plencutoff, 
+                          LTRSONLY=True)
+                MakeDir('ModelTestDir_{0}'.format(keySuffix), 
+                    '{0}/GeneconversionDisallowed'.format(paths['ModelTestDir']))
             else:
-                AutoAlign(I=None, part='entire', rmgeneconv=False, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'], 'percAln':WickerParams['percAln'], 'minLen':WickerParams['minLen']}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
-                MakeDir('ModelTestDir_{0}'.format(keySuffix), '{0}/NoGCFiltering'.format(paths['ModelTestDir']))
-
-            alignmentsForModeltesting = [ pth for pth in paths if pth.startswith('WickerAln_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])) and pth.endswith('{0}.nohomoflank.noOutgroup'.format(gc)) ] # model testing not done for small clusters
-
+                AutoAlign(I=None, 
+                          part='entire', 
+                          rmgeneconv=False, 
+                          minClustSize=minClustSize, 
+                          align='clusters', 
+                          rmhomologflank=False, 
+                          clustering_method='WickerFam', 
+                          WickerParams={'pId':WickerParams['pId'], 
+                          'percAln':WickerParams['percAln'], 
+                          'minLen':WickerParams['minLen']}, 
+                          auto_outgroup=False, 
+                          bpflank=bpflank, 
+                          combine_and_do_small_clusters=combine_and_do_small_clusters, 
+                          flank_pId=flank_pId, 
+                          flank_evalue=flank_evalue, 
+                          flank_plencutoff=flank_plencutoff, 
+                          LTRSONLY=True)
+                MakeDir('ModelTestDir_{0}'.format(keySuffix), 
+                             '{0}/NoGCFiltering'.format(paths['ModelTestDir']))
+            # model testing not done for small clusters
+            alignmentsForModeltesting = [pth for pth in paths if pth.startswith(
+                        'WickerAln_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])) 
+                     and pth.endswith('{0}.nohomoflank.noOutgroup'.format(gc))]
         elif MCLCLUST:
             MCLdir = paths['MCL_I{0}'.format(I)]
             MCL_MT_dirkey = 'MCL_I{0}_modeltestDir'.format(I)
             paths[MCL_MT_dirkey] = '{0}/Modeltest'.format(MCLdir)
             paths['ModelTestDir'] = paths[MCL_MT_dirkey]
             if not checkStatusFl(MCL_MT_dirkey):
-                with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                    statusFlAppend.write('{0}\t{1}\n'.format(MCL_MT_dirkey, paths[MCL_MT_dirkey]))
+                with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                    statusFlAppend.write('{0}\t{1}\n'.format(
+                                          MCL_MT_dirkey, paths[MCL_MT_dirkey]))
             if REMOVEGENECONV:
-                AutoAlign(I=I, part=part, rmgeneconv=True, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
-                MakeDir('ModelTestDir_{0}'.format(keySuffix), '{0}/GeneconversionDisallowed'.format(paths['ModelTestDir']))
+                AutoAlign(I=I, 
+                          part=part, 
+                          rmgeneconv=True, 
+                          minClustSize=minClustSize, 
+                          align='clusters', 
+                          rmhomologflank=False, 
+                          clustering_method='MCL', 
+                          WickerParams=None, 
+                          auto_outgroup=False, 
+                          bpflank=bpflank, 
+                          combine_and_do_small_clusters=combine_and_do_small_clusters, 
+                          flank_pId=flank_pId, 
+                          flank_evalue=flank_evalue, 
+                          flank_plencutoff=flank_plencutoff, 
+                          LTRSONLY=True)
+                MakeDir('ModelTestDir_{0}'.format(keySuffix), 
+                  '{0}/GeneconversionDisallowed'.format(paths['ModelTestDir']))
             else:
-                AutoAlign(I=I, part=part, rmgeneconv=False, minClustSize=minClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
-                MakeDir('ModelTestDir_{0}'.format(keySuffix), '{0}/NoGCFiltering'.format(paths['ModelTestDir']))
-            alignmentsForModeltesting = [ pth for pth in paths if pth.startswith('Aln_') and pth.endswith('{0}.nohomoflank.noOutgroup'.format(gc)) and 'I{0}'.format(I) in pth ]
-
+                AutoAlign(I=I, 
+                          part=part, 
+                          rmgeneconv=False, 
+                          minClustSize=minClustSize, 
+                          align='clusters', 
+                          rmhomologflank=False, 
+                          clustering_method='MCL', 
+                          WickerParams=None, 
+                          auto_outgroup=False, 
+                          bpflank=bpflank, 
+                          combine_and_do_small_clusters=combine_and_do_small_clusters, 
+                          flank_pId=flank_pId, 
+                          flank_evalue=flank_evalue, 
+                          flank_plencutoff=flank_plencutoff, 
+                          LTRSONLY=True)
+                MakeDir('ModelTestDir_{0}'.format(keySuffix), 
+                             '{0}/NoGCFiltering'.format(paths['ModelTestDir']))
+            alignmentsForModeltesting = [pth for pth in paths if 
+                                            pth.startswith('Aln_') and 
+                                            pth.endswith('{0}.nohomoflank.noOutgroup'.format(
+                                              gc)) and 'I{0}'.format(I) in pth]
         if alignmentsForModeltesting == []:
-            with open('{0}/NO_MODEL_TESTING_DONE'.format(paths['ModelTestDir_{0}'.format(keySuffix)]), 'w') as outFl:
+            with open('{0}/NO_MODEL_TESTING_DONE'.format(
+                   paths['ModelTestDir_{0}'.format(keySuffix)]), 'w') as outFl:
                 outFl.write('Perhaps there are too few LTR RTs')
-            
         for aln in alignmentsForModeltesting:
             if not os.path.isfile(paths[aln]):
                 continue
@@ -4519,59 +4602,116 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
                 if '-' in a[2]:
                     j = a[2].split('-')[1][7:]
                     suffix = a[3] 
-
                 else:
                     j = a[3][7:]
                     suffix = a[4]
-                OutDirKey = 'MCLModelTestDir_{0}_iters_I{1}_{2}_cluster_{3}_{4}'.format(iters,I, classif, j, suffix)
-                OutSummaryKey = 'MCLModelTestSummary_{0}_iters_I{1}_{2}'.format(iters,I, classif)
+                OutDirKey = 'MCLModelTestDir_{0}_iters_I{1}_{2}_cluster_{3}_{4}'.format(
+                                                  iters,I, classif, j, suffix)
+                OutSummaryKey = 'MCLModelTestSummary_{0}_iters_I{1}_{2}'.format(
+                                                              iters,I, classif)
                 if j == 'small':
                     if not combine_and_do_small_clusters:    
                         continue
                     j = 'clustersmall'
             elif WICKERCLUST:
-                # e.g. aln = WickerAln_80_pId_80_percAln_80_minLen_Copia_cluster_0_GCfiltered
+                # e.g. 
+                # aln = WickerAln_80_pId_80_percAln_80_minLen_Copia_cluster_0_GCfiltered
                 a = aln.split('_')
                 classif = a[7]
                 j = a[-2] # Cluster
                 suffix = a[-1]
-                OutDirKey = 'WickerModelTestDir_{0}_iters_{1}_pId_{2}_percAln_{3}_minLen_{4}_cluster_{5}_{6}'.format(iters, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, j, suffix)
-                OutSummaryKey = 'WickerModelTestSummary_{0}_iters_{1}_pId_{2}_percAln_{3}_minLen_{4}'.format(iters, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)
-                    
-            MakeDir('ModelTest_{0}_{1}_dir'.format(suffix, classif), '{0}/{1}'.format(paths['ModelTestDir_{0}'.format(suffix)], classif))
+                OutDirKey = ('WickerModelTestDir_{0}_iters_{1}_pId_{2}_percAln'
+                            '_{3}_minLen_{4}_cluster_{5}_{6}').format(
+                                                        iters, 
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif, 
+                                                        j, 
+                                                        suffix)
+                OutSummaryKey = ('WickerModelTestSummary_{0}_iters_{1}_pId_{2}'
+                                '_percAln_{3}_minLen_{4}').format(
+                                                        iters, 
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif)
+            MakeDir('ModelTest_{0}_{1}_dir'.format(suffix, classif), 
+                    '{0}/{1}'.format(paths['ModelTestDir_{0}'.format(suffix)], 
+                                                                      classif))
             sessionDir = paths['ModelTest_{0}_{1}_dir'.format(suffix, classif)]
-
-            if not OutDirKey in paths: # If true it means the model testing already finished for that group
+            # If true it means the model testing already finished for that group
+            if not OutDirKey in paths:
 
                 MakeDir(OutDirKey, '{0}/{1}_iters'.format(sessionDir, iters))
-                MakeDir('ModelTestClustDir', '{0}/cluster_{1}'.format(paths[OutDirKey], j))
-
+                MakeDir('ModelTestClustDir', '{0}/cluster_{1}'.format(
+                                                          paths[OutDirKey], j))
                 for i in range(int(iters)):
-
-                    MakeDir('ModelTestIterationDir', '{0}/iter_{1}'.format(paths['ModelTestClustDir'], str(i+1)))
-
+                    MakeDir('ModelTestIterationDir', 
+                            '{0}/iter_{1}'.format(
+                                         paths['ModelTestClustDir'], str(i+1)))
                     # FastTree
-                    paths['Tree'] = '{0}/{1}_I{2}_{3}.tree'.format(paths['ModelTestIterationDir'], classif, I, j)
-                    filenames['Tree'] = '{0}_I{1}_{2}.tree'.format(classif, I, j)
+                    paths['Tree'] = '{0}/{1}_I{2}_{3}.tree'.format(
+                                 paths['ModelTestIterationDir'], classif, I, j)
+                    filenames['Tree'] = '{0}_I{1}_{2}.tree'.format(
+                                                                 classif, I, j)
                     fasttree_call = [ executables['fasttree'], '-nt', '-gtr' ]
-                    fasttree_call_string = '{0} -nt -gtr <{1} >{2} 2>{2}.stderr'.format(executables['fasttree'], paths[aln],paths['Tree'])
+                    fasttree_call_string = '{0} -nt -gtr <{1} >{2} 2>{2}.stderr'.format(
+                             executables['fasttree'], paths[aln],paths['Tree'])
                     scriptpath = os.path.realpath(__file__)
                     lineno = getframeinfo(currentframe()).lineno + 2
-                    append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-                    append2logfile(paths['output_top_dir'], mainlogfile, 'Began inferring phylogeny using FastTree:\n{0}'.format(fasttree_call_string))
-                    makecall(fasttree_call, stdout=paths['Tree'], stderr='{0}.stderr'.format(paths['Tree']), stdin=paths[aln])
-                    append2logfile(paths['output_top_dir'], mainlogfile, 'Finished inferring phylogeny using FastTree')
-                    paths['jModeltest2out_{0}'.format(classif)] = '{0}/{1}.jModelTest2.out'.format(paths['ModelTestIterationDir'], filenames['Tree'])
-                    jmodeltestCallString = 'java -jar {0} -d {1} -w -g 4 -f -BIC -a -u {2} -o {3} -tr {4} -s 11'.format(executables['jmodeltest2'], paths[aln], paths['Tree'], paths['jModeltest2out_{0}'.format(classif)], str(procs))
-                    append2logfile(paths['output_top_dir'], mainlogfile, 'Starting jModeltest2\n{0}'.format(jmodeltestCallString))
-                    subprocess.call([ 'java', '-jar', executables['jmodeltest2'], '-d', paths[aln], '-w', '-g', '4', '-f', '-BIC', '-a', '-u', paths['Tree'], '-o', paths['jModeltest2out_{0}'.format(classif)], '-tr', str(procs), '-s', '11'])
+                    append2logfile(paths['output_top_dir'], 
+                                   mainlogfile, 
+                                   'Below log entry is from line {0} in {1}'.format(
+                                                           lineno, scriptpath))
+                    append2logfile(paths['output_top_dir'],
+                                   mainlogfile, 
+                                   'Began inferring phylogeny using FastTree:\n{0}'.format(
+                                                         fasttree_call_string))
+                    makecall(fasttree_call, stdout=paths['Tree'], 
+                            stderr='{0}.stderr'.format(paths['Tree']), 
+                            stdin=paths[aln])
+                    append2logfile(paths['output_top_dir'], 
+                                   mainlogfile, 
+                                   'Finished inferring phylogeny using FastTree')
+                    paths['jModeltest2out_{0}'.format(
+                            classif)] = '{0}/{1}.jModelTest2.out'.format(
+                             paths['ModelTestIterationDir'], filenames['Tree'])
+                    jmodeltestCallString = ('java -jar {0} -d {1} -w -g 4 -f '
+                        '-BIC -a -u {2} -o {3} -tr {4} -s 11').format(
+                                                 executables['jmodeltest2'], 
+                                                 paths[aln], 
+                                                 paths['Tree'], 
+                                                 paths['jModeltest2out_{0}'.format(
+                                                         classif)], str(procs))
+                    append2logfile(paths['output_top_dir'], 
+                                   mainlogfile, 
+                                   'Starting jModeltest2\n{0}'.format(
+                                                         jmodeltestCallString))
+                    subprocess.call(['java', '-jar', executables['jmodeltest2'], 
+                                     '-d', 
+                                     paths[aln], 
+                                     '-w', 
+                                     '-g', 
+                                     '4', 
+                                     '-f', 
+                                     '-BIC', 
+                                     '-a', 
+                                     '-u', 
+                                     paths['Tree'], 
+                                     '-o', 
+                                     paths['jModeltest2out_{0}'.format(classif)], 
+                                     '-tr', 
+                                     str(procs), 
+                                     '-s', 
+                                     '11'])
                                     
                     topDir = paths[OutDirKey]
                     jmt2summaryFlPth = '{0}/Summary.txt'.format(topDir)
                     paths['jModeltest2summary_{0}'.format(classif)] = jmt2summaryFlPth
-                    #with open('{0}/{1}/{2}'.format(topDir, d, f), 'r') as jmt2outFl:
-                    clustSize = len([ 1 for line in open(paths[aln],'r').read().split('\n') if line.startswith('>') ])
-
+                    clustSize = len([ 1 for line in open(
+                                paths[aln],'r').read().split('\n') 
+                                if line.startswith('>') ])
                     with open(paths['jModeltest2out_{0}'.format(classif)], 'r') as jmt2outFl:
                         END = False
                         PAUP = False
@@ -4584,7 +4724,6 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
                                 PAUP = True
                             elif line.startswith('::Best Models::'):
                                 END = True
-
                             if line.startswith('END;') and getPAUP:
                                 paupLines += 'Dset distance=ML;\n'
                                 paupLines += 'SaveDist format=oneColumn file=dist;\n'
@@ -4596,23 +4735,26 @@ def modeltest(iters=1, I=6, removegeneconv=True, part='entire', clustering_metho
                                 getPAUP = True
                             elif getPAUP:
                                 paupLines += line
-
                             if line.startswith('BIC') and END:
-                                #method, model, a, c, g, t, kappa, titv, Ra, Rb, Rc, Rd, Re, Rf, pInv, gamma = line.strip().split()
                                 with open(jmt2summaryFlPth, 'a') as summaryFl:
-                                    summaryFl.write('{0}\t{1}\t{2}\n'.format(line.strip(), j, clustSize))
+                                    summaryFl.write('{0}\t{1}\t{2}\n'.format(
+                                                   line.strip(), j, clustSize))
                                     summaryFl.write(paupLines)
                                     COMPLETE_RUN = True
-
             if not checkStatusFl(OutDirKey):
-                with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                    statusFlAppend.write('{0}\t{1}\n'.format(OutDirKey, paths['ModelTestIterationDir']))
-                    #statusFlAppend.write('{0}\t{1}\n'.format('jModeltest2out_{0}'.format(classif), paths['jModeltest2out_{0}'.format(classif)]))
-                    if 'jModeltest2summary_{0}'.format(classif) in paths and COMPLETE_RUN:
+                with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                    statusFlAppend.write('{0}\t{1}\n'.format(
+                                    OutDirKey, paths['ModelTestIterationDir']))
+                    if 'jModeltest2summary_{0}'.format(
+                                            classif) in paths and COMPLETE_RUN:
                         if not checkStatusFl(OutSummaryKey):
-                            statusFlAppend.write('{0}\t{1}\n'.format(OutSummaryKey, paths['jModeltest2summary_{0}'.format(classif)]))
+                            statusFlAppend.write('{0}\t{1}\n'.format(
+                              OutSummaryKey, 
+                              paths['jModeltest2summary_{0}'.format(classif)]))
                     else:
                         pass
+
 
 def align_ltrs(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, DONTALIGN=False):
 
