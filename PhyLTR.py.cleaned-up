@@ -49,7 +49,15 @@ class GFF3_line:
             self.attributes = {}
             
         else:
-            (self.seqid, self.source, self.type, self.start, self.end, self.score, self.strand, self.phase, self.attributes_str) = line.strip().split('\t')
+            (self.seqid, 
+             self.source, 
+             self.type, 
+             self.start, 
+             self.end, 
+             self.score, 
+             self.strand, 
+             self.phase, 
+             self.attributes_str) = line.strip().split('\t')
             self.start = int(self.start)
             self.end = int(self.end)
             assert self.start <= self.end
@@ -4756,29 +4764,34 @@ def modeltest(iters=1,
                         pass
 
 
-def align_ltrs(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, DONTALIGN=False):
+def align_ltrs(I=6, 
+               clustering_method='WickerFam', 
+               WickerParams={'pId':80,'percAln':80,'minLen':80}, 
+               DONTALIGN=False):
+    """Make a GFF3 for every LTR pair from which to use to extract 
+    sequences and align each pair of LTRs using MAFFT.
 
-    """
-    Run through GFF3
-    Make a GFF3 for every LTR pair
-    Create a bedtools getfasta call for every LTR pair GFF3
-    Change sequence headers
-    Create a mafft call for every LTR pair FASTA
-    Execute calls using multiprocessing
-
-    Elements with Superfamily classifications besides the ones in LTR_SFs are ignored because they might be DIRS or
-    another kind of SF with non-identical LTRs (thus the LTR divergence process would not be accurate)
+    Elements with Superfamily classifications besides the ones in 
+    LTR_SFs are ignored because they might be DIRS or another kind of 
+    SF with non-identical LTRs, thus the LTR divergence process would 
+    not be accurate.
     """
     global paths
     global filenames
-
     WICKERCLUST = False
     MCLCLUST = False
-    # And set up directory structure for output (LTR pairs GFFs, FASTAs, and alignments)
+    # And set up directory structure for output (LTR pairs GFFs, 
+    # FASTAs, and alignments)
     if clustering_method == 'WickerFam':
         WICKERCLUST = True
-        key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-        WickerDir = 'WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+        key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                    WickerParams['pId'], 
+                                                    WickerParams['percAln'], 
+                                                    WickerParams['minLen'])
+        WickerDir = 'WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                    WickerParams['pId'], 
+                                                    WickerParams['percAln'], 
+                                                    WickerParams['minLen'])
         MakeDir('Alignments', '{0}/Alignments'.format(paths[WickerDir]))
         AlnKey = '{0}.LTRAlnDir'.format(key_base)
         paths[AlnKey] = '{0}/LTRs'.format(paths['Alignments'])
@@ -4806,136 +4819,211 @@ def align_ltrs(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percA
         MakeDir(FASTAKey, paths[FASTAKey])
         TrimalKey = '{0}.LTRs.aln.trimal'.format(key_base)
     else:
-        sys.exit('align_ltrs() parameter clustering_method needs to be either WickerFam or MCL and it is: {0}'.format(clustering_method))
-
+        sys.exit(('align_ltrs() parameter clustering_method needs to be either '
+                  'WickerFam or MCL and it is: {0}').format(clustering_method))
     if checkStatusFl('{0}.LTR_divergence_complete'.format(key_base)):
         scriptpath = os.path.realpath(__file__)
         lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'ltr_divergence() already completed: {0}'.format(paths['{0}.LTR_divergence_complete'.format(key_base)]))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                'Below log entry is from line {0} in {1}'.format(lineno, 
+                                                                 scriptpath))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                'ltr_divergence() already completed: {0}'.format(
+                        paths['{0}.LTR_divergence_complete'.format(key_base)]))
         return
-
     if GENECONVLTRS or LTRDIVERGENCE:
-
         MakeDir('LTRsGFFoutputDir', '{0}/LTRs'.format(paths['GFFOutputDir']))
         MakeDir('LTRsFASTAoutputDir', '{0}/LTRs'.format(paths['FastaOutputDir']))
         MakeDir('Alignments', '{0}/Alignments'.format(paths['output_top_dir']))
         MakeDir('LTRsAlignments_dir', '{0}/LTRs'.format(paths['Alignments']))
-
-        ltrs = {} # this will have the GFF lines for each LTR RT's LTRs
+        # this will have the GFF lines for each LTR RT's LTRs
+        ltrs = {}
         ltrs_getfasta_calls = {}
         ltrs_changefastaheaders_calls = {}
         ltrs_mafft_calls = {}
         ltrs_clean_mafft_output_calls = {}
         ltrs_trimal_calls = {}
         num_pairs = 0
-
         scriptpath = os.path.realpath(__file__)
         lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Parsing LTRs from GFF3:\n{0}'.format(paths['CurrentGFF']))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                  'Below log entry is from line {0} in {1}'.format(lineno, 
+                                                                   scriptpath))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                    'Parsing LTRs from GFF3:\n{0}'.format(paths['CurrentGFF']))
         with open(paths['CurrentGFF'], 'r') as GFF_fl:
             for line in GFF_fl:
                 if '\tlong_terminal_repeat\t' in line:
                     gffLine = GFF3_line(line)
                     elementName = gffLine.attributes['Parent']
-
-                    # Skip element kinds with potentially non-identical LTRs upon insertion, e.g. DIRS, Ngaro
+                    # Skip element kinds with potentially non-identical 
+                    # LTRs upon insertion, e.g. DIRS, Ngaro
                     YESLTR = False
                     for SF in LTR_SFs:
                         if classifs_by_element[elementName].startswith(SF):
                             YESLTR = True
                             break
-
                     if YESLTR:
                         if elementName in ltrs:
                             ltrs[elementName].append(line)
                             if len(ltrs[elementName]) == 2:
-                                LTRsGFFfilepath = '{0}/{1}_LTRs.gff'.format(paths[GFFKey], elementName)
-                                LTRsFASTAfilepath = '{0}/{1}_LTRs.fasta'.format(paths[FASTAKey], elementName)
-                                LTRsAlignmentFilepath = '{0}/{1}_LTRs.fasta.aln'.format(paths[AlnKey], elementName)
-                                LTRsTrimmedAlnFilepath = '{0}.trimmed'.format(LTRsAlignmentFilepath)
-                                ltrs[elementName].append(LTRsGFFfilepath) # For writing GFF3
-                                getfasta_LTRs_call = [ executables['bedtools'], 'getfasta', '-fi', paths['inputFasta'], '-s', '-bed', LTRsGFFfilepath ]  
-                                ltrs_getfasta_calls[elementName] = (getfasta_LTRs_call, LTRsFASTAfilepath, None, None)
-                                ltrs_changefastaheaders_calls[elementName] = (LTRsFASTAfilepath, LTRsGFFfilepath, 'Parent')
-                                mafft_LTRs_call = [ executables['mafft'], '--quiet', '--globalpair', '--maxiterate', '1000', LTRsFASTAfilepath ]
-                                ltrs_mafft_calls[elementName] = (mafft_LTRs_call, LTRsAlignmentFilepath, None, None)
-                                #ltrs_clean_mafft_output_calls[elementName] = (CleanMafft(LTRsAlignmentFilepath), None, None, None)
-                                ltrs_clean_mafft_output_calls[elementName] = LTRsAlignmentFilepath
-                                trimal_LTRs_call = [ executables['trimal'], '-in', LTRsAlignmentFilepath, '-out', LTRsTrimmedAlnFilepath, '-automated1' ]
-                                ltrs_trimal_calls[elementName] = (trimal_LTRs_call, LTRsTrimmedAlnFilepath, None, None)
-
+                                LTRsGFFfilepath = '{0}/{1}_LTRs.gff'.format(
+                                                            paths[GFFKey], 
+                                                            elementName)
+                                LTRsFASTAfilepath = '{0}/{1}_LTRs.fasta'.format(
+                                                            paths[FASTAKey], 
+                                                            elementName)
+                                LTRsAlignmentFilepath = '{0}/{1}_LTRs.fasta.aln'.format(
+                                                            paths[AlnKey], 
+                                                            elementName)
+                                LTRsTrimmedAlnFilepath = '{0}.trimmed'.format(
+                                                         LTRsAlignmentFilepath)
+                                # For writing GFF3
+                                ltrs[elementName].append(LTRsGFFfilepath)
+                                getfasta_LTRs_call = [executables['bedtools'], 
+                                                     'getfasta', 
+                                                     '-fi', paths['inputFasta'], 
+                                                     '-s', 
+                                                     '-bed', LTRsGFFfilepath]
+                                ltrs_getfasta_calls[elementName] = (
+                                                    getfasta_LTRs_call, 
+                                                    LTRsFASTAfilepath, 
+                                                    None, None)
+                                ltrs_changefastaheaders_calls[elementName] = (
+                                                    LTRsFASTAfilepath, 
+                                                    LTRsGFFfilepath, 
+                                                    'Parent')
+                                mafft_LTRs_call = [executables['mafft'], 
+                                                  '--quiet', 
+                                                  '--globalpair', 
+                                                  '--maxiterate', '1000', 
+                                                  LTRsFASTAfilepath]
+                                ltrs_mafft_calls[elementName] = (mafft_LTRs_call, 
+                                                    LTRsAlignmentFilepath, 
+                                                    None, None)
+                                ltrs_clean_mafft_output_calls[
+                                           elementName] = LTRsAlignmentFilepath
+                                trimal_LTRs_call = [executables['trimal'], 
+                                                   '-in', LTRsAlignmentFilepath, 
+                                                   '-out', LTRsTrimmedAlnFilepath, 
+                                                   '-automated1']
+                                ltrs_trimal_calls[elementName] = (
+                                                        trimal_LTRs_call, 
+                                                        LTRsTrimmedAlnFilepath, 
+                                                        None, None)
                                 num_pairs += 1
                         else:
                             ltrs[elementName] = [line]
-
         chunk_size = ceil(num_pairs/procs)
         # Write to log file here about chunk size and processors used
         scriptpath = os.path.realpath(__file__)
         lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'For align_ltrs(): procs={0} chunk_size={1}'.format(procs,chunk_size))
+        append2logfile(paths['output_top_dir'], 
+                       mainlogfile, 
+                       'Below log entry is from line {0} in {1}'.format(
+                                                                lineno, 
+                                                                scriptpath))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                        'For align_ltrs(): procs={0} chunk_size={1}'.format(
+                                                                  procs,
+                                                                  chunk_size))
         if not checkStatusFl(GFFKey):
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Writing GFF3s for each LTR pair:\n{0}'.format(paths[GFFKey]) )
-            with Pool(processes=procs) as p: # Write GFF3s for each LTR pair
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                            'Writing GFF3s for each LTR pair:\n{0}'.format(
+                                                                paths[GFFKey]))
+            # Write GFF3s for each LTR pair
+            with Pool(processes = procs) as p:
                 p.map(write_ltrs_gff3, ltrs.values(), chunksize=chunk_size)
             p.join()
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format(GFFKey, paths[GFFKey])) # Add LTRs GFF path to status file (for resuming later)
-
+            with open('{0}/status'.format(paths['output_top_dir']), 
+                                                        'a') as statusFlAppend:
+                # Add LTRs GFF path to status file (for resuming later)
+                statusFlAppend.write('{0}\t{1}\n'.format(GFFKey, paths[GFFKey]))
         if not checkStatusFl(FASTAKey):
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Extracting sequences for LTR pairs:\n{0}'.format(list(ltrs_getfasta_calls.values())[0]))
-            with Pool(processes=procs) as p: # Write FASTA for each LTR pair
-                p.map(makecallMultiprocessing, ltrs_getfasta_calls.values(), chunksize=chunk_size)
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                            'Extracting sequences for LTR pairs:\n{0}'.format(
+                                        list(ltrs_getfasta_calls.values())[0]))
+            # Write FASTA for each LTR pair
+            with Pool(processes = procs) as p:
+                p.map(makecallMultiprocessing, ltrs_getfasta_calls.values(), 
+                                                        chunksize = chunk_size)
             p.join()
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format(FASTAKey, paths[FASTAKey])) # Add LTRs FASTA path to status file (for resuming later)
-
+            with open('{0}/status'.format(paths['output_top_dir']),
+                                                        'a') as statusFlAppend:
+                # Add LTRs FASTA path to status file (for resuming later)
+                statusFlAppend.write('{0}\t{1}\n'.format(FASTAKey, 
+                                                         paths[FASTAKey]))
         NewHeaderKey = '{0}.LTRsFASTAnewheaders'.format(key_base)
         if not checkStatusFl(NewHeaderKey):
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Changing bedtools getfasta default headers to LTR RT names:\n{0}'.format(paths[FASTAKey] ))
-            with Pool(processes=procs) as p: # Write FASTA for each LTR pair
-                p.map(ChangeFastaHeadersMultiprocessing, ltrs_changefastaheaders_calls.values(), chunksize=chunk_size)
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                'Changing bedtools getfasta default headers to LTR RT names:\n{0}'.format(
+                                                              paths[FASTAKey]))
+            # Write FASTA for each LTR pair
+            with Pool(processes = procs) as p:
+                p.map(ChangeFastaHeadersMultiprocessing,
+                      ltrs_changefastaheaders_calls.values(), 
+                      chunksize = chunk_size)
             p.join()
             paths[NewHeaderKey] = paths[FASTAKey]
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format(NewHeaderKey, paths[FASTAKey])) # Add LTRs FASTA path to status file (for resuming later)
-
-        if DONTALIGN: # Stop here. Happens when only doing solo LTR search.
+            with open('{0}/status'.format(paths['output_top_dir']), 
+                                                        'a') as statusFlAppend:
+                # Add LTRs FASTA path to status file (for resuming later)
+                statusFlAppend.write('{0}\t{1}\n'.format(NewHeaderKey, 
+                                                         paths[FASTAKey]))
+        # Stop here. Happens when only doing solo LTR search.
+        if DONTALIGN:
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'align_ltrs() stopping after writing FASTAs for each LTR'.format(procs,chunk_size))
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                            'Below log entry is from line {0} in {1}'.format(
+                                                           lineno, scriptpath))
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+             'align_ltrs() stopping after writing FASTAs for each LTR'.format(
+                                                             procs,chunk_size))
             return
-            
-
         if not checkStatusFl(AlnKey):
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Making MAFFT alignments for each LTR pair:\n{0}'.format(list(ltrs_mafft_calls.values())[0]))
-            with Pool(processes=procs) as p: # Do alignment for each LTR pair
-                p.map(makecallMultiprocessing, ltrs_mafft_calls.values(), chunksize=chunk_size)
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                    'Making MAFFT alignments for each LTR pair:\n{0}'.format(
+                                           list(ltrs_mafft_calls.values())[0]))
+            # Do alignment for each LTR pair
+            with Pool(processes=procs) as p:
+                p.map(makecallMultiprocessing, ltrs_mafft_calls.values(), 
+                                                          chunksize=chunk_size)
             p.join()
-            with Pool(processes=procs) as p: # Remove non-fasta format text from alignment if present (some versions of MAFFT output aln method info with alignments
-                p.map(CleanMafft, ltrs_clean_mafft_output_calls.values(), chunksize=chunk_size)
+            # Remove non-fasta format text from alignment if present 
+            # (some versions of MAFFT output aln method info with alignments
+            with Pool(processes=procs) as p:
+                p.map(CleanMafft, ltrs_clean_mafft_output_calls.values(), 
+                                                          chunksize=chunk_size)
             p.join()
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format(AlnKey, paths[AlnKey])) # Add LTRs FASTA path to status file (for resuming later)
-
+            with open('{0}/status'.format(paths['output_top_dir']), 
+                                                        'a') as statusFlAppend:
+                # Add LTRs FASTA path to status file (for resuming later)
+                statusFlAppend.write('{0}\t{1}\n'.format(AlnKey, paths[AlnKey]))
         if not checkStatusFl(TrimalKey):
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Trimming MAFFT LTRs alignment using TrimAl -automated1:\n{0}'.format(list(ltrs_trimal_calls.values())[0]) )
-            with Pool(processes=procs) as p: # Do alignment for each LTR pair
-                p.map(makecallMultiprocessing, ltrs_trimal_calls.values(), chunksize=chunk_size)
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+              'Trimming MAFFT LTRs alignment using TrimAl -automated1:\n{0}'.format(
+                                         list(ltrs_trimal_calls.values())[0]))
+            # Do alignment for each LTR pair
+            with Pool(processes=procs) as p:
+                p.map(makecallMultiprocessing, ltrs_trimal_calls.values(), 
+                                                          chunksize=chunk_size)
             p.join()
             paths[TrimalKey] = paths[AlnKey]
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format(TrimalKey, paths[TrimalKey])) # Add LTRs FASTA path to status file (for resuming later)
-                statusFlAppend.write('{0}.LTR_divergence_complete\t{0}'.format(key_base))
+            with open('{0}/status'.format(paths['output_top_dir']), 
+                                                        'a') as statusFlAppend:
+                # Add LTRs FASTA path to status file (for resuming later)
+                statusFlAppend.write('{0}\t{1}\n'.format(TrimalKey, paths[
+                                                                   TrimalKey]))
+                statusFlAppend.write('{0}.LTR_divergence_complete\t{0}'.format(
+                                                                     key_base))
 
-def SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
 
+def SoloLTRsearch(I=6, 
+                  clustering_method='WickerFam', 
+                  WickerParams={'pId':80,'percAln':80,'minLen':80}):
     global paths
     global filenames
-
     # Set up directory structure for output (LTRs GFF & FASTA)
     if clustering_method == 'WickerFam':
         WICKERCLUST = True
