@@ -5022,23 +5022,38 @@ def align_ltrs(I=6,
 def SoloLTRsearch(I=6, 
                   clustering_method='WickerFam', 
                   WickerParams={'pId':80,'percAln':80,'minLen':80}):
+    """
+    """
     global paths
     global filenames
     # Set up directory structure for output (LTRs GFF & FASTA)
     if clustering_method == 'WickerFam':
         WICKERCLUST = True
-        clustMethodTopDir = '{0}/WickerFamDir/{1}_pId_{2}_percAln_{3}_minLen'.format(paths['output_top_dir'], WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-        key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-        ClusterSummaryFl = 'WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-        ClusterMembershipFl = 'WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+        clustMethodTopDir = '{0}/WickerFamDir/{1}_pId_{2}_percAln_{3}_minLen'.format(
+                                                    paths['output_top_dir'], 
+                                                    WickerParams['pId'], 
+                                                    WickerParams['percAln'], 
+                                                    WickerParams['minLen'])
+        key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                    WickerParams['pId'], 
+                                                    WickerParams['percAln'], 
+                                                    WickerParams['minLen'])
+        ClusterSummaryFl = 'WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                    WickerParams['pId'], 
+                                                    WickerParams['percAln'], 
+                                                    WickerParams['minLen'])
+        ClusterMembershipFl = 'WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                    WickerParams['pId'], 
+                                                    WickerParams['percAln'], 
+                                                    WickerParams['minLen'])
     elif clustering_method == 'MCL':
         MCLCLUST = True
         clustMethodTopDir = '{0}/MCL/I{1}'.format(paths['output_top_dir'], I)
         key_base = 'MCL_I{0}'.format(I)
         ClusterSummaryFl = 'MCL_ClusterSummary_I{0}'.format(I)
         ClusterMembershipFl = 'MCL_ClusterMembership_I{0}'.format(I)
-
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning SoloLTRsearch(): {0}'.format(key_base))
+    append2logfile(paths['output_top_dir'], mainlogfile,
+                             'Beginning SoloLTRsearch(): {0}'.format(key_base))
     OutputDir = 'SoloLTRSearch.{0}'.format(key_base)
     paths[OutputDir] = '{0}/SoloLTRsearch'.format(clustMethodTopDir)
     MakeDir(OutputDir, paths[OutputDir])
@@ -5053,27 +5068,33 @@ def SoloLTRsearch(I=6,
     paths[BLASToutput] = '{0}.blastn.tsv'.format(paths[LTRsFASTA])
     SoloLTRsGFF = '{0}.SoloLTRsGFF'.format(key_base)
     paths[SoloLTRsGFF] = '{0}/{1}.gff'.format(paths['SoloLTRsGFFsDir'], LTRsGFF)
-    
-
     RepeatRegionsGFF = 'repeat_regions'
-    paths['RepeatRegionsGFF'] = '{0}/{1}.gff'.format(paths[OutputDir], RepeatRegionsGFF)
+    paths['RepeatRegionsGFF'] = '{0}/{1}.gff'.format(paths[OutputDir],
+                                                     RepeatRegionsGFF)
 
     SoloLTRsummary = '{0}.SoloLTRsummary'.format(key_base)
-    paths[SoloLTRsummary] = '{0}/{1}.tsv'.format(paths[OutputDir],SoloLTRsummary)
-
+    paths[SoloLTRsummary] = '{0}/{1}.tsv'.format(paths[OutputDir],
+                                                 SoloLTRsummary)
     if checkStatusFl(SoloLTRsummary) and checkStatusFl(SoloLTRsGFF):
-        append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch() already completed for {0}'.format(key_base))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                  'SoloLTRsearch() already completed for {0}'.format(key_base))
         return
-        
-
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Writing GFFs for SoloLTRsearch(): {0}'.format(key_base))
-    writeLTRretrotransposonGFF(paths['CurrentGFF'], paths['RepeatRegionsGFF'], elementSet=None, REPEATREGION=True, truncateParent=False) # Write repeat_region features for checking overlaps with LTR hits
+    append2logfile(paths['output_top_dir'], mainlogfile, 
+                                'Writing GFFs for SoloLTRsearch(): {0}'.format(
+                                                                     key_base))
+    # Write repeat_region features for checking overlaps with LTR hits
+    writeLTRretrotransposonGFF(paths['CurrentGFF'], 
+                               paths['RepeatRegionsGFF'], 
+                               elementSet=None, 
+                               REPEATREGION=True, 
+                               truncateParent=False) 
 
 
     lastEl = None
     LTRlengths = {}
     with open(paths[LTRsGFF], 'w') as outFl:
-        with open(paths['CurrentGFF'], 'r') as inFl: # Write LTRs GFF
+        # Write LTRs GFF
+        with open(paths['CurrentGFF'], 'r') as inFl:
             for line in inFl:
                 if line.startswith('#'):
                     continue
@@ -5089,33 +5110,50 @@ def SoloLTRsearch(I=6,
                     gl.refreshAttrStr()
                     outFl.write(str(gl)+'\n')
                     lastEl = el
-
-    getfasta(paths[LTRsGFF], paths['inputFasta'], paths[LTRsFASTA], headerKey='ID') # Get LTRs FASTA
-
+    # Get LTRs FASTA
+    getfasta(paths[LTRsGFF], paths['inputFasta'], paths[LTRsFASTA], 
+                                                               headerKey='ID') 
     if not checkStatusFl(BLASToutput):
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Running blastn for SoloLTRsearch(): {0}'.format(key_base))
-        runblast(query=paths[LTRsFASTA], subject=paths['inputFasta'], out=paths[BLASToutput], evalue=soloLTRmaxEvalue, outfmt='7', percid=soloLTRminPid, blast='blastn', procs=procs) # Do blastn x input fasta
-        with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-            statusFlAppend.write('{0}\t{1}\n'.format(BLASToutput, paths[BLASToutput]))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Finished blastn for SoloLTRsearch(): {0}'.format(key_base))
-
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                    'Running blastn for SoloLTRsearch(): {0}'.format(key_base))
+        runblast(query = paths[LTRsFASTA], 
+                 subject = paths['inputFasta'], 
+                 out = paths[BLASToutput], 
+                 evalue = soloLTRmaxEvalue, 
+                 outfmt = '7', 
+                 percid = soloLTRminPid, 
+                 blast = 'blastn', 
+                 procs = procs) # Do blastn x input fasta
+        with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+            statusFlAppend.write('{0}\t{1}\n'.format(BLASToutput, 
+                                                     paths[BLASToutput]))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                   'Finished blastn for SoloLTRsearch(): {0}'.format(key_base))
     # parse results and assign LTRs to clusters and write GFF3 for each cluster
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Parsing repeat_regions GFF3 for SoloLTRsearch(): {0}'.format(key_base))
-    RR = {} # repeat_region features that hits shouldn't overlap
+    append2logfile(paths['output_top_dir'], mainlogfile, 
+       'Parsing repeat_regions GFF3 for SoloLTRsearch(): {0}'.format(
+                                                                     key_base))
+    # repeat_region features that hits shouldn't overlap
+    RR = {}
     i = 0
     with open(paths['RepeatRegionsGFF'], 'r') as inFl:
         for line in inFl:
             if not line.startswith('#'):
                 gl = GFF3_line(line)
                 if not gl.seqid in RR:
-                    # convert coords from 0-based (GFF3) to 1-based for easier overlap comparison
+                    # convert coords from 0-based (GFF3) to 1-based for 
+                    # easier overlap comparison
                     RR[gl.seqid] = {i:{'coords':(gl.start+1, gl.end)}}
                 else:
                     RR[gl.seqid][i] = {'coords':(gl.start+1, gl.end)}
                 i+=1
-
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Parsing potential solo LTR hits from blastn output for SoloLTRsearch(): {0}'.format(key_base))
-    Hits = {} # hits from genomic blast of LTRs
+    append2logfile(paths['output_top_dir'], mainlogfile, 
+                                 ('Parsing potential solo LTR hits from blastn'
+                                 ' output for SoloLTRsearch(): {0}').format(
+                                                                     key_base))
+    # hits from genomic blast of LTRs
+    Hits = {}
     i = 0
     with open(paths[BLASToutput], 'r') as inFl:
         for line in inFl:
@@ -5123,24 +5161,26 @@ def SoloLTRsearch(I=6,
                 c = line.strip().split()
                 query, subj, pid, alnLen = c[:4]
                 LTRlen = int(c[7]) - int(c[6]) + 1
-                pLen = LTRlen/LTRlengths[query]*100 # percent of LTR length in the alignment
-                if pLen < soloLTRminLen: # skip alignments shorter 
+                # percent of LTR length in the alignment
+                pLen = LTRlen/LTRlengths[query]*100 
+                # skip alignments shorter 
+                if pLen < soloLTRminLen:
                     continue
-
                 bit = float(c[-1])
-                s, e = [int(x) for x in c[8:10]] # subject start and end
-                
+                # subject start and end
+                s, e = [int(x) for x in c[8:10]]
                 if not subj in Hits:
-                    # convert coords from 0-based (GFF3) to 1-based for easier overlap comparison
-                    Hits[subj] = {i:{'coords':(s+1, e), 'bit':bit, 'pLen':pLen, 'LTR':query}}
+                    # convert coords from 0-based (GFF3) to 1-based for easier
+                    # overlap comparison
+                    Hits[subj] = {i:{'coords':(s+1, e), 'bit':bit, 'pLen':pLen, 
+                                                                  'LTR':query}}
                 else:
-                    Hits[subj][i] = {'coords':(s+1, e), 'bit':bit, 'pLen':pLen, 'LTR':query}
+                    Hits[subj][i] = {'coords':(s+1, e), 'bit':bit, 'pLen':pLen, 
+                                                                   'LTR':query}
                 i+=1
-
-                # Fields: query id, subject id, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score
-                #LTR_retrotransposon1000.1    Sacu_v1.1_s0020    100.00    268    0    0    1    268    246379    246112    3e-139    496
-
-    append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\ndiscarding hits that overlap repeat_regions'.format(key_base))
+    append2logfile(paths['output_top_dir'], mainlogfile, 
+                        ('SoloLTRsearch(): {0}\ndiscarding hits that overlap '
+                         'repeat_regions').format(key_base))
     # Discard hits that overlap a repeat region
     HitsR1 = {}
     for scaf in Hits:
@@ -5164,34 +5204,43 @@ def SoloLTRsearch(I=6,
                     HitsR1[scaf] = {i:Hits[scaf][i]}
 
     # If hits overlap, keep only the hit with the highest bit score
-    append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nretaining highest scoring hits among hits that overlap'.format(key_base))
+    append2logfile(paths['output_top_dir'], mainlogfile, 
+                        ('SoloLTRsearch(): {0}\nretaining highest scoring hits'
+                         ' among hits that overlap').format(key_base))
     HitsR2 = {}
     for scaf in HitsR1:
-        # Sort hits by bit score to allow not checking bit score if Overlaps()==True
-        sortedHits = sorted([(H,sorted(list(HitsR1[scaf][H].items()), key=lambda x:x[0])) for H in HitsR1[scaf]], key=lambda y:y[1][1][1], reverse=True)
-        Remaining = [ LTRinfo[0] for LTRinfo in sortedHits ] # Elements are discarded if they overlap or are added to HitsR2
-        #LTRinfo = (4482, [('LTR', 'LTR_retrotransposon1012.1'), ('bit', 300.0), ('coords', (133796, 133460)), ('pLen', 100.88757396449704)])
+        # Sort hits by bit score to allow not checking bit score if 
+        # Overlaps()==True
+        sortedHits = sorted([(H, sorted(list(HitsR1[scaf][H].items()), 
+                                key=lambda x:x[0])) for H in HitsR1[scaf]], 
+                                         key=lambda y:y[1][1][1], reverse=True)
+        # Elements are discarded if they overlap or are added to HitsR2
+        Remaining = [ LTRinfo[0] for LTRinfo in sortedHits ]
         while Remaining != []:
             LTR1 = Remaining[0]
             Remove = set()
             for LTR2 in Remaining:
-                if LTR1 == LTR2: # skip identities
+                # skip identities
+                if LTR1 == LTR2:
                     continue
-                if Overlaps(HitsR1[scaf][LTR1]['coords'], HitsR1[scaf][LTR2]['coords']):
-                    Remove.add(LTR2) # discard
-            
+                if Overlaps(HitsR1[scaf][LTR1]['coords'], 
+                                         HitsR1[scaf][LTR2]['coords']):
+                    # discard
+                    Remove.add(LTR2)
             if scaf in HitsR2:
                 HitsR2[scaf][LTR1] = HitsR1[scaf][LTR1]
             else:
                 HitsR2[scaf] = {LTR1:HitsR1[scaf][LTR1]}
-
-            Remove.add(LTR1) # kept, but remove from Remaining
+            # kept, but remove from Remaining
+            Remove.add(LTR1)
             Remaining = [LTR for LTR in Remaining if not LTR in Remove]
             if Remaining == []:
                 break
 
     # write table with cluster and # of solo LTRs
-    append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nparsing cluster membership and summary files'.format(key_base))
+    append2logfile(paths['output_top_dir'], mainlogfile, 
+                        ('SoloLTRsearch(): {0}\nparsing cluster membership and'
+                         ' summary files').format(key_base))
     ClusterMembership = {}
     ClusterSizes = {}
     with open(paths[ClusterMembershipFl], 'r') as inFl:
@@ -5199,28 +5248,25 @@ def SoloLTRsearch(I=6,
             if not line.startswith('element'):
                 el, classif, clust = line.strip().split()
                 ClusterMembership[el] = (classif, clust)
-
                 if classif in ClusterSizes:
-
                     if clust in ClusterSizes[classif]:
                         ClusterSizes[classif][clust] += 1
                     else:
                         ClusterSizes[classif][clust] = 1
                 else:
                     ClusterSizes[classif] = {clust:1}
-    
     SoloLTRclusterMembership = {}
     GFFoutput = {}
     for scaf in HitsR2:
         GFFoutput[scaf] = {}
         for LTRinfo in HitsR2[scaf]:
-            # LTRinfo = {'coords': (8851, 8469), 'bit': 507.0, 'LTR': 'LTR_retrotransposon1004.2', 'pLen': 100.0}
             LTRname = HitsR2[scaf][LTRinfo]['LTR']
             el = LTRname.split('.')[0].lstrip('LTR_retrotransposon')
             try:
                 classif, clust = ClusterMembership[el]
             except KeyError:
-                print('{0} not in ClusterMembership file'.format(el), file=sys.stderr)
+                print('{0} not in ClusterMembership file'.format(el), 
+                                                               file=sys.stderr)
             if classif not in GFFoutput[scaf]:
                 GFFoutput[scaf][classif] = {clust:{LTRname:HitsR2[scaf][LTRinfo]}}
             else:
@@ -5228,74 +5274,137 @@ def SoloLTRsearch(I=6,
                     GFFoutput[scaf][classif][clust] = {LTRname:HitsR2[scaf][LTRinfo]}
                 else:
                     GFFoutput[scaf][classif][clust][LTRname] = HitsR2[scaf][LTRinfo]
-
             if classif in SoloLTRclusterMembership:
-
                 if clust in SoloLTRclusterMembership[classif]:
                     SoloLTRclusterMembership[classif][clust] += 1
                 else:
                     SoloLTRclusterMembership[classif][clust] = 1
             else:
                 SoloLTRclusterMembership[classif] = {clust:1}
-
     if not checkStatusFl(SoloLTRsummary):
-        append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nwriting summary output'.format(key_base))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                    'SoloLTRsearch(): {0}\nwriting summary output'.format(
+                                                                     key_base))
         with open(paths[SoloLTRsummary], 'w') as outFl:
-            outFl.write('classif\tclust\tFullLengthElements\tNumberOfSoloLTRs\tSolo2FullRatio\n')
+            outFl.write(('classif\tclust\tFullLengthElements\tNumberOfSoloLTRs'
+                                                          '\tSolo2FullRatio\n'))
             for classif in sorted(list(SoloLTRclusterMembership.keys())):
-                for clust in sorted(list(SoloLTRclusterMembership[classif]), key=int):
+                for clust in sorted(list(SoloLTRclusterMembership[classif]), 
+                                                                      key=int):
                     solos = SoloLTRclusterMembership[classif][clust]
                     fulls = ClusterSizes[classif][clust]
                     ratio = solos/fulls
-                    outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format(classif, clust, fulls, solos, ratio))
-                    
+                    outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format(classif, 
+                                                                   clust, 
+                                                                   fulls, 
+                                                                   solos, 
+                                                                   ratio))
         with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
             statusFlAppend.write('{0}\t{1}\n'.format(SoloLTRsummary, paths[SoloLTRsummary]))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nSummary file written'.format(key_base))
-
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                        'SoloLTRsearch(): {0}\nSummary file written'.format(
+                                                                     key_base))
     if not checkStatusFl(SoloLTRsGFF):
-        append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nWriting GFF3 output'.format(key_base))
-        # remove any existing GFFs soas not to double-write when appending with write() below
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                        'SoloLTRsearch(): {0}\nWriting GFF3 output'.format(
+                                                                     key_base))
+        # remove any existing GFFs soas not to double-write when 
+        # appending with write() below
         for scaf in GFFoutput:
             for classif in GFFoutput[scaf]:
-                if os.path.isfile('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif)):
-                    os.remove('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif))
+                if os.path.isfile('{0}/{1}_{2}.SoloLTRs.gff'.format(
+                                                    paths['SoloLTRsGFFsDir'], 
+                                                    key_base, 
+                                                    classif)):
+                    os.remove('{0}/{1}_{2}.SoloLTRs.gff'.format(
+                                                    paths['SoloLTRsGFFsDir'], 
+                                                    key_base, 
+                                                    classif))
                 clustersOut = 'SoloLTRs{0}'.format(classif)
-                #MakeDir(clustersOut, '{1}/{0}_clusters'.format(paths['SoloLTRsGFFsDir'], classif)) # Causes dirs in wrong place?
                 if classif in GFFoutput[scaf]:
                     for clust in GFFoutput[scaf][classif]:
                         if clustersOut in paths:
-                            if os.path.isfile('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust)):
-                                os.remove('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust))
-
+                            if os.path.isfile('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(
+                                                           paths[clustersOut], 
+                                                           key_base, 
+                                                           classif, 
+                                                           clust)):
+                                os.remove('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(
+                                                           paths[clustersOut], 
+                                                           key_base, 
+                                                           classif, 
+                                                           clust))
         # write GFF files with coordinates and store info for summary file
         with open(paths[SoloLTRsGFF], 'w') as outFl:
             i=0
             outFl.write('##gff-version 3\n')
             for scaf in GFFoutput:
-                append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nwriting GFF3 output to\n{1}'.format(key_base, paths[SoloLTRsGFF]))
+                append2logfile(paths['output_top_dir'], mainlogfile, 
+                        'SoloLTRsearch(): {0}\nwriting GFF3 output to\n{1}'.format(
+                                                           key_base, 
+                                                           paths[SoloLTRsGFF]))
                 for classif in GFFoutput[scaf]:
-                    with open('{0}/{1}_{2}.SoloLTRs.gff'.format(paths['SoloLTRsGFFsDir'], key_base, classif), 'a') as outClassifFl:
+                    with open('{0}/{1}_{2}.SoloLTRs.gff'.format(
+                                                paths['SoloLTRsGFFsDir'], 
+                                                key_base, 
+                                                classif), 'a') as outClassifFl:
                         outClassifFl.write('##gff-version 3\n')
                         clustersOut = 'SoloLTRs{0}'.format(classif)
-                        MakeDir(clustersOut, '{0}/{1}_clusters'.format(paths['SoloLTRsGFFsDir'], classif))
+                        MakeDir(clustersOut, '{0}/{1}_clusters'.format(
+                                            paths['SoloLTRsGFFsDir'], classif))
                         for clust in GFFoutput[scaf][classif]:
-                            with open('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(paths[clustersOut], key_base, classif, clust), 'a') as outClusterFl:
+                            with open('{0}/{1}_{2}_cluster_{3}.SoloLTRs.gff'.format(
+                                                  paths[clustersOut], 
+                                                  key_base, 
+                                                  classif, 
+                                                  clust), 'a') as outClusterFl:
                                 outClusterFl.write('##gff-version 3\n')
                                 for relatedLTR in GFFoutput[scaf][classif][clust]:
                                     i+=1
-                                    #Info = {'coords': (8851, 8469), 'bit': 507.0, 'LTR': 'LTR_retrotransposon1004.2', 'pLen': 100.0} (1-based coordinates)
                                     Info = GFFoutput[scaf][classif][clust][relatedLTR]
-                                    closestLivingRelative = Info['LTR'].split('.')[0] + '-LTR-' + Info['LTR'].split('.')[1]
-                                    start, end = sorted([int(c) for c in Info['coords']])
+                                    closestLivingRelative = Info['LTR'].split(
+                                         '.')[0] + '-LTR-' + Info['LTR'].split(
+                                                                        '.')[1]
+                                    start, end = sorted([int(c) for 
+                                                          c in Info['coords']])
                                     score = Info['bit']
-                                    outFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR-{4}.{5}.cluster_{6};relative={7}\n'.format(scaf, start, end, score, i, classif, clust, closestLivingRelative))
-                                    outClassifFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR-{4}.{5}.cluster_{6};relative={7}\n'.format(scaf, start, end, score, i, classif, clust, closestLivingRelative))
-                                    outClusterFl.write('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}\t{3}\t?\t.\tID=LTR-{4}.{5}.cluster_{6};relative={7}\n'.format(scaf, start, end, score, i, classif, clust, closestLivingRelative))
-
+                                    outFl.write(('{0}\tPhyLTR\tSoloLTR\t{1}\t{2}'
+                                                 '\t{3}\t?\t.\tID=LTR-{4}.{5}.'
+                                                 'cluster_{6};relative={7}\n').format(
+                                                        scaf, 
+                                                        start, 
+                                                        end, 
+                                                        score, 
+                                                        i, 
+                                                        classif, 
+                                                        clust, 
+                                                        closestLivingRelative))
+                                    outClassifFl.write(('{0}\tPhyLTR\tSoloLTR'
+                                           '\t{1}\t{2}\t{3}\t?\t.\tID=LTR-{4}.'
+                                           '{5}.cluster_{6};relative={7}\n').format(
+                                                        scaf, 
+                                                        start, 
+                                                        end, 
+                                                        score, 
+                                                        i, 
+                                                        classif, 
+                                                        clust, 
+                                                        closestLivingRelative))
+                                    outClusterFl.write(('{0}\tPhyLTR\tSoloLTR'
+                                           '\t{1}\t{2}\t{3}\t?\t.\tID=LTR-{4}.'
+                                           '{5}.cluster_{6};relative={7}\n').format(
+                                                        scaf, 
+                                                        start, 
+                                                        end, 
+                                                        score, 
+                                                        i, 
+                                                        classif, 
+                                                        clust, 
+                                                        closestLivingRelative))
         with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
             statusFlAppend.write('{0}\t{1}\n'.format(SoloLTRsGFF, paths[SoloLTRsGFF]))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'SoloLTRsearch(): {0}\nGFFs written'.format(key_base))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                         'SoloLTRsearch(): {0}\nGFFs written'.format(key_base))
 
 
 def geneconvLTRs(g='/g0', I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
@@ -5303,16 +5412,8 @@ def geneconvLTRs(g='/g0', I=6, clustering_method='WickerFam', WickerParams={'pId
     g can be one of /g0, /g1, or /g2
     g is proportional to the tolerance for mismatches in fragments by geneconv
     """
-    # GENECONV output:
-    ##   Names                                                                                                    Pvalue  Pvalue   Begin  End   Len  Poly Dif  Difs Pen.
-    #GI      LTR_retrotransposon4189;LTR_retrotransposon4189 0.0001  0.01017 26      100     75      75      0       10      None
-    ##
     global paths
     global filenames
-
-    WICKERCLUST = False
-    MCLCLUST = False
-    # And set up directory structure for output (LTR pairs GFFs, FASTAs, and alignments)
     if clustering_method == 'WickerFam':
         WICKERCLUST = True
         key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
@@ -5461,6 +5562,7 @@ def geneconvLTRs(g='/g0', I=6, clustering_method='WickerFam', WickerParams={'pId
         paths[SummaryKey] = paths['GENECONVsummary']
         with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
             statusFlAppend.write('{0}\t{1}\n'.format(SummaryKey, paths['GENECONVsummary']))
+
 
 def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, iters=1, model='hky85'):
     """
