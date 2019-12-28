@@ -5897,8 +5897,8 @@ END;
         with open(paths[GENECONVSummaryKey], 'r') as gcFl:
             for line in gcFl:
                 if not line.startswith('#'):
-                    el, p, alnLen, start, end, tractLen, ratio, 
-                                                  gscale = line.strip().split()
+                    (el, p, alnLen, start, end, tractLen, ratio, 
+                                                  gscale) = line.strip().split()
                     ratio = float(ratio)
                     alnLen = int(alnLen)
                     start = int(start)
@@ -5981,7 +5981,7 @@ END;
     with open(paths['DivergenceSummary'.format(I)],'w') as divSummaryFl:
         divSummaryFl.write(('elementName\tclassification\tMCLinflationValue\t'
                             'cluster\tclusterSize\tmodel\tdivergence\t'
-                            'correctedDivergence\tIntraelementGeneConversion\n')
+                            'correctedDivergence\tIntraelementGeneConversion\n'))
     for fname in os.listdir(paths['PAUPDivOutDir']):
         fPth = '{0}/{1}'.format(paths['PAUPDivOutDir'], fname)
         el1, el2, div = open(fPth, 'r').read().strip().split('\t')
@@ -6297,7 +6297,7 @@ def phylo(removegeneconv = True,
                 print(('phylo(): modeltest(removegeneconv = True) used but {0} '
                        'not in paths or status file. This happens at least '
                        'when there is only 1 element with a classification and '
-                       'therefore nothing is aligned'.format(gcSummaryPth), 
+                       'therefore nothing is aligned').format(gcSummaryPth), 
                                                              file = sys.stderr)
             if os.path.isfile(gcSummaryPth):
                 for j in range(len(clusters)):
@@ -6690,7 +6690,7 @@ mrca: {1}, {2}, fixage=1;
                                   paths['classifDir'], classif, clust, classif)
         copyfile(bootstrapped, bootstrappedLocation)
         append2logfile(paths['output_top_dir'], mainlogfile, (('Finished bootstrapping. '
-                    'Tree with bootstrap support values here:\n{0}').format(
+                    'Tree with bootstrap support values here:\n{0}')).format(
                                                          bootstrappedLocation))
 
 def clusterSummary():
