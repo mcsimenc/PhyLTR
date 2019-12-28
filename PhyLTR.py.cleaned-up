@@ -5022,7 +5022,10 @@ def align_ltrs(I=6,
 def SoloLTRsearch(I=6, 
                   clustering_method='WickerFam', 
                   WickerParams={'pId':80,'percAln':80,'minLen':80}):
-    """
+    """Finds LTRs which are homologous to an LTR from a full-length
+    LTR-RT but are not associated with any of the full-length LTR-RTs
+    and do not overlap other solo LTRs. The blast highest scoring solo
+    LTR is retained.
     """
     global paths
     global filenames
@@ -5116,6 +5119,7 @@ def SoloLTRsearch(I=6,
     if not checkStatusFl(BLASToutput):
         append2logfile(paths['output_top_dir'], mainlogfile, 
                     'Running blastn for SoloLTRsearch(): {0}'.format(key_base))
+        # Do blastn x input fasta
         runblast(query = paths[LTRsFASTA], 
                  subject = paths['inputFasta'], 
                  out = paths[BLASToutput], 
@@ -5123,11 +5127,11 @@ def SoloLTRsearch(I=6,
                  outfmt = '7', 
                  percid = soloLTRminPid, 
                  blast = 'blastn', 
-                 procs = procs) # Do blastn x input fasta
+                 procs = procs)
         with open('{0}/status'.format(
                               paths['output_top_dir']), 'a') as statusFlAppend:
             statusFlAppend.write('{0}\t{1}\n'.format(BLASToutput, 
-                                                     paths[BLASToutput]))
+                                                           paths[BLASToutput]))
         append2logfile(paths['output_top_dir'], mainlogfile, 
                    'Finished blastn for SoloLTRsearch(): {0}'.format(key_base))
     # parse results and assign LTRs to clusters and write GFF3 for each cluster
@@ -5236,7 +5240,6 @@ def SoloLTRsearch(I=6,
             Remaining = [LTR for LTR in Remaining if not LTR in Remove]
             if Remaining == []:
                 break
-
     # write table with cluster and # of solo LTRs
     append2logfile(paths['output_top_dir'], mainlogfile, 
                         ('SoloLTRsearch(): {0}\nparsing cluster membership and'
@@ -5407,46 +5410,47 @@ def SoloLTRsearch(I=6,
                          'SoloLTRsearch(): {0}\nGFFs written'.format(key_base))
 
 
-def geneconvLTRs(g='/g0', I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
-    """
+def geneconvLTRs(g='/g0', 
+                 I=6, 
+                 clustering_method='WickerFam', 
+                 WickerParams={'pId':80,'percAln':80,'minLen':80}):
+    """Assesses intra-element gene conversion between LTRs
     g can be one of /g0, /g1, or /g2
-    g is proportional to the tolerance for mismatches in fragments by geneconv
+    g is proportional to the tolerance for mismatches in fragments by 
+    geneconv
     """
     global paths
     global filenames
     if clustering_method == 'WickerFam':
         WICKERCLUST = True
-        key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-        WickerDir = 'WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-
+        key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
+        WickerDir = 'WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
         AlnKey = '{0}.LTRAlnDir'.format(key_base)
         if not checkStatusFl(AlnKey):
             sys.exit('LTR alignment not in status file: {0}'.format(AlnKey))
-
         GENECONVTopDirKey = '{0}.GENECONV'.format(key_base)
         paths[GENECONVTopDirKey] = '{0}/GENECONV'.format(paths[WickerDir])
         MakeDir(GENECONVTopDirKey, paths[GENECONVTopDirKey])
-
         GENECONVDirKey = '{0}.GENECONVLTRs'.format(key_base)
         paths[GENECONVDirKey] = '{0}/LTRs'.format(paths[GENECONVTopDirKey])
         MakeDir(GENECONVDirKey, paths[GENECONVDirKey])
-
         GENECONVgDirKey = 'GENECONVgDir'
         paths[GENECONVgDirKey] = '{0}/{1}'.format(paths[GENECONVDirKey], g[1:])
         MakeDir(GENECONVgDirKey, paths[GENECONVgDirKey])
-
         SummaryKey = '{0}.GENECONVLTRs.Summary'.format(key_base)
-        
     elif clustering_method == 'MCL':
-
         MCLCLUST = True
         key_base = 'MCL_I{0}'.format(I)
         MCLdir = 'MCL_I{0}'.format(I)
-
         AlnKey = '{0}.LTRAlnDir'.format(key_base)
         if not checkStatusFl(AlnKey):
             sys.exit('LTR alignment not in status file: {0}'.format(AlnKey))
-
         GENECONVTopDirKey = '{0}.GENECONV'.format(key_base)
         paths[GENECONVTopDirKey] = '{0}/GENECONV'.format(paths[MCLdir])
         MakeDir(GENECONVTopDirKey, paths[GENECONVTopDirKey])
@@ -5462,85 +5466,108 @@ def geneconvLTRs(g='/g0', I=6, clustering_method='WickerFam', WickerParams={'pId
         SummaryKey = '{0}.GENECONVLTRs.Summary'.format(key_base)
 
     else:
-        sys.exit('modeltest() parameter clustering_method needs to be either WickerFam or MCL and it is: {0}'.format(clustering_method))
+        sys.exit(('modeltest() parameter clustering_method needs to be either '
+                  'WickerFam or MCL and it is: {0}').format(clustering_method))
 
     if checkStatusFl(SummaryKey):
         scriptpath = os.path.realpath(__file__)
         lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'ltr_divergence() already completed: {0}'.format(paths['{0}.GENECONVLTRs'.format(key_base)]))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                        'Below log entry is from line {0} in {1}'.format(lineno, 
+                                                                   scriptpath))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                            'ltr_divergence() already completed: {0}'.format(
+                                   paths['{0}.GENECONVLTRs'.format(key_base)]))
         return
-
     if not checkStatusFl('{0}.GENECONVLTRs.{1}'.format(key_base, g[1:])):
-
         geneconv_calls = []
         scriptpath = os.path.realpath(__file__)
         lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Checking directory structure for GENECONV using {0}'.format(g) )
-
-        files = [ f for f in os.listdir(paths[AlnKey]) if f.endswith('trimmed') ]
-
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                        'Below log entry is from line {0} in {1}'.format(lineno, 
+                                                                   scriptpath))
+        append2logfile(paths['output_top_dir'], mainlogfile,
+               'Checking directory structure for GENECONV using {0}'.format(g))
+        files = [f for f in os.listdir(paths[AlnKey]) if f.endswith('trimmed')]
         num_elements = len(files)
         alnLens = {}
         show = False
         scriptpath = os.path.realpath(__file__)
         lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run GENECONV for finding intraelement gene conversion between LTRs')
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                        'Below log entry is from line {0} in {1}'.format(lineno, 
+                                                                   scriptpath))
+        append2logfile(paths['output_top_dir'], mainlogfile, ('Preparing to run'
+             ' GENECONV for finding intraelement gene conversion between LTRs'))
         for f in files:
             flpth = '{0}/{1}'.format(paths[AlnKey], f)
-            call = [ executables['geneconv'], flpth, '/w123', g, '-include_monosites', '-nolog', '-Dumptab' ]
+            call = [executables['geneconv'], flpth, '/w123', g, 
+                                   '-include_monosites', '-nolog', '-Dumptab']
             geneconv_calls.append((call, '/dev/null', None, None))
             elementName = '_'.join(f.split('_')[:2])
             seqs = list(SeqIO.parse(flpth, 'fasta'))
-
             try:
                 alnLen = len(seqs[0].seq)
             except IndexError:
                 continue
-
             elementName = seqs[0].id
             alnLens[elementName] = alnLen
             show=False
         # Make calls for each ltr pair
         if not checkStatusFl('{0}.GENECONVLTRs.{1}'.format(key_base, g[1:])):
             chunk_size = ceil(len(files)/procs)
-            with Pool(processes=procs) as p:
-                p.map(makecallMultiprocessing, geneconv_calls, chunksize=chunk_size)
+            with Pool(processes = procs) as p:
+                p.map(makecallMultiprocessing, geneconv_calls, 
+                                                        chunksize = chunk_size)
             p.join()
-
-            output = [ f for f in os.listdir(paths[AlnKey]) if f.endswith('tab') ]
+            output = [f for f in os.listdir(paths[AlnKey]) if f.endswith('tab')]
             # Move geneconv files to geneconv dir
             for f in output:
-                os.rename('{0}/{1}'.format(paths[AlnKey], f), '{0}/{1}'.format(paths[GENECONVgDirKey], f))
-
-            paths['{0}.GENECONVLTRs.{1}'.format(key_base, g[1:])] = paths[GENECONVgDirKey]
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}.GENECONVLTRs.{1}\t{2}\n'.format(key_base, g[1:], paths[GENECONVgDirKey])) 
-        
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Parsing GENECONV output')
+                os.rename('{0}/{1}'.format(paths[AlnKey], f), 
+                                   '{0}/{1}'.format(paths[GENECONVgDirKey], f))
+            paths['{0}.GENECONVLTRs.{1}'.format(
+                                     key_base, g[1:])] = paths[GENECONVgDirKey]
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                statusFlAppend.write('{0}.GENECONVLTRs.{1}\t{2}\n'.format(
+                                                    key_base, g[1:], 
+                                                    paths[GENECONVgDirKey])) 
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                                                     'Parsing GENECONV output')
         # Parse geneconv files
-        sig = [] # sig is short for "significant". To contain significant global inner fragments identified by GENECONV
+        # sig is short for "significant". To contain significant 
+        # global inner fragments identified by GENECONV
+        sig = [] 
         for f in os.listdir(paths[GENECONVgDirKey]):
             if f.endswith('tab'):
                 with open('{0}/{1}'.format(paths[GENECONVgDirKey], f)) as fl:
-                    sig += [ line for line in fl.read().split('\n') if line.startswith('GI') ]
-
-        sig = sorted(sig, key=lambda x:x[1]) # Sort by element name, which at sig[i][1] are as: LTR_retrotransposon1;LTR_retrotransposon1
-        
-        paths['GENECONVsummary'] = '{0}/GENECONV_summary'.format(paths[GENECONVDirKey])
-        paths['GENECONV_output'] = '{0}/GENECONVoutput_tab'.format(paths[GENECONVDirKey])
+                    sig += [line for line in fl.read().split('\n') if 
+                                                         line.startswith('GI')]
+        # Sort by element name, which at sig[i][1] are as: 
+        # LTR_retrotransposon1;LTR_retrotransposon1
+        sig = sorted(sig, key=lambda x:x[1])
+        paths['GENECONVsummary'] = '{0}/GENECONV_summary'.format(
+                                                         paths[GENECONVDirKey])
+        paths['GENECONV_output'] = '{0}/GENECONVoutput_tab'.format(
+                                                         paths[GENECONVDirKey])
         IAGCpositive = set()
         with open(paths['GENECONV_output'], 'w') as outputFl:
             with open(paths['GENECONVsummary'], 'w') as summaryFl:
-                summaryFl.write('# ratio is the ratio of the alignment length to the alignment length minus the gene conversion tract\n')
+                summaryFl.write(('# ratio is the ratio of the alignment length '
+                   'to the alignment length minus the gene conversion tract\n'))
                 try:
-                    summaryFl.write('# {0} elements out of {1}, or {2:.1f}% with possible evidence of gene conversion\n'.format(len(sig), num_elements, ((len(sig)/num_elements)*100)))
+                    summaryFl.write(('# {0} elements out of {1}, or {2:.1f}% '
+                         'with possible evidence of gene conversion\n').format(
+                                                 len(sig), 
+                                                 num_elements, 
+                                                 ((len(sig)/num_elements)*100)))
                 except ZeroDivisionError:
-                    summaryFl.write('# {0} elements out of {1}, or 0% with possible evidence of gene conversion\n'.format(len(sig), num_elements))
+                    summaryFl.write(('# {0} elements out of {1}, or 0% with '
+                               'possible evidence of gene conversion\n').format(
+                                                       len(sig), num_elements))
                 summaryFl.write('# 5% are expected by chance\n')
-                summaryFl.write('#elementName\tsim_p-val\talnLen\tstart\tend\ttractLen\tratio_alnLen2alnLen-tractLen\tgScale\n')
+                summaryFl.write(('#elementName\tsim_p-val\talnLen\tstart\tend'
+                          '\ttractLen\tratio_alnLen2alnLen-tractLen\tgScale\n'))
                 for line in sig:
                     totDifs = int(line.strip().split()[9])
                     if totDifs < 3:
@@ -5556,33 +5583,58 @@ def geneconvLTRs(g='/g0', I=6, clustering_method='WickerFam', WickerParams={'pId
                     tractLen = int(contents[6])
                     alnLen = alnLens[element]
                     ratio = alnLen / (alnLen-tractLen)
-                    summaryFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\n'.format(element, sim_p, alnLen, start, end, tractLen, ratio, g[1:]))
-
-        append2logfile(paths['output_top_dir'], mainlogfile, 'GENECONV output and a summary written to:\n{0}\n{1}'.format(paths['GENECONV_output'], paths['GENECONVsummary'] ))
+                    summaryFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\n'.format(
+                                                            element, 
+                                                            sim_p, 
+                                                            alnLen, 
+                                                            start, 
+                                                            end, 
+                                                            tractLen, 
+                                                            ratio, 
+                                                            g[1:]))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                'GENECONV output and a summary written to:\n{0}\n{1}'.format(
+                                                    paths['GENECONV_output'], 
+                                                    paths['GENECONVsummary']))
         paths[SummaryKey] = paths['GENECONVsummary']
         with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-            statusFlAppend.write('{0}\t{1}\n'.format(SummaryKey, paths['GENECONVsummary']))
+            statusFlAppend.write('{0}\t{1}\n'.format(SummaryKey,
+                                                     paths['GENECONVsummary']))
 
 
-def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, iters=1, model='hky85'):
+def ltr_divergence(I=6, 
+                   clustering_method='WickerFam', 
+                   WickerParams={'pId':80,'percAln':80,'minLen':80}, 
+                   iters=1, 
+                   model='hky85'):
     """
     Runs PAUP
     iters used with modeltest(). deprecated pretty much
     """
-
     global paths
-
     WICKERCLUST = False
     MCLCLUST = False
     if clustering_method == 'WickerFam':
-        key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+        key_base = 'WickerFam_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
         WICKERCLUST = True
-        WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
-        WickerLTRdivDirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_LTRdivDir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+        WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])]
+        WickerLTRdivDirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_LTRdivDir'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
         statusFlKey = '{0}_PAUP_divergence_dir'.format(WickerLTRdivDirkey)
         paths[WickerLTRdivDirkey] = '{0}/LTR_divergence'.format(WickerDir)
         paths['DivergenceTopDir'] = paths[WickerLTRdivDirkey]
-        SummaryKey = 'WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_LTR_divergence_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+        SummaryKey = 'WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_LTR_divergence_summary'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
         TrimalKey = '{0}.LTRs.aln.trimal'.format(key_base)
     elif clustering_method == 'MCL':
         key_base = 'MCL_I{0}'.format(I)
@@ -5595,22 +5647,28 @@ def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'p
         SummaryKey = 'MCL_I{0}_LTR_divergence_summary'.format(I)
         TrimalKey = '{0}.LTRs.aln.trimal'.format(key_base)
     else:
-        sys.exit('modeltest() parameter clustering_method needs to be either WickerFam or MCL and it is: {0}'.format(clustering_method))
+        sys.exit(('modeltest() parameter clustering_method needs to be either '
+                    'WickerFam or MCL and it is: {0}').format(clustering_method))
     MakeDir('PAUPdivergenceDir', '{0}/PAUP'.format(paths['DivergenceTopDir']))
-    MakeDir('PAUPNexusInputDir', '{0}/nexus'.format(paths['PAUPdivergenceDir'.format(I)]))
-    MakeDir('PAUPDivOutDir', '{0}/divergences'.format(paths['PAUPdivergenceDir'.format(I)]))
+    MakeDir('PAUPNexusInputDir', '{0}/nexus'.format(
+                                         paths['PAUPdivergenceDir'.format(I)]))
+    MakeDir('PAUPDivOutDir', '{0}/divergences'.format(
+                                         paths['PAUPdivergenceDir'.format(I)]))
     if checkStatusFl(SummaryKey):
         scriptpath = os.path.realpath(__file__)
         lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'ltr_divergence() already completed: {0}'.format(paths[SummaryKey]))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+          'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+           'ltr_divergence() already completed: {0}'.format(paths[SummaryKey]))
         return
     if LTRDIVERGENCE:
         paupCalls = []
         modeltestResults = {}
         if not checkStatusFl(statusFlKey):
             for classif in classifs:
-                # Align only clusters from superfamilies with identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+                # Align only clusters from superfamilies with 
+                # identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
                 YESLTRS = False
                 for SF in LTR_SFs:
                     if classif.startswith(SF):
@@ -5618,21 +5676,33 @@ def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'p
                         break
                 if not YESLTRS:
                     continue
-                # parse model test results for paup block and summary for best model
+                # parse model test results for paup block and summary 
+                # for best model
                 if MCLCLUST:
-                    ModeltestSummaryKey = 'MCLModelTestSummary_{0}_iters_I{1}_{2}'.format(iters,I, classif)
+                    ModeltestSummaryKey = 'MCLModelTestSummary_{0}_iters_I{1}_{2}'.format(
+                                                              iters,I, classif)
                 elif WICKERCLUST:
-                    ModeltestSummaryKey = 'WickerModelTestSummary_{0}_iters_{1}_pId_{2}_percAln_{3}_minLen_{4}'.format(iters, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)
+                    ModeltestSummaryKey = 'WickerModelTestSummary_{0}_iters_{1}_pId_{2}_percAln_{3}_minLen_{4}'.format(
+                                                        iters, 
+                                                        WickerParams['pId'],   
+                                                        WickerParams['percAln'],   
+                                                        WickerParams['minLen'],    
+                                                        classif)
                 modeltestResults[classif] = {}
                 # Create PAUP calls for each cluster
                 if MCLCLUST:
                     clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
                 elif WICKERCLUST:
-                    clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
-                clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
-
-                PhyLTRalnPths = { '_'.join(f.split('_')[:2]):'{0}/{1}'.format(paths[TrimalKey], f) for f in os.listdir(paths[TrimalKey]) if f.endswith('trimmed') } # LTR_retrotransposon148_LTRs.fasta.aln.trimmed 
-
+                    clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(
+                                                        WickerParams['pId'],   
+                                                        WickerParams['percAln'],   
+                                                        WickerParams['minLen'],    
+                                                        classif)]
+                clusters = [clust.split('\t') for clust in open(
+                                  clusterPath,'r').read().strip().split('\n')]
+                PhyLTRalnPths = {'_'.join(f.split('_')[:2]):'{0}/{1}'.format(
+                                   paths[TrimalKey], f) for f in os.listdir(
+                                    paths[TrimalKey]) if f.endswith('trimmed')} 
                 if ModeltestSummaryKey in paths:
                     with open(paths[ModeltestSummaryKey]) as testOutputFl:
                         paupLines = ''
@@ -5642,15 +5712,19 @@ def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'p
                         for line in testOutputFl:
                             if line.startswith('BIC'):
                                 if not method == None:
-                                    modeltestResults[classif][clust] = (paupLines, model)
+                                    modeltestResults[classif][clust] = (
+                                                              paupLines, model)
                                 if len(line.strip().split()) == 17:
-                                    method, model, pa, pc, pg, pt, kappa, titv, Ra, Rb, Rc, Rd, Re, Rf, pInv, gamma, clust = line.strip().split()
+                                    method, model, pa, pc, pg, pt, kappa, titv, 
+                                    Ra, Rb, Rc, Rd, Re, Rf, pInv, gamma, 
+                                    clust = line.strip().split()
                                 else:
-                                    method, model, pa, pc, pg, pt, kappa, titv, Ra, Rb, Rc, Rd, Re, Rf, pInv, gamma, clust, clustSize = line.strip().split()
+                                    method, model, pa, pc, pg, pt, kappa, titv, 
+                                    Ra, Rb, Rc, Rd, Re, Rf, pInv, gamma, clust, 
+                                    clustSize = line.strip().split()
                                 paupLines = ''
                             else:
                                 paupLines += line
-
                         if not method == None:
                             modeltestResults[classif][clust] = (paupLines, model)
                     for j in range(len(clusters)):
@@ -5658,8 +5732,6 @@ def ltr_divergence(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'p
                             if el == '':
                                 continue
                             paupBlock = ''
-                            #print('OK, WHAT IS IT?', file=sys.stderr))
-                            #print('classif {0}, cluster {1}, element {2}'.format(classif, j, el), file=sys.stderr)
                             seqRec = list(SeqIO.parse(PhyLTRalnPths[el], 'fasta'))
                             paupBlock = """#NEXUS
 begin DATA;
@@ -5670,23 +5742,31 @@ MATRIX
 '{2}' {4}
 ;
 END;
-""".format(len(seqRec[0].seq), seqRec[0].id+'_L', seqRec[1].id+'_R', str(seqRec[0].seq), str(seqRec[1].seq))
+""".format(len(seqRec[0].seq), seqRec[0].id+'_L', seqRec[1].id+'_R', str(
+                                            seqRec[0].seq), str(seqRec[1].seq))
 
-                            if str(j) in modeltestResults[classif]: # Have modeltest result for this cluster
-                                #print('IN', file=sys.stderr)
+                            # Have modeltest result for this cluster
+                            if str(j) in modeltestResults[classif]:
                                 model = modeltestResults[classif][str(j)][1]
                                 for line in modeltestResults[classif][str(j)][0].split('\n'):
                                     if line.startswith('SaveDist'):
-                                        paupBlock += 'SaveDist format=oneColumn file=../divergences/divergence.{0}.{1};\n'.format(model, el)
+                                        paupBlock += ('SaveDist format=oneColumn '
+                                               'file=../divergences/divergence.'
+                                               '{0}.{1};\n').format(model, el)
                                     else:
                                         paupBlock += line + '\n'
-                            else: # No model test result, perhaps the cluster is too small (default may be no modeltesting for clusters <5 elements)
-                                if len(set(str(seqRec[0].seq))) == 2 and len(set(str(seqRec[1].seq))) == 2: # HKY+85 does not work when there are only 2 character states
+                            # No model test result, perhaps the cluster 
+                            # is too small
+                            else:
+                                # HKY+85 does not work when there are 
+                                # only 2 character states
+                                if len(set(str(seqRec[0].seq))) == 2 and len(
+                                                set(str(seqRec[1].seq))) == 2:
                                     model = 'JC'
-                                    scriptpath = os.path.realpath(__file__)
-                                    lineno = getframeinfo(currentframe()).lineno + 2
-                                    append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-                                    append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}\tcluster:{1}. Using JC'.format(classif, j))
+                                    append2logfile(paths['output_top_dir'], 
+                                        mainlogfile, 
+                                        ('Model testing not done for {0}\tcluster'
+                                        ':{1}. Using JC').format(classif, j))
                                     paupBlock += """[!
 Likelihood settings from best-fit model (JC) selected by default
 Model testing not done for some reason, possibly the cluster size is
@@ -5702,8 +5782,14 @@ END;
                                     model = 'HKY85'
                                     scriptpath = os.path.realpath(__file__)
                                     lineno = getframeinfo(currentframe()).lineno + 2
-                                    append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-                                    append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}\tcluster:{1}. Using HKY85'.format(classif, j))
+                                    append2logfile(paths['output_top_dir'], 
+                                        mainlogfile, 
+                                        'Below log entry is from line {0} in {1}'.format(
+                                                           lineno, scriptpath))
+                                    append2logfile(paths['output_top_dir'], 
+                                        mainlogfile, 
+                                        'Model testing not done for {0}\tcluster:{1}. Using HKY85'.format(
+                                                                   classif, j))
                                     paupBlock += """[!
 Likelihood settings from best-fit model (HKY) selected by default
 Model testing not done for some reason, possibly the cluster size is
@@ -5714,20 +5800,25 @@ Dset distance=hky85;
 SaveDist format=oneColumn file=../divergences/divergence.{0}.{1};
 END;
 """.format(model, el)
-                            with open('{0}/{3}_{4}_{1}_divergence_{2}.nex'.format(paths['PAUPNexusInputDir'], seqRec[0].id, model, classif, j), 'w') as nexusFl:
+                            with open('{0}/{3}_{4}_{1}_divergence_{2}.nex'.format(
+                                     paths['PAUPNexusInputDir'], seqRec[0].id, 
+                                           model, classif, j), 'w') as nexusFl:
                                 nexusFl.write(paupBlock)
-                            paup_call = [ executables['paup'], '-n', '{0}/{3}_{4}_{1}_divergence_{2}.nex'.format(paths['PAUPNexusInputDir'], seqRec[0].id, model, classif, j) ]
+                            paup_call = [executables['paup'], '-n', 
+                                '{0}/{3}_{4}_{1}_divergence_{2}.nex'.format(
+                                                   paths['PAUPNexusInputDir'], 
+                                                   seqRec[0].id, 
+                                                   model, 
+                                                   classif, 
+                                                   j)]
                             packet = (paup_call, None, None, None)
                             paupCalls.append(packet)
-
                 else:
                     for j in range(len(clusters)):
                         for el in clusters[j]:
                             if el == '':
                                 continue
                             paupBlock = ''
-                            print('OK, WHAT IS IT?')
-                            print('classif {0}, cluster {1}, element {2}'.format(classif, j, el))
                             seqRec = list(SeqIO.parse(PhyLTRalnPths[el], 'fasta'))
                             paupBlock = """#NEXUS
 begin DATA;
@@ -5738,12 +5829,16 @@ MATRIX
 '{2}' {4}
 ;
 END;
-""".format(len(seqRec[0].seq), seqRec[0].id+'_L', seqRec[1].id+'_R', str(seqRec[0].seq), str(seqRec[1].seq))
-                            if len(set(str(seqRec[0].seq))) == 2 and len(set(str(seqRec[1].seq))) == 2: # HKY+85 does not work when there are only 2 character states
-                                scriptpath = os.path.realpath(__file__)
-                                lineno = getframeinfo(currentframe()).lineno + 2
-                                append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-                                append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}\tcluster:{1}. Using JC'.format(classif, j))
+""".format(len(seqRec[0].seq), seqRec[0].id+'_L', seqRec[1].id+'_R', str(
+                                            seqRec[0].seq), str(seqRec[1].seq))
+                             # HKY+85 does not work when there are only 
+                             # 2 character states
+                            if (len(set(str(seqRec[0].seq))) == 2 and 
+                                        len(set(str(seqRec[1].seq))) == 2):
+                                append2logfile(paths['output_top_dir'], 
+                                    mainlogfile, 
+                                    'Model testing not done for {0}\tcluster:{1}. Using JC'.format(
+                                                                   classif, j))
                                 model = 'JC'
                                 paupBlock += """[!
 Likelihood settings from best-fit model (JC) selected by default
@@ -5757,10 +5852,10 @@ SaveDist format=oneColumn file=../divergences/divergence.{0}.{1};
 END;
 """.format(model, el)
                             else:
-                                scriptpath = os.path.realpath(__file__)
-                                lineno = getframeinfo(currentframe()).lineno + 2
-                                append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-                                append2logfile(paths['output_top_dir'], mainlogfile, 'Model testing not done for {0}\tcluster:{1}. Using HKY85'.format(classif, j))
+                                append2logfile(paths['output_top_dir'], 
+                                    mainlogfile, 
+                                    'Model testing not done for {0}\tcluster:{1}. Using HKY85'.format(
+                                                                   classif, j))
                                 model = 'HKY85'
                                 paupBlock += """[!
 Likelihood settings from best-fit model (HKY) selected by default
@@ -5772,25 +5867,38 @@ Dset distance=hky85;
 SaveDist format=oneColumn file=../divergences/divergence.{0}.{1};
 END;
 """.format(model, el)
-                            with open('{0}/{3}_{4}_{1}_divergence_{2}.nex'.format(paths['PAUPNexusInputDir'], seqRec[0].id, model, classif, j), 'w') as nexusFl:
+                            with open('{0}/{3}_{4}_{1}_divergence_{2}.nex'.format(
+                                            paths['PAUPNexusInputDir'], 
+                                            seqRec[0].id, 
+                                            model, 
+                                            classif, 
+                                            j), 'w') as nexusFl:
                                 nexusFl.write(paupBlock)
-                            paup_call = [ executables['paup'], '-n', '{0}/{3}_{4}_{1}_divergence_{2}.nex'.format(paths['PAUPNexusInputDir'], seqRec[0].id, model, classif, j) ]
+                            paup_call = [executables['paup'], '-n', 
+                                '{0}/{3}_{4}_{1}_divergence_{2}.nex'.format(
+                                            paths['PAUPNexusInputDir'], 
+                                            seqRec[0].id, 
+                                            model, 
+                                            classif, 
+                                            j)]
                             packet = (paup_call, None, None, None)
                             paupCalls.append(packet)
-
             chunk_size = ceil(len(paupCalls)/procs)
             with Pool(processes=procs) as p:
                 p.map(makecallMultiprocessing, paupCalls, chunksize=chunk_size)
             p.join()
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format(statusFlKey, paths['PAUPdivergenceDir']))
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                statusFlAppend.write('{0}\t{1}\n'.format(statusFlKey, 
+                                                   paths['PAUPdivergenceDir']))
     gcDct = {}
     if GENECONVLTRS:
         GENECONVSummaryKey = '{0}.GENECONVLTRs.Summary'.format(key_base)
         with open(paths[GENECONVSummaryKey], 'r') as gcFl:
             for line in gcFl:
                 if not line.startswith('#'):
-                    el, p, alnLen, start, end, tractLen, ratio, gscale = line.strip().split()
+                    el, p, alnLen, start, end, tractLen, ratio, 
+                                                  gscale = line.strip().split()
                     ratio = float(ratio)
                     alnLen = int(alnLen)
                     start = int(start)
@@ -5802,13 +5910,14 @@ END;
                         gcDct[el].append((start, end, alnLen, gscale))
 
         # Average ratio for those elements with multiple predicted GC tracts.
-        # Currently all LTR divergence estimates are scaled as if all GC tracts were g0 (no mismatches)
+        # Currently all LTR divergence estimates are scaled as if all 
+        # GC tracts were g0 (no mismatches)
         for el in gcDct:
-            if len(gcDct[el]) == 1: # If True there is only one GC tract for this element.
+            # If True there is only one GC tract for this element.
+            if len(gcDct[el]) == 1: 
                 tractLen = gcDct[el][0][1] - gcDct[el][0][0]
                 alnLen = gcDct[el][0][2]
                 gcDct[el] = alnLen / (alnLen - tractLen)
-                #assert gcDct[el] != float(1), "GENECONV ratio of alnLen/(alnLen-tractLen) > 1. Shouldn't be the case since GENECONV found evidence of gene conversion. see ltr_divergece()"
             else:
                 alnLen = gcDct[el][0][2]
                 coords = []
@@ -5829,12 +5938,12 @@ END;
                 for t in tracts:
                     tractLen += t[1] - t[0] + 1
                 gcDct[el] = alnLen / (alnLen - tractLen)
-                #assert gcDct[el] != float(1), "GENECONV ratio of alnLen/(alnLen-tractLen) > 1. Shouldn't be the case since GENECONV found evidence of gene conversion. see ltr_divergece()"
     # Read PAUP output
     clustLenDcts = {}
     clustDct = {}
     for classif in classifs:
-        # Align only clusters from superfamilies with identical LTRs on transposition (Copia, Gypsy, ERV, BEL/Pao)
+        # Align only clusters from superfamilies with identical LTRs 
+        # on transposition (Copia, Gypsy, ERV, BEL/Pao)
         YESLTRS = False
         for SF in LTR_SFs:
             if classif.startswith(SF):
@@ -5846,8 +5955,13 @@ END;
         if MCLCLUST:
             clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
         elif WICKERCLUST:
-            clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
-        clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
+            clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(
+                                                WickerParams['pId'], 
+                                                WickerParams['percAln'], 
+                                                WickerParams['minLen'], 
+                                                classif)]
+        clusters = [clust.split('\t') for clust in open(
+                                   clusterPath,'r').read().strip().split('\n')]
         for j in range(len(clusters)):
             for el in clusters[j]:
                 clustDct[classif][el] = j
@@ -5856,12 +5970,18 @@ END;
         clustLenDcts[classif] = clustLenDct
 
     if MCLCLUST:
-        paths['DivergenceSummary'] = '{0}/MCL_I{1}.LTR_divergences.tab'.format(paths['DivergenceTopDir'], I)
+        paths['DivergenceSummary'] = '{0}/MCL_I{1}.LTR_divergences.tab'.format(
+                                                  paths['DivergenceTopDir'], I)
     elif WICKERCLUST:
-        paths['DivergenceSummary'] = '{0}/WickerFamDir_{1}_pId_{2}_percAln_{3}_minLen.LTR_divergences.tab'.format(paths['DivergenceTopDir'], WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-
+        paths['DivergenceSummary'] = '{0}/WickerFamDir_{1}_pId_{2}_percAln_{3}_minLen.LTR_divergences.tab'.format(
+                                                paths['DivergenceTopDir'], 
+                                                WickerParams['pId'], 
+                                                WickerParams['percAln'], 
+                                                WickerParams['minLen'])
     with open(paths['DivergenceSummary'.format(I)],'w') as divSummaryFl:
-        divSummaryFl.write('elementName\tclassification\tMCLinflationValue\tcluster\tclusterSize\tmodel\tdivergence\tcorrectedDivergence\tIntraelementGeneConversion\n')
+        divSummaryFl.write(('elementName\tclassification\tMCLinflationValue\t'
+                            'cluster\tclusterSize\tmodel\tdivergence\t'
+                            'correctedDivergence\tIntraelementGeneConversion\n')
     for fname in os.listdir(paths['PAUPDivOutDir']):
         fPth = '{0}/{1}'.format(paths['PAUPDivOutDir'], fname)
         el1, el2, div = open(fPth, 'r').read().strip().split('\t')
@@ -5872,7 +5992,6 @@ END;
             classif == 'All'
         else:
             classif = classifs_by_element[el]
-
         if classif in clustDct:
             if el in clustDct[classif]:
                 clust = clustDct[classif][el]
@@ -5887,59 +6006,80 @@ END;
         else:
             divc = div
             GC = 'No'
-    
-        # Possibly exclude proportion of invariable sites in model, it was part of the models that estimated too high
         if div > 5 or divc > 5:
             print('{0} LTRs have estimated substitutions per site of {1} and {2} (gene conversion-corrected) using {3}. It was excluded from the summary table at: {4}'.format(el, div, divc, model, paths['DivergenceSummary']), file=sys.stderr)
             continue
-
         # Combine as new output
         with open(paths['DivergenceSummary'],'a') as divSummaryFl:
-            divSummaryFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n'.format(el, classif, I, clust, clustSize, model, div, divc, GC))
-                            
+            divSummaryFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n'.format(
+                       el, classif, I, clust, clustSize, model, div, divc, GC))
     if not SummaryKey in paths:
-        with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-            statusFlAppend.write('{0}\t{1}\n'.format(SummaryKey, paths['DivergenceSummary']))
+        with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+            statusFlAppend.write('{0}\t{1}\n'.format(SummaryKey, 
+                                                   paths['DivergenceSummary']))
 
 
-def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomologouspair=True, part='entire', clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, auto_outgroup=False, bootstrap_reps=100, minClustSize=4, convert_to_ultrametric=False, bpflank=None, combine_and_do_small_clusters=True):
+def phylo(removegeneconv = True, 
+          BOOTSTRAP = True, 
+          I = 6, 
+          align = 'cluster', 
+          removehomologouspair = True, 
+          part = 'entire', 
+          clustering_method = 'WickerFam', 
+          WickerParams = {'pId':80,'percAln':80,'minLen':80}, 
+          auto_outgroup = False, 
+          bootstrap_reps = 100, 
+          minClustSize = 4, 
+          convert_to_ultrametric = False, 
+          bpflank = None, 
+          combine_and_do_small_clusters = True):
     """
-    align: one of cluster or classifs
-    I only applies to cluster
-
-    removegeneconv    If True GENECONV output will be parsed and elements with evidence of gene conversion will be removed from cluster prior to aligning for tree
-    BOOTSTRAP=False is not implemented yet.
-    I        inflation parameter used for MCL clusters desired to use for this function
-    align        'cluster'  align and make trees for each WickerFam or MCL cluster, depending on setting of clustering_method
-            'classif'  align and make trees for each superfamily
+    align              one of cluster or classifs
+    removegeneconv     If True GENECONV output will be parsed and 
+                       elements with evidence of gene conversion will 
+                       be removed from cluster prior to aligning for 
+                       tree
+    BOOTSTRAP=False    is not implemented yet.
+    I                  inflation parameter used for MCL clusters desired 
+                       to use for this function
+    align              'cluster' align and make trees for each WickerFam 
+                       or MCL cluster, depending on setting of 
+                       clustering_method. 'classif' align and make trees 
+                       for each superfamily
     removehomologouspair    Not implementd for align='cluster' yet.
-                If True then the flanking X bp on both sides of the element are extracted and blastn'd together
-                (constraints can be changed, see ). One of each pair of hits is removed prior to alignment.
-    part        'entire'  Use whole sequence of element for trees. Not including TSD. From: start(LTR1) -> end(LTR2)
-            'inernal' Use sequence between LTRs for trees. From: end(LTR1) -> start(LTR2)
-    clustering_method    'WickerFam'
-                'MCL'
-    WickerParams    A dictionary of the format {'pId':A,'percAln':B,'minLen':C} where A, B, C are numbers specifying the WickerFam() params.
-    auto_outgroup    Not available for align='classif'.
-            # Automatically roots each cluster's tree with an outgroup by this process:
-            #   the outgroup shall be a random element from cluster k
-            #   where cluster k is the largest of the clusters that is not j
-            #   if j is the first cluster then the next smallest cluster is k
-            #   if there is no other cluster, no outgroup is used
-            
+                            If True then the flanking X bp on both sides 
+                            of the element are extracted and blastn'd 
+                            together. (constraints can be changed, see). 
+                            One of each pair of hits is removed prior to 
+                            alignment.
+    part                'entire' Use whole sequence of element for 
+                        trees. Not including TSD. From: 
+                        start(LTR1) -> end(LTR2)
+                        'inernal' Use sequence between LTRs for trees. 
+                        From: end(LTR1) -> start(LTR2)
+    clustering_method   'WickerFam' or 'MCL'
+    WickerParams        A dictionary of the format 
+                        {'pId':A,'percAln':B,'minLen':C} where A, B, C 
+                        are numbers specifying the WickerFam() params.
+    auto_outgroup       Not available for align='classif'.
+                        Automatically roots each cluster's tree with an 
+                        outgroup by this process: the outgroup shall be 
+                        a random element from cluster k where cluster k 
+                        is the largest of the clusters that is not j if 
+                        j is the first cluster then the next smallest 
+                        cluster is k if there is no other cluster, no 
+                        outgroup is used
     """
     global paths
-
     if not PHYLO:
         return
-
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Start phylo() for {0}'.format(clustering_method))
-
+    append2logfile(paths['output_top_dir'], mainlogfile, 
+                     'Start phylo() for {0}'.format(clustering_method))
     AUTO_OUTGROUP = auto_outgroup
     REMOVEHOMOLOGOUSFLANK = removehomologouspair
     REMOVEGENECONV = removegeneconv
     ULTRAMETRIC = convert_to_ultrametric
-
     if AUTO_OUTGROUP:
         strOutgroup = 'withOutgroup'
     else:
@@ -5948,13 +6088,18 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
         strHomoflank = 'homoflank'
     else:
         strHomoflank = 'nohomoflank'
-
     WICKERCLUST = False
     MCLCLUST = False
     if clustering_method == 'WickerFam':
         WICKERCLUST = True
-        WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
-        WickerTreesDirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_TreesDir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+        WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                    WickerParams['pId'], 
+                                                    WickerParams['percAln'], 
+                                                    WickerParams['minLen'])]
+        WickerTreesDirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_TreesDir'.format(
+                                                    WickerParams['pId'], 
+                                                    WickerParams['percAln'], 
+                                                    WickerParams['minLen'])
         paths[WickerTreesDirkey] = '{0}/Trees'.format(WickerDir)
         paths['TreesDir'] = paths[WickerTreesDirkey]
         MakeDir(WickerTreesDirkey, paths['TreesDir'])
@@ -5967,11 +6112,10 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
         paths['TreesDir'] = paths[MCLTreesDirkey]
         MakeDir(MCLTreesDirkey, paths['TreesDir'])
     else:
-        sys.exit('modeltest() parameter clustering_method needs to be either WickerFam or MCL, and it is: {0}'.format(clustering_method))
-
+        sys.exit(('modeltest() parameter clustering_method needs to be either '
+                  'WickerFam or MCL, and it is: {0}').format(clustering_method))
     OutPth = None
     alnPthKeys = []
-
     ENTIRE = False
     INTERNAL = False
     if part == 'entire':
@@ -5979,74 +6123,160 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
     elif part == 'internal':
         INTERNAL = True
     else:
-        sys.exit('part parameter to AutoAlign() is invalid: {0}. Must be either "entire" or "internal"'.format(part))
-
+        sys.exit(('part parameter to AutoAlign() is invalid: {0}. Must be '
+                  'either "entire" or "internal"').format(part))
     if INTERNAL:
-        MakeDir('InternalRegionsAlignments', '{0}/InternalRegions'.format(paths['TreesDir']))
+        MakeDir('InternalRegionsAlignments', '{0}/InternalRegions'.format(
+                                                            paths['TreesDir']))
         paths['RegionDir'] = paths['InternalRegionsAlignments']
     elif ENTIRE:
-        MakeDir('WholeElementAlignments', '{0}/WholeElements'.format(paths['TreesDir']))
+        MakeDir('WholeElementAlignments', '{0}/WholeElements'.format(
+                                                            paths['TreesDir']))
         paths['RegionDir'] = paths['WholeElementAlignments']
-    if align == 'classif': # OUTGROUP is not possible here
+    # OUTGROUP is not possible here
+    if align == 'classif':
         MakeDir('Superfamilies', '{0}/Superfamilies'.format(paths['RegionDir']))
         if REMOVEHOMOLOGOUSFLANK:
             strHomoflank = 'homoflank'
-            MakeDir('HomoFlankDir', '{0}/NoPairsWithHomologousFlanks'.format(paths['Superfamilies']))
+            MakeDir('HomoFlankDir', '{0}/NoPairsWithHomologousFlanks'.format(
+                                                       paths['Superfamilies']))
         else:
             strHomoflank = 'nohomoflank'
-            MakeDir('HomoFlankDir', '{0}/AllElements'.format(paths['Superfamilies']))
+            MakeDir('HomoFlankDir', '{0}/AllElements'.format(
+                                                       paths['Superfamilies']))
         OutPth = paths['HomoFlankDir']
         if WICKERCLUST:
-            AutoAlign(I=None, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='classif', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'],'percAln':WickerParams['percAln'],'minLen':['minLen']}, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
-            alnPthKeys.append('WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_all.{4}.{5}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, strHomoflank))
+            AutoAlign(I = None, 
+                      part = part, 
+                      rmgeneconv = removegeneconv, 
+                      minClustSize = minClustSize, 
+                      align = 'classif', 
+                      rmhomologflank = REMOVEHOMOLOGOUSFLANK, 
+                      clustering_method = 'WickerFam', 
+                      WickerParams = {'pId':WickerParams['pId'],
+                        'percAln':WickerParams['percAln'],'minLen':['minLen']}, 
+                      auto_outgroup = AUTO_OUTGROUP, 
+                      bpflank = bpflank, 
+                      combine_and_do_small_clusters = combine_and_do_small_clusters, 
+                      flank_pId = flank_pId, 
+                      flank_evalue = flank_evalue, 
+                      flank_plencutoff = flank_plencutoff, 
+                      LTRSONLY = False)
+            alnPthKeys.append('WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_all.{4}.{5}'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'],
+                                                        WickerParams['minLen'], 
+                                                        classif, 
+                                                        strHomoflank))
         elif MCLCLUST:
-            AutoAlign(I=I, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='classif', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
-            alnPthKeys.append('Aln_{0}_I{1}_cluster_all.{2}.{3}'.format(classif, I, strHomoflank))
+            AutoAlign(I = I, 
+                      part = part, 
+                      rmgeneconv = removegeneconv, 
+                      minClustSize = minClustSize, 
+                      align = 'classif', 
+                      rmhomologflank = REMOVEHOMOLOGOUSFLANK, 
+                      clustering_method = 'MCL', 
+                      WickerParams = None, 
+                      auto_outgroup = AUTO_OUTGROUP, 
+                      bpflank = bpflank, 
+                      combine_and_do_small_clusters = combine_and_do_small_clusters, 
+                      flank_pId = flank_pId, 
+                      flank_evalue = flank_evalue, 
+                      flank_plencutoff = flank_plencutoff, 
+                      LTRSONLY = False)
+            alnPthKeys.append('Aln_{0}_I{1}_cluster_all.{2}.{3}'.format(
+                                                     classif, I, strHomoflank))
     elif align == 'cluster':
         if REMOVEGENECONV:
-            MakeDir('GCDir', '{0}/GeneconversionDisallowed'.format(paths['RegionDir']))
+            MakeDir('GCDir', '{0}/GeneconversionDisallowed'.format(
+                                                           paths['RegionDir']))
         else:
             MakeDir('GCDir', '{0}/NoGCFiltering'.format(paths['RegionDir']))
         if REMOVEHOMOLOGOUSFLANK:
             strHomoflank = 'homoflank'
-            MakeDir('HomoFlankDir', '{0}/NoPairsWithHomologousFlanks'.format(paths['GCDir']))
+            MakeDir('HomoFlankDir', '{0}/NoPairsWithHomologousFlanks'.format(
+                                                               paths['GCDir']))
         else:
             strHomoflank = 'nohomoflank'
             MakeDir('HomoFlankDir', '{0}/AllElements'.format(paths['GCDir']))
         if AUTO_OUTGROUP:
-            MakeDir('OutgroupDir', '{0}/WithOutgroup'.format(paths['HomoFlankDir']))
+            MakeDir('OutgroupDir', '{0}/WithOutgroup'.format(
+                                                        paths['HomoFlankDir']))
         else:
-            MakeDir('OutgroupDir', '{0}/NoOutgroup'.format(paths['HomoFlankDir']))
+            MakeDir('OutgroupDir', '{0}/NoOutgroup'.format(
+                                                        paths['HomoFlankDir']))
         OutPth= paths['OutgroupDir']
-
         if WICKERCLUST:
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Start AutoAlign() in phylo() for {0}'.format(clustering_method))
-            AutoAlign(I=None, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='clusters', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='WickerFam', WickerParams={'pId':WickerParams['pId'],'percAln':WickerParams['percAln'],'minLen':WickerParams['minLen']}, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
-
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+              'Start AutoAlign() in phylo() for {0}'.format(clustering_method))
+            AutoAlign(I = None, 
+                      part = part, 
+                      rmgeneconv = removegeneconv, 
+                      minClustSize = minClustSize, 
+                      align = 'clusters', 
+                      rmhomologflank = REMOVEHOMOLOGOUSFLANK, 
+                      clustering_method = 'WickerFam', 
+                      WickerParams = {'pId':WickerParams['pId'],
+                                      'percAln':WickerParams['percAln'],
+                                      'minLen':WickerParams['minLen']}, 
+                      auto_outgroup = AUTO_OUTGROUP, 
+                      bpflank = bpflank, 
+                      combine_and_do_small_clusters = combine_and_do_small_clusters, 
+                      flank_pId = flank_pId, 
+                      flank_evalue = flank_evalue, 
+                      flank_plencutoff = flank_plencutoff, 
+                      LTRSONLY = False)
         elif MCLCLUST:
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Start AutoAlign() in phylo() for {0}'.format(clustering_method))
-            AutoAlign(I=I, part=part, rmgeneconv=removegeneconv, minClustSize=minClustSize, align='clusters', rmhomologflank=REMOVEHOMOLOGOUSFLANK, clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP, bpflank=bpflank, combine_and_do_small_clusters=combine_and_do_small_clusters, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+              'Start AutoAlign() in phylo() for {0}'.format(clustering_method))
+            AutoAlign(I = I, 
+                      part = part, 
+                      rmgeneconv = removegeneconv, 
+                      minClustSize = minClustSize, 
+                      align = 'clusters', 
+                      rmhomologflank = REMOVEHOMOLOGOUSFLANK, 
+                      clustering_method = 'MCL', 
+                      WickerParams = None, 
+                      auto_outgroup = AUTO_OUTGROUP, 
+                      bpflank = bpflank, 
+                      combine_and_do_small_clusters = combine_and_do_small_clusters, 
+                      flank_pId = flank_pId, 
+                      flank_evalue = flank_evalue, 
+                      flank_plencutoff = flank_plencutoff, 
+                      LTRSONLY = False)
 
     for classif in classifs:
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Start processing {0} clusters in phylo() for {1}'.format(classif, clustering_method))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                    'Start processing {0} clusters in phylo() for {1}'.format(
+                                                            classif, 
+                                                            clustering_method))
         # Read clusters
         if MCLCLUST:
             clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
         elif WICKERCLUST:
-            clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
-        clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
+            clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(
+                                                WickerParams['pId'], 
+                                                WickerParams['percAln'], 
+                                                WickerParams['minLen'], 
+                                                classif)]
+        clusters = [clust.split('\t') for clust in open(
+                                 clusterPath, 'r').read().strip().split('\n')]
         # Read GENECONV output
         if REMOVEGENECONV:
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Start processing gene conversion results phylo() for {0}'.format(clustering_method))
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+              'Start processing gene conversion results phylo() for {0}'.format(
+                                                            clustering_method))
             gc = 'GCfiltered'
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Excluding {0} elements with evidence of gene conversion'.format(classif))
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                'Excluding {0} elements with evidence of gene conversion'.format(
+                                                                      classif))
             if MCLCLUST:
                 gcSummaryPth = 'MCL_I{0}_GENECONV_summary'.format(I)
             elif WICKERCLUST:
-                gcSummaryPth = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_summary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+                gcSummaryPth = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONV_summary'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
             if gcSummaryPth in paths:
                 if os.path.isfile(gcSummaryPth):
                     gcDct = {}
@@ -6064,109 +6294,170 @@ def phylo(removegeneconv=True, BOOTSTRAP=True, I=6, align='cluster', removehomol
                             else:
                                 gcDct[classif] = {clust:[el]}
             elif gcSummaryPth not in paths:
-                print('phylo(): modeltest(removegeneconv=True) used but {0} not in paths or status file. This happens at least when there is only 1 element with a classification and therefore nothing is aligned'.format(gcSummaryPth), file=sys.stderr)
-
+                print(('phylo(): modeltest(removegeneconv = True) used but {0} '
+                       'not in paths or status file. This happens at least '
+                       'when there is only 1 element with a classification and '
+                       'therefore nothing is aligned'.format(gcSummaryPth), 
+                                                             file = sys.stderr)
             if os.path.isfile(gcSummaryPth):
                 for j in range(len(clusters)):
                     if j in gcDct[classif]:
-                        clusters[j] = [ el for el in clusters[j] if not el in gcDct[classif][j] ]
+                        clusters[j] = [el for el in clusters[j] if 
+                                                   not el in gcDct[classif][j]]
         else:
             gc = 'NoGCfiltering'
-        
-        # Begin cluster routine
         if align == 'cluster':
             for j in range(len(clusters)):
                 if WICKERCLUST:
-                    alnPth = 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_{4}_{5}.{6}.{7}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, j, gc, strHomoflank, strOutgroup)
+                    alnPth = 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_cluster_{4}_{5}.{6}.{7}'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif, 
+                                                        j, 
+                                                        gc, 
+                                                        strHomoflank, 
+                                                        strOutgroup)
                 elif MCLCLUST:
-                    alnPth = 'Aln_{0}_I{1}_cluster{2}_{3}.{4}.{5}'.format(classif, I, j, gc, strHomoflank, strOutgroup)
+                    alnPth = 'Aln_{0}_I{1}_cluster{2}_{3}.{4}.{5}'.format(
+                                                        classif, 
+                                                        I, 
+                                                        j, 
+                                                        gc, 
+                                                        strHomoflank, 
+                                                        strOutgroup)
                 if  alnPth in paths:
                     alnPthKeys.append(alnPth)
-
             # clustersmall will be left out of OUTGROUP. No LTT for clustersmall
             if combine_and_do_small_clusters:
                 if WICKERCLUST:
-                    alnPth = 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_clustersmall_{4}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc)
+                    alnPth = 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_clustersmall_{4}'.format(WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif, 
+                                                        gc)
                     if alnPth in paths:
                         alnPthKeys.append(alnPth)
                 elif MCLCLUST:
-                    alnPth = 'Aln_{0}_I{1}_clustersmall_{2}'.format(classif, I, gc)
+                    alnPth = 'Aln_{0}_I{1}_clustersmall_{2}'.format(classif, I, 
+                                                                            gc)
                     if alnPth in paths:
                         alnPthKeys.append(alnPth)
-
     if BOOTSTRAP:
-        scriptpath = os.path.realpath(__file__)
-        lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Ready to begin bootstrapping for:\n{0}'.format('\n'.join(alnPthKeys)))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+            'Ready to begin bootstrapping for:\n{0}'.format('\n'.join(
+                                                                  alnPthKeys)))
         if ULTRAMETRIC:
             if WICKERCLUST:
-                bootstrap(alnPthsLst=alnPthKeys, reps=bootstrap_reps, OutPth=OutPth, convert_to_ultrametric=True, WickerParams={'pId':WickerParams['pId'],'percAln':WickerParams['percAln'],'minLen':WickerParams['minLen']}, gc=gc, strHomoflank=strHomoflank, strOutgroup=strOutgroup, I=None)
+                bootstrap(alnPthsLst = alnPthKeys, 
+                          reps = bootstrap_reps, 
+                          OutPth = OutPth, 
+                          convert_to_ultrametric = True, 
+                          WickerParams = {'pId':WickerParams['pId'],
+                                        'percAln':WickerParams['percAln'],
+                                        'minLen':WickerParams['minLen']}, 
+                          gc = gc, 
+                          strHomoflank = strHomoflank, 
+                          strOutgroup = strOutgroup, 
+                          I = None)
             elif MCLCLUST:
-                bootstrap(alnPthsLst=alnPthKeys, reps=bootstrap_reps, OutPth=OutPth, convert_to_ultrametric=True, WickerParams=None,  gc=gc, strHomoflank=strHomoflank, strOutgroup=strOutgroup, I=I)
+                bootstrap(alnPthsLst = alnPthKeys, 
+                          reps = bootstrap_reps, 
+                          OutPth = OutPth, 
+                          convert_to_ultrametric = True, 
+                          WickerParams = None, 
+                          gc = gc, 
+                          strHomoflank = strHomoflank, 
+                          strOutgroup = strOutgroup, 
+                          I = I)
         else:
             if WICKERCLUST:
-                bootstrap(alnPthsLst=alnPthKeys, reps=bootstrap_reps, OutPth=OutPth, convert_to_ultrametric=False, WickerParams={'pId':WickerParams['pId'],'percAln':WickerParams['percAln'],'minLen':WickerParams['minLen']}, gc=gc, strHomoflank=strHomoflank, strOutgroup=strOutgroup, I=None)
+                bootstrap(alnPthsLst = alnPthKeys, 
+                          reps = bootstrap_reps, 
+                          OutPth = OutPth, 
+                          convert_to_ultrametric = False, 
+                          WickerParams = {'pId':WickerParams['pId'],
+                                          'percAln':WickerParams['percAln'],
+                                          'minLen':WickerParams['minLen']}, 
+                          gc = gc, 
+                          strHomoflank = strHomoflank, 
+                          strOutgroup = strOutgroup, 
+                          I = None)
             elif MCLCLUST:
-                bootstrap(alnPthsLst=alnPthKeys, reps=bootstrap_reps, OutPth=OutPth, convert_to_ultrametric=False, WickerParams=None, gc=gc, strHomoflank=strHomoflank, strOutgroup=strOutgroup, I=I)
+                bootstrap(alnPthsLst = alnPthKeys, 
+                          reps = bootstrap_reps, 
+                          OutPth = OutPth, 
+                          convert_to_ultrametric = False, 
+                          WickerParams = None, 
+                          gc = gc, 
+                          strHomoflank = strHomoflank, 
+                          strOutgroup = strOutgroup, 
+                          I = I)
 
 
 def SeqbootCall(Call):
+    """Runs seqboot"""
     baseDir = os.getcwd()
     os.chdir(Call[1])
     subprocess.call(Call[0], stdin=open('seqboot.conf', 'r'))
     os.chdir(baseDir)
 
 
-def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, WickerParams=None, gc=None, strHomoflank=None, strOutgroup=None, I=None):
-
+def bootstrap(alnPthsLst, 
+              reps, 
+              OutPth = None, 
+              convert_to_ultrametric = False, 
+              WickerParams = None, 
+              gc = None, 
+              strHomoflank = None, 
+              strOutgroup = None, 
+              I = None):
     global paths
-
     append2logfile(paths['output_top_dir'], mainlogfile, 'Start bootstrap()')
-
-    scriptpath = os.path.realpath(__file__)
-    lineno = getframeinfo(currentframe()).lineno + 2
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Began bootstrap()')
     OutgroupSummaryKey = None
     seqbootCalls = []
     ULTRAMETRIC = convert_to_ultrametric
-
     # Store calls for SEQBOOT
     for AlnFasta in alnPthsLst:
         if os.path.isfile(paths[AlnFasta]):
-            if os.stat(paths[AlnFasta]).st_size == 0: # if alignment file is empty
+            # if alignment file is empty
+            if os.stat(paths[AlnFasta]).st_size == 0:
                 continue
-            if len(list(SeqIO.parse(paths[AlnFasta], 'fasta'))[0]) == 0: # no sequences
+             # no sequences
+            if len(list(SeqIO.parse(paths[AlnFasta], 'fasta'))[0]) == 0: 
                 continue
-                
         else:
             continue
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run SEQBOOT for:\n{0}'.format(paths[AlnFasta]))
-        AlignIO.convert(in_file=paths[AlnFasta], out_file='{0}.phylip'.format(paths[AlnFasta]), in_format='fasta', out_format='phylip')
-        SeqBootInstructionsFlPth = '{0}/seqboot.conf'.format('/'.join(paths[AlnFasta].split('/')[:-1]))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                  'Preparing to run SEQBOOT for:\n{0}'.format(paths[AlnFasta]))
+        AlignIO.convert(in_file=paths[AlnFasta], 
+                        out_file='{0}.phylip'.format(paths[AlnFasta]), 
+                        in_format='fasta', 
+                        out_format='phylip')
+        SeqBootInstructionsFlPth = '{0}/seqboot.conf'.format('/'.join(
+                                              paths[AlnFasta].split('/')[:-1]))
         with open(SeqBootInstructionsFlPth, 'w') as SeqBootInstructionsFl:
             Phylip = '{0}.phylip'.format(paths[AlnFasta]).split('/')[-1]
-            SeqBootInstructionsFl.write('{0}\nR\n{1}\nY\n1\nR\n'.format(Phylip, reps))
-        
-        seqbootCalls.append([['{0}/seqboot'.format(executables['phylip'])], '/'.join(paths[AlnFasta].split('/')[:-1])])
-
+            SeqBootInstructionsFl.write('{0}\nR\n{1}\nY\n1\nR\n'.format(
+                                                                 Phylip, reps))
+        seqbootCalls.append([['{0}/seqboot'.format(executables['phylip'])], 
+                                    '/'.join(paths[AlnFasta].split('/')[:-1])])
     if not seqbootCalls == []:
         chunk_size = ceil(len(seqbootCalls)/procs)
         with Pool(processes=procs) as p:
             p.map(SeqbootCall, seqbootCalls, chunksize=chunk_size)
         p.join()
-
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Finished running SEQBOOT')
-
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                                                    'Finished running SEQBOOT')
     for AlnFasta in alnPthsLst:
         fasttreeCalls = []
         if os.path.isfile(paths[AlnFasta]):
-            if os.stat(paths[AlnFasta]).st_size == 0: # if alignment file is empty
+            # if alignment file is empty
+            if os.stat(paths[AlnFasta]).st_size == 0:
                 continue
-            if len(list(SeqIO.parse(paths[AlnFasta], 'fasta'))[0]) == 0: # no sequences
+            # no sequences
+            if len(list(SeqIO.parse(paths[AlnFasta], 'fasta'))[0]) == 0:
                 continue
-                
         else:
             continue
         alignment_length = len(list(SeqIO.parse(paths[AlnFasta], 'fasta'))[0])
@@ -6190,106 +6481,143 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
             clust = paths[AlnFasta].split('/')[-2]
             settings = paths[AlnFasta].split('/')[2]
         else:
-            sys.exit('modeltest() parameter clustering_method needs to be either WickerFam or MCL, and it is, from within bootstrap(): {0}'.format(clustMethod))
-
+            sys.exit(('modeltest() parameter clustering_method needs to be '
+                      'either WickerFam or MCL, and it is, from within '
+                      'bootstrap(): {0}').format(clustMethod))
         if ULTRAMETRIC:
             if clustMethod == 'WickerFam':
-                OutgroupSummaryKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.OutgroupSummary'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc, strHomoflank)
-                #OutgroupSummaryKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.{6}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc, strHomoflank, strOutgroup)
+                OutgroupSummaryKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.OutgroupSummary'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif, 
+                                                        gc, 
+                                                        strHomoflank)
             elif clustMethod == 'MCL':
-                OutgroupSummaryKey = 'MCLOutgroups_{0}_I{1}_{2}.{3}.OutgroupSummary'.format(classif, I, gc, strHomoflank)
-                #OutgroupSummaryKey = 'MCLOutgroups_{0}_I{1}_{2}.{3}.{4}'.format(classif, I, gc, strHomoflank, strOutgroup)
+                OutgroupSummaryKey = 'MCLOutgroups_{0}_I{1}_{2}.{3}.OutgroupSummary'.format(
+                                                        classif, 
+                                                        I, 
+                                                        gc, 
+                                                        strHomoflank)
         seqbootOutputPhylip = '{0}/outfile'.format(pth)
         # Split seqboot multi-phylip output
         MakeDir('classifDir', '{0}/{1}'.format(OutPth, classif))
         MakeDir('clustDir', '{0}/{1}'.format(paths['classifDir'], clust))
         scriptpath = os.path.realpath(__file__)
         lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing to run FastTree for:\n{0}'.format(paths[AlnFasta]))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+          'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                 'Preparing to run FastTree for:\n{0}'.format(paths[AlnFasta]))
         # Integrate both Wicker and MCL
-        runID = '{0}_{1}_Bootstrap_{2}_{3}'.format(clustMethod, settings, classif, clust)
+        runID = '{0}_{1}_Bootstrap_{2}_{3}'.format(clustMethod, settings, 
+                                                                classif, clust)
         # Run FastTree for main tree
         if not 'mainTree_{0}'.format(runID) in paths:
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Start inferring phylogeny in bootstrap()')
-            mainTree = '{0}/{1}.main_tree'.format(paths['clustDir'], paths[AlnFasta].split('/')[-1])
-            makecallMultiprocessing(([ executables['fasttree'], '-nt', '-gtr' ], mainTree, '{0}/fasttree.err'.format(pth), paths[AlnFasta] ))
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                                    'Start inferring phylogeny in bootstrap()')
+            mainTree = '{0}/{1}.main_tree'.format(paths['clustDir'], paths[
+                                                      AlnFasta].split('/')[-1])
+            makecallMultiprocessing(([executables['fasttree'], '-nt', '-gtr'], 
+                    mainTree, '{0}/fasttree.err'.format(pth), paths[AlnFasta]))
             paths['mainTree_{0}'.format(runID)] = mainTree
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format('mainTree_{0}'.format(runID), mainTree))
+            with open('{0}/status'.format(paths[
+                                    'output_top_dir']), 'a') as statusFlAppend:
+                statusFlAppend.write('{0}\t{1}\n'.format('mainTree_{0}'.format(
+                                                             runID), mainTree))
             scriptpath = os.path.realpath(__file__)
             lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Generated main tree:\n{0}'.format(mainTree))
-
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                     'Below log entry is from line {0} in {1}'.format(lineno, 
+                                                                   scriptpath))
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                                  'Generated main tree:\n{0}'.format(mainTree))
         if not 'Trees_{0}'.format(runID) in paths:
             with open(seqbootOutputPhylip, 'r') as alnIters:
                 replicate = 0
                 repFlPth = None
                 scriptpath = os.path.realpath(__file__)
                 lineno = getframeinfo(currentframe()).lineno + 2
-                append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-                append2logfile(paths['output_top_dir'], mainlogfile, 'Preparing for bootstrapping')
+                append2logfile(paths['output_top_dir'], mainlogfile, 
+                            'Below log entry is from line {0} in {1}'.format(
+                                                           lineno, scriptpath))
+                append2logfile(paths['output_top_dir'], mainlogfile, 
+                                                 'Preparing for bootstrapping')
                 for line in alnIters:
-                    if line.strip().replace(' ', '') == '{0}{1}'.format(numAlns, alnLen): # new alignment
-                        
+                    # new alignment
+                    if line.strip().replace(' ', '') == '{0}{1}'.format(
+                                                              numAlns, alnLen):
                         if repFlPth != None:
-                            iterDir = '{0}/{1}'.format(paths['clustDir'], replicate)
-                            fasttree_call = ( [ executables['fasttree'], '-nt', '-gtr' ], '{0}/tree.newick'.format(iterDir), '{0}/fasttree.err'.format(iterDir), repFlPth )
-                            #fasttree_call_string =  '{0} -nt -gtr <{1} >{2} 2>{3}'.format(executables['fasttree'], repFlPth, '{0}/tree.newick'.format(iterDir), '{0}/fasttree.err'.format(iterDir))
+                            iterDir = '{0}/{1}'.format(paths['clustDir'], 
+                                                                     replicate)
+                            fasttree_call = ([executables['fasttree'], '-nt', '-gtr'], 
+                                            '{0}/tree.newick'.format(iterDir), 
+                                            '{0}/fasttree.err'.format(iterDir), 
+                                            repFlPth)
                             fasttreeCalls.append(fasttree_call)
                         replicate += 1
-                        # MAKE DIR FOR BOOTSTRAP REPLICATES OUTPUT
-                        MakeDir('iterDir', '{0}/{1}'.format(paths['clustDir'], replicate))
-                        repFlPth = '{0}/alnReplicate_{1}.fasta'.format(paths['iterDir'], replicate)
+                        # make dir for bootstrap replicates output
+                        MakeDir('iterDir', '{0}/{1}'.format(paths['clustDir'], 
+                                                                    replicate))
+                        repFlPth = '{0}/alnReplicate_{1}.fasta'.format(
+                                                   paths['iterDir'], replicate)
                         with open(repFlPth, 'a') as repFl:
                             repFl.write(line)
                     else:
                         with open(repFlPth, 'a') as repFl:
                             repFl.write(line)
-                        
-                fasttree_call = ( [ executables['fasttree'], '-nt', '-gtr' ], '{0}/tree.newick'.format(paths['iterDir']), '{0}/fasttree.err'.format(paths['iterDir']), repFlPth )
-                #fasttree_call_string =  '{0} -nt -gtr <{1} >{2} 2>{3}'.format(executables['fasttree'], repFlPth, '{0}/tree.newick'.format(iterDir), '{0}/fasttree.err'.format(iterDir))
+                fasttree_call = ([executables['fasttree'], '-nt', '-gtr'], 
+                        '{0}/tree.newick'.format(paths['iterDir']),
+                        '{0}/fasttree.err'.format(paths['iterDir']), repFlPth)
                 fasttreeCalls.append(fasttree_call)
-
             chunk_size = ceil(len(fasttreeCalls)/procs)
             with Pool(processes=procs) as p:
-                append2logfile(paths['output_top_dir'], mainlogfile, 'Start FastTree bootstrapping for alignments:\n{0}'.format(AlnFasta))
-                p.map(makecallMultiprocessing, fasttreeCalls, chunksize=chunk_size)
+                append2logfile(paths['output_top_dir'], mainlogfile, 
+                    'Start FastTree bootstrapping for alignments:\n{0}'.format(
+                                                                     AlnFasta))
+                p.map(makecallMultiprocessing, fasttreeCalls,
+                                                        chunksize = chunk_size)
             p.join()
-            
-            paths['Trees_{0}'.format(runID)] = '{0}/allReplicates.newick'.format(paths['clustDir'])
-            for d in [D for D in os.listdir(paths['clustDir']) if os.path.isdir('{0}/{1}'.format(paths['clustDir'], D))]:
+            paths['Trees_{0}'.format(runID)] = '{0}/allReplicates.newick'.format(
+                                                             paths['clustDir'])
+            for d in [D for D in os.listdir(paths['clustDir']) if 
+                        os.path.isdir('{0}/{1}'.format(paths['clustDir'], D))]:
                 for f in os.listdir('{0}/{1}'.format(paths['clustDir'], d)):
                     if f.endswith('newick'):
-                        tree = open('{0}/{1}/{2}'.format(paths['clustDir'], d, f), 'r').read().strip()
+                        tree = open('{0}/{1}/{2}'.format(paths['clustDir'], d, 
+                                                        f), 'r').read().strip()
                         with open(paths['Trees_{0}'.format(runID)], 'a') as treeFl:
                             treeFl.write('{0}\n'.format(tree))
-
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'All bootstrap replicate trees in this file:\n{0}'.format(paths['Trees_{0}'.format(runID)]))
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                    'All bootstrap replicate trees in this file:\n{0}'.format(
+                                             paths['Trees_{0}'.format(runID)]))
             paths[runID] = paths['clustDir']
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
                 statusFlAppend.write('{0}\t{1}\n'.format(runID,  paths[runID]))
-
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format('Trees_{0}'.format(runID), paths['Trees_{0}'.format(runID)]))
-
+            with open('{0}/status'.format(paths[
+                                    'output_top_dir']), 'a') as statusFlAppend:
+                statusFlAppend.write('{0}\t{1}\n'.format('Trees_{0}'.format(
+                                     runID), paths['Trees_{0}'.format(runID)]))
         # Get bootstrap values
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Start CompareToBootstrap.pl for\n{0}'.format(AlnFasta))
-        compare2bootstrap_call = [ executables['perl'], '{0}/{1}'.format( paths['scriptsDir'], 'CompareToBootstrap.pl'), '-tree', paths['mainTree_{0}'.format(runID)], '-boot', paths['Trees_{0}'.format(runID)]]
-        makecall(compare2bootstrap_call, stdout = '{0}.bootstrapped'.format(paths['mainTree_{0}'.format(runID)]))
-
-        bootstrapped = '{0}.bootstrapped'.format(paths['mainTree_{0}'.format(runID)])
-
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                       'Start CompareToBootstrap.pl for\n{0}'.format(AlnFasta))
+        compare2bootstrap_call = [executables['perl'], 
+                                  '{0}/{1}'.format( 
+                                  paths['scriptsDir'], 
+                                  'CompareToBootstrap.pl'), 
+                                  '-tree', 
+                                  paths['mainTree_{0}'.format(runID)], 
+                                  '-boot', 
+                                  paths['Trees_{0}'.format(runID)]]
+        makecall(compare2bootstrap_call, stdout = '{0}.bootstrapped'.format(
+                                          paths['mainTree_{0}'.format(runID)]))
+        bootstrapped = '{0}.bootstrapped'.format(paths['mainTree_{0}'.format(
+                                                                       runID)])
         # run PATHd8 to convert tree to ultrametric
         if ULTRAMETRIC:
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning Ultrametric transformation for {0}'.format(runID))
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                  'Beginning Ultrametric transformation for {0}'.format(runID))
             with open(bootstrapped, 'r') as bstreefl:
                 tree = bstreefl.read().strip()
             outgroup = None
@@ -6300,15 +6628,17 @@ def bootstrap(alnPthsLst, reps, OutPth=None, convert_to_ultrametric=False, Wicke
                     key, outG, outgroup_clust = line.strip().split('\t')
                     if key == AlnFasta:
                         outgroup = outG[19:]
-
             if outgroup == None:
-                print('Unable to root {0}. No ultrametric tree will be made'.format(AlnFasta))
+                print('Unable to root {0}. No ultrametric tree will be made'.format(
+                                                                     AlnFasta))
             else:
-                other_taxon = random.choice(list(SeqIO.parse(paths[AlnFasta], 'fasta'))).id # a random element from the current cluster to tell PATHd8 where the mrca is (outgroupXother_taxon) for determining relative branch lengths
-                scriptpath = os.path.realpath(__file__)
-                lineno = getframeinfo(currentframe()).lineno + 2
-                append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-                append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning PATHd8 for {0}'.format(runID))
+                # a random element from the current cluster to tell PATHd8 
+                # where the mrca is (outgroupXother_taxon) for determining 
+                # relative branch lengths
+                other_taxon = random.choice(list(SeqIO.parse(paths[AlnFasta], 
+                                                                  'fasta'))).id 
+                append2logfile(paths['output_top_dir'], mainlogfile, 
+                                      'Beginning PATHd8 for {0}'.format(runID))
                 pathd8_file_str = """Sequence length={0};
 mrca: {1}, {2}, fixage=1;
 {3}
@@ -6316,66 +6646,54 @@ mrca: {1}, {2}, fixage=1;
                 pathd8flpth = '{0}/pathd8.in'.format(paths[runID])
                 with open(pathd8flpth, 'w') as outFl:
                     outFl.write(pathd8_file_str)
-                paths['PATHd8_output_{0}'.format(runID)] = '{0}.pathd8_ultrametric'.format(bootstrapped)
-                pathd8_call = [ executables['pathd8'], pathd8flpth, paths['PATHd8_output_{0}'.format(runID)] ]
+                paths['PATHd8_output_{0}'.format(
+                        runID)] = '{0}.pathd8_ultrametric'.format(bootstrapped)
+                pathd8_call = [executables['pathd8'], pathd8flpth, 
+                                      paths['PATHd8_output_{0}'.format(runID)]]
                 makecall(pathd8_call)
                 if os.path.isfile(paths['PATHd8_output_{0}'.format(runID)]):
                     with open(paths['PATHd8_output_{0}'.format(runID)], 'r') as d8Fl:
                         for line in d8Fl:
                             if line.startswith('d8 tree '):
                                 d8tree = line[line.index('('):]
-                                newLocation = '{0}/{1}_{2}.bootstrapped.pathd8_ultrametric.outgroup_{3}.newick'.format(paths['classifDir'], classif, clust, outgroup)
+                                newLocation = '{0}/{1}_{2}.bootstrapped.pathd8_ultrametric.outgroup_{3}.newick'.format(
+                                                         paths['classifDir'], 
+                                                         classif, 
+                                                         clust, 
+                                                         outgroup)
                                 if clustMethod == 'WickerFam':
-                                    newLocationKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.outgroup_{6}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif, gc, strHomoflank, outgroup)
+                                    newLocationKey = 'WickerOutgroups_{0}_pId_{1}_percAln_{2}_minLen_{3}_{4}.{5}.outgroup_{6}'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif, 
+                                                        gc, 
+                                                        strHomoflank, 
+                                                        outgroup)
                                 elif clustMethod == 'MCL':
-                                    newLocationKey = 'MCLOutgroups_{0}_I{1}_{2}.{3}.outgroup_{4}'.format(classif, I, gc, strHomoflank, outgroup)
+                                    newLocationKey = 'MCLOutgroups_{0}_I{1}_{2}.{3}.outgroup_{4}'.format(
+                                                        classif, 
+                                                        I, 
+                                                        gc, 
+                                                        strHomoflank, 
+                                                        outgroup)
                                 with open(newLocation, 'w') as outFl:
                                     outFl.write(d8tree)
                                 if not checkStatusFl(newLocationKey):
-                                    with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFl:
-                                        statusFl.write('{0}\t{1}\n'.format(newLocationKey, newLocation))
-
-                            
-                scriptpath = os.path.realpath(__file__)
-                lineno = getframeinfo(currentframe()).lineno + 2
-                append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-                append2logfile(paths['output_top_dir'], mainlogfile, 'Finished PATHd8 for {0}'.format(runID))
-
-        bootstrappedLocation = '{0}/{1}_{2}.bootstrapped.outgroup_{3}.newick'.format(paths['classifDir'], classif, clust, classif)
+                                    with open('{0}/status'.format(paths[
+                                          'output_top_dir']), 'a') as statusFl:
+                                        statusFl.write('{0}\t{1}\n'.format(
+                                                  newLocationKey, newLocation))
+                append2logfile(paths['output_top_dir'], mainlogfile, 
+                                       'Finished PATHd8 for {0}'.format(runID))
+        bootstrappedLocation = '{0}/{1}_{2}.bootstrapped.outgroup_{3}.newick'.format(
+                                  paths['classifDir'], classif, clust, classif)
         copyfile(bootstrapped, bootstrappedLocation)
-        scriptpath = os.path.realpath(__file__)
-        lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Finished bootstrapping. Tree with bootstrap support values here:\n{0}'.format(bootstrappedLocation))
-
-
-def div2Rplots(I=6):
-
-    R_wd = os.path.abspath('/'.join(paths['DivergenceSummary_I{0}'.format(I)].split('/')[:-1]))
-    fl = os.path.abspath(paths['DivergenceSummary_I{0}'.format(I)])
-    call = [ executables['rscript'], '{0}/div2density.R'.format(paths['scriptsDir']), R_wd, fl ]
-    call_str = '{0} {1} {2} {3}'.format(executables['rscript'], '{0}/div2density.R'.format(paths['scriptsDir']), R_wd, fl)
-    scriptpath = os.path.realpath(__file__)
-    lineno = getframeinfo(currentframe()).lineno + 2
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Making R plot\n{0}'.format(call_str))
-    with open('{0}/RscriptCalls.txt'.format(paths['output_top_dir']), 'a') as RcallFl:
-        RcallFl.write(call_str+'\n')
-    subprocess.call(call)
-
+        append2logfile(paths['output_top_dir'], mainlogfile, (('Finished bootstrapping. '
+                    'Tree with bootstrap support values here:\n{0}').format(
+                                                         bootstrappedLocation))
 
 def clusterSummary():
-    #WickerFamDir_80_pId_80_percAln_80_minLen_Copia    LTRan_output/WickerFamDir/80_pId_80_percAln_80_minLen/Clusters/Copia/wicker_groups_Copia
-    #WickerFamDir_80_pId_80_percAln_80_minLen_ERV    LTRan_output/WickerFamDir/80_pId_80_percAln_80_minLen/Clusters/ERV/wicker_groups_ERV
-    #WickerFamDir_80_pId_80_percAln_80_minLen_Other    LTRan_output/WickerFamDir/80_pId_80_percAln_80_minLen/Clusters/Other/wicker_groups_Other
-    #WickerFamDir_80_pId_80_percAln_80_minLen_Gypsy    LTRan_output/WickerFamDir/80_pId_80_percAln_80_minLen/Clusters/Gypsy/wicker_groups_Gypsy
-    #MCL_ERV_I8    LTRan_output/MCL/I8/Clusters/ERV/ERV_MCL_clusters.I8
-    #MCL_ERV_I8    LTRan_output/MCL/I8/Clusters/ERV/out.LTR_retrotransposon_ERV.mci.I80
-    #MCL_Other_I8    LTRan_output/MCL/I8/Clusters/Other/out.LTR_retrotransposon_Other.mci.I80
-    #MCL_Gypsy_I8    LTRan_output/MCL/I8/Clusters/Gypsy/out.LTR_retrotransposon_Gypsy.mci.I80
-    #MCL_Copia_I8    LTRan_output/MCL/I8/Clusters/Copia/out.LTR_retrotransposon_Copia.mci.I80
-    #MCL_Gypsy_I4    LTRan_output/MCL/I4/Clusters/Gypsy/out.LTR_retrotransposon_Gypsy.mci.I40
-
     clustPaths = [ line for line in open('{0}/status'.format(paths['output_top_dir']), 'r').read().strip().split('\n') if not 'divergence' in line and not line.endswith('minLen') and (line.startswith('WickerFamDir_') or re.match('MCL_.+_I\d', line)) ]
 
     # To avoid double-appending, remove cluster files if they exist before adding the new stuff
