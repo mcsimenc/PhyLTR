@@ -6693,10 +6693,18 @@ mrca: {1}, {2}, fixage=1;
                     'Tree with bootstrap support values here:\n{0}')).format(
                                                          bootstrappedLocation))
 
-def clusterSummary():
-    clustPaths = [ line for line in open('{0}/status'.format(paths['output_top_dir']), 'r').read().strip().split('\n') if not 'divergence' in line and not line.endswith('minLen') and (line.startswith('WickerFamDir_') or re.match('MCL_.+_I\d', line)) ]
 
-    # To avoid double-appending, remove cluster files if they exist before adding the new stuff
+def clusterSummary():
+    """Creates a map of LTR-RT IDs to the superfamily classification
+    they were assigned in the classify step.
+    """
+    clustPaths = [line for line in open('{0}/status'.format(
+                    paths['output_top_dir']), 'r').read().strip().split('\n') 
+                   if not 'divergence' in line and not line.endswith('minLen') 
+                   and (line.startswith('WickerFamDir_') 
+                   or re.match('MCL_.+_I\d', line))]
+    # To avoid double-appending, remove cluster files if they exist 
+    # before adding the new stuff
     for p in clustPaths:
         p = p.strip().split('\t')
         if p[0].startswith('MCL'):
@@ -6707,69 +6715,81 @@ def clusterSummary():
         elif p[0].startswith('Wicker'):
             Wickerclustdir = '/'.join(p[1].split('/')[:-2])
             params = '_'.join(p[0].split('_')[1:-2])
-            if os.path.exists('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params)):
-                os.remove('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params))
-
-
-    headers = set() # Holds whether the header was written already for a particular file
+            if os.path.exists('{0}/Wicker_{1}_summary'.format(Wickerclustdir, 
+                                                                      params)):
+                os.remove('{0}/Wicker_{1}_summary'.format(Wickerclustdir, 
+                                                                       params))
+    # Holds whether the header was written already for a particular file
+    headers = set()
     for p in clustPaths:
         p = p.strip().split('\t')
         if p[0].startswith('MCL'):
             MCLclustdir = '/'.join(p[1].split('/')[:-2])
             superfamily = p[0].split('_')[1]
             I = p[0].split('_')[-1][1:]
-            with open('{0}/MCL_I{1}_summary'.format(MCLclustdir, I), 'a') as outfl:
+            with open('{0}/MCL_I{1}_summary'.format(
+                                                MCLclustdir, I), 'a') as outfl:
                 if '{0}/MCL_I{1}_summary'.format(MCLclustdir, I) not in headers:
                     outfl.write('superfamily\tcluster\tsize\n')
                     headers.add('{0}/MCL_I{1}_summary'.format(MCLclustdir, I))
                 with open(p[1], 'r') as clustFl:
                     clust = 0
                     for line in clustFl:
-                        outfl.write('{0}\t{1}\t{2}\n'.format(superfamily, clust, len(line.split('\t'))))
+                        outfl.write('{0}\t{1}\t{2}\n'.format(superfamily, clust, 
+                                                        len(line.split('\t'))))
                         clust += 1
-
         elif p[0].startswith('Wicker'):
             superfamily = p[0].split('_')[-1]
             Wickerclustdir = '/'.join(p[1].split('/')[:-2])
             params = '_'.join(p[0].split('_')[1:-2])
-            with open('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params), 'a') as outfl:
-                if '{0}/Wicker_{1}_summary'.format(Wickerclustdir, params) not in headers:
+            with open('{0}/Wicker_{1}_summary'.format(
+                                        Wickerclustdir, params), 'a') as outfl:
+                if '{0}/Wicker_{1}_summary'.format(
+                                        Wickerclustdir, params) not in headers:
                     outfl.write('superfamily\tcluster\tsize\n')
-                    headers.add('{0}/Wicker_{1}_summary'.format(Wickerclustdir, params))
+                    headers.add('{0}/Wicker_{1}_summary'.format(
+                                                       Wickerclustdir, params))
                 with open(p[1], 'r') as clustFl:
                     clust = 0
                     for line in clustFl:
-                        outfl.write('{0}\t{1}\t{2}\n'.format(superfamily, clust, len(line.split('\t'))))
+                        outfl.write('{0}\t{1}\t{2}\n'.format(
+                                    superfamily, clust, len(line.split('\t'))))
                         clust += 1
 
 
-
-def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, output='file', linksdct=None, transposeLinks=True):
-    """
-    Converts GI tract pairs from geneconvClusters() output and writes a links file for Circos
-    The GFF3 is needed to get the scaffold name.
-    seqlengths needs to be a dictionary with the lengths of the sequences whose names correspond
-    to the sequence names in the gff for the features with gene conversion tracts.
-    Assumes LTR_retrotransposon features were used.
+def geneconv2circoslinks(geneconvfile, 
+                         ltrharvestgff, 
+                         outfile, 
+                         append = False, 
+                         output = 'file', 
+                         linksdct = None, 
+                         transposeLinks = True):
+    """Converts GI tract pairs from geneconvClusters() output and writes 
+    a links file for Circos. The GFF3 is needed to get the scaffold 
+    name. seqlengths needs to be a dictionary with the lengths of the 
+    sequences whose names correspond to the sequence names in the gff 
+    for the features with gene conversion tracts. Assumes 
+    LTR_retrotransposon features were used. 
+    
     append=True will append to the outfile if it exists.
 
-    output    'file', or 'return'. If file, the links will be written to a file at outfile. If 'return'
-                     then the links will be returned as a dictionary like:
-
-                     links = { orf1:[linkline1, linkline2, linkline3], ... }
-
-                     Only the first orf in each link pair needs to be considered because gene conversion
-                     was evaluated within clusters only.
+    output    'file', or 'return'. If file, the links will be written 
+                    to a file at outfile. If 'return' then the links 
+                    will be returned as a dictionary like:
+                links = {orf1:[linkline1, linkline2, linkline3], ... }
+                     Only the first orf in each link pair needs to be 
+                     considered because gene conversion was evaluated 
+                     within clusters only.
     
-    linksdct    If 'output'=return and a links dct is provided here it will be updated and returned.
+    linksdct    If 'output'=return and a links dct is provided here it 
+                will be updated and returned.
 
-    transposeLinks=True will write links for elements in their position on the scaffolds.
-    transposeLinks=False will write links for elements with a start position of 0 at one end of the element.
+    transposeLinks=True will write links for elements in their 
+                        position on the scaffolds.
+    transposeLinks=False will write links for elements with a start 
+                         position of 0 at one end of the element.
     """
     global paths
-
-    #lengths = { l[0]:int(l[1]) for  l in open(seqlengths).read().strip().split('\n')}
-
     seqs = {}
     starts = {}
     if append:
@@ -6793,7 +6813,8 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
                 for line in inFl:
                     if line.startswith('GI'):
                         rec = line.strip().split('\t')
-                        el1, el2 = [ 'LTR_retrotransposon{0}'.format(e[1:]) for e in rec[1].split(';') ]
+                        el1, el2 = ['LTR_retrotransposon{0}'.format(
+                                             e[1:]) for e in rec[1].split(';')]
                         if transposeLinks:
                             el1start  = int(rec[7]) + starts[el1] - 1
                             el1end  = int(rec[8]) + starts[el1] - 1
@@ -6809,12 +6830,14 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
                             el1seq = copy(el1)
                             el2seq = copy(el2)
                         if 'g0.summary' in geneconvfile:
-                            outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=orange_a3\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
+                            outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=orange_a3\n'.format(
+                                el1seq, el1start, el1end, el2seq, el2start, el2end))
                         elif 'g1.summary' in geneconvfile:
-                            outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=vdpurple_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
+                            outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=vdpurple_a5\n'.format(
+                                el1seq, el1start, el1end, el2seq, el2start, el2end))
                         elif 'g2.summary' in geneconvfile:
-                            outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end))
-                     
+                            outFl.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(
+                                el1seq, el1start, el1end, el2seq, el2start, el2end))
     elif output == 'return':
         if linksdct != None:
             links = linksdct
@@ -6829,7 +6852,8 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
             for line in inFl:
                 if line.startswith('GI'):
                     rec = line.strip().split('\t')
-                    el1, el2 = [ 'LTR_retrotransposon{0}'.format(e[1:]) for e in rec[1].split(';') ]
+                    el1, el2 = ['LTR_retrotransposon{0}'.format(
+                                             e[1:]) for e in rec[1].split(';')]
                     if transposeLinks:
                         el1start  = int(rec[7]) + starts[el1] - 1
                         el1end  = int(rec[8]) + starts[el1] - 1
@@ -6837,15 +6861,20 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
                         el2end  = int(rec[11]) + starts[el2] - 1
                         el1seq = copy(seqs[el1])
                         el2seq = copy(seqs[el2])
-                        # Different colored links for different gscale parameters. g values > 2 are possible but not implemented.
+                        # Different colored links for different gscale 
+                        # parameters. g values > 2 are possible but not 
+                        # implemented.
                         if 'g0.summary' in geneconvfile:
-                            outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=orange_a3\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+                            outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=orange_a3\n'.format(
+                                el1seq, el1start, el1end, el2seq, el2start, el2end)
                             g = 'g0'
                         elif 'g1.summary' in geneconvfile:
-                            outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=vdpurple_a5\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+                            outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=vdpurple_a5\n'.format(
+                                el1seq, el1start, el1end, el2seq, el2start, el2end)
                             g = 'g1'
                         elif 'g2.summary' in geneconvfile:
-                            outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(el1seq, el1start, el1end, el2seq, el2start, el2end)
+                            outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(
+                                el1seq, el1start, el1end, el2seq, el2start, el2end)
                             g = 'g2'
                         if g in links:
                             if el1 in links[g]:
@@ -6859,15 +6888,20 @@ def geneconv2circoslinks(geneconvfile, ltrharvestgff, outfile, append=False, out
                         el1end  = int(rec[8])
                         el2start  = int(rec[10])
                         el2end  = int(rec[11])
-                        # Different colored links for different gscale parameters. g values > 2 are possible but not implemented.
+                        # Different colored links for different gscale 
+                        # parameters. g values > 2 are possible but not 
+                        # implemented.
                         if 'g0.summary' in geneconvfile:
-                            outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=orange_a3\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+                            outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=3,color=orange_a3\n'.format(
+                                el1, el1start, el1end, el2, el2start, el2end)
                             g = 'g0'
                         elif 'g1.summary' in geneconvfile:
-                            outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=vdpurple_a5\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+                            outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=2,color=vdpurple_a5\n'.format(
+                                el1, el1start, el1end, el2, el2start, el2end)
                             g = 'g1'
                         elif 'g2.summary' in geneconvfile:
-                            outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(el1, el1start, el1end, el2, el2start, el2end)
+                            outline = '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\tz=1,color=vlblue_a1\n'.format(
+                                el1, el1start, el1end, el2, el2start, el2end)
                             g = 'g2'
                         if g in links:
                             if el1 in links[g]:
@@ -6897,8 +6931,10 @@ def circosMultiprocessing(packet):
     os.chdir(current_wd)
     png = '{0}/circos.png'.format(circosdir)
     svg = '{0}/circos.svg'.format(circosdir)
-    newpng = '{0}/{1}.cluster_{2}.geneconv_{3}.png'.format(outpath, classif, i, '_'.join(G))
-    newsvg = '{0}/{1}.cluster_{2}.geneconv_{3}.svg'.format(outpath, classif, i, '_'.join(G))
+    newpng = '{0}/{1}.cluster_{2}.geneconv_{3}.png'.format(
+                                              outpath, classif, i, '_'.join(G))
+    newsvg = '{0}/{1}.cluster_{2}.geneconv_{3}.svg'.format(
+                                              outpath, classif, i, '_'.join(G))
     if not os.path.isfile(newpng):
         if os.path.isfile(png):
             copyfile(png, newpng)
@@ -6910,11 +6946,17 @@ def circosMultiprocessing(packet):
     #    rmtree(circosdir)
 
 
-def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}, g='g0,g1,g2', MinCircosClusterSize=2):
+def Circos(window = '1000000', 
+           plots = 'clusters', 
+           I = 6, 
+           clustering_method = 'WickerFam', 
+           WickerParams = {'pId':80,'percAln':80,'minLen':80}, 
+           g = 'g0,g1,g2', 
+           MinCircosClusterSize = 2):
     """
-    Generate a Circos plot for each cluster, showing gene interelement gene conversion tracts
-    by using links.
-    plots needs to be either 'clusters' or 'classifs'
+    Generate a Circos plot for each cluster, showing gene interelement 
+    gene conversion tracts by using links. plots needs to be either 
+    'clusters' or 'classifs'
     """
     global paths
     G = g.split(',')
@@ -6928,21 +6970,22 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
         CLUSTERS = True
     if clustering_method == 'WickerFam':
         WICKERCLUST = True
-        ClustMethod = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+        ClustMethod = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                    WickerParams['pId'], 
+                                                    WickerParams['percAln'], 
+                                                    WickerParams['minLen'])
     elif clustering_method == 'MCL':
         MCLCLUST = True
         ClustMethod =  'MCL_I{0}'.format(I)
-
-    if checkStatusFl('Circos_output_dir_elements_{0}'.format(ClustMethod)) and checkStatusFl('Circos_output_dir_scaffolds_{0}'.format(ClustMethod)):
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Circos() {0} has already completed.'.format(ClustMethod))
+    if checkStatusFl('Circos_output_dir_elements_{0}'.format(
+                    ClustMethod)) and checkStatusFl(
+                        'Circos_output_dir_scaffolds_{0}'.format(ClustMethod)):
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                     'Circos() {0} has already completed.'.format(ClustMethod))
         return
-
-    scriptpath = os.path.realpath(__file__)
-    lineno = getframeinfo(currentframe()).lineno + 2
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-    append2logfile(paths['output_top_dir'], mainlogfile, 'Beginning making Circos plots')
+    append2logfile(paths['output_top_dir'], mainlogfile, 
+                                               'Beginning making Circos plots')
     MakeDir('CircosTopDir', '{0}/Circos'.format(paths['output_top_dir']))
-
     # Get seq lengths
     scafLengthsFlPth = '{0}/seqLengths.tab'.format(paths['CircosTopDir'])
     scafLengths = {}
@@ -6954,16 +6997,13 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
                 scafLengths[currentSeqName] = 0
             else:
                 scafLengths[currentSeqName] += len(line.strip())
-    
     with open(scafLengthsFlPth, 'w') as outFl:
         for scaf in sorted(list(scafLengths.keys())):
             outFl.write('{0}\t{1}\n'.format(scaf, str(scafLengths[scaf])))
-
     # Create ideogram file!
     allscafs = '{0}/seqs.track'.format(paths['CircosTopDir'])
-    ideogramCall = [ '{0}/ideogramFromLengths.py'.format(paths['scriptsDir']) ]
-    makecall(ideogramCall, stdin=scafLengthsFlPth, stdout=allscafs)
-
+    ideogramCall = ['{0}/ideogramFromLengths.py'.format(paths['scriptsDir'])]
+    makecall(ideogramCall, stdin = scafLengthsFlPth, stdout = allscafs)
     # Make track for elements!
     if CLASSIFS:
         # Separate out GFFs by classif
@@ -6973,60 +7013,86 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
                 if '\tLTR_retrotransposon\t' in line:
                     gffLine = GFF3_line(line)
                     classif = classifs_by_element[gffLine.attributes['ID']]
-                    MakeDir('classifDir', '{0}/{1}'.format(paths['CircosTopDir'], classif))
-                    GFFoutPth = '{0}/{1}.gff'.format(paths['classifDir'], classif)
+                    MakeDir('classifDir', '{0}/{1}'.format(
+                                               paths['CircosTopDir'], classif))
+                    GFFoutPth = '{0}/{1}.gff'.format(
+                                                  paths['classifDir'], classif)
                     with open(GFFoutPth, 'a') as GFFoutFl:
                         GFFoutFl.write(line)
                     with open(allGFFoutPth, 'a') as GFFoutFl:
                         GFFoutFl.write(line)
         scriptpath = os.path.realpath(__file__)
         lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Created GFF files for each classification for converting to Circos heatmap tracks.')
-
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                     'Below log entry is from line {0} in {1}'.format(lineno, 
+                                                                   scriptpath))
+        append2logfile(paths['output_top_dir'], mainlogfile, ('Created GFF '
+            'files for each classification for converting to Circos heatmap tracks.'))
         for classif in classifs:
             classifDir = '{0}/{1}'.format(paths['CircosTopDir'], classif)
             GFFoutPth = '{0}/{1}.gff'.format(classifDir, classif)
-            gff2heatmapCall = [ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', GFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ]
-            makecall(gff2heatmapCall, stdout='{0}/{1}.heatmap.track'.format(classifDir, classif))
-
+            gff2heatmapCall = ['{0}/gff2circos-heatmap.py'.format(
+                                                  paths['scriptsDir']), 
+                                                  '-gff', GFFoutPth, 
+                                                  '-window', window, 
+                                                  '-scafLens', scafLengthsFlPth]
+            makecall(gff2heatmapCall, stdout = '{0}/{1}.heatmap.track'.format(
+                                                          classifDir, classif))
             # Geneconv output to circos links track
-            paths['GENECONV_{0}_dir'.format(classif)] = '{0}/{1}'.format(paths[geneconvOutputDir], classif)
+            paths['GENECONV_{0}_dir'.format(classif)] = '{0}/{1}'.format(
+                                             paths[geneconvOutputDir], classif)
             outfile = '{0}/{1}.testlinks'.format(paths['CircosTopDir'], classif)
-            g0fl = '{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, 'g0')
-            g1fl = '{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, 'g1')
-            g2fl = '{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, 'g2')
+            g0fl = '{0}/{1}_{2}.summary'.format(
+                       paths['GENECONV_{0}_dir'.format(classif)],classif, 'g0')
+            g1fl = '{0}/{1}_{2}.summary'.format(
+                       paths['GENECONV_{0}_dir'.format(classif)],classif, 'g1')
+            g2fl = '{0}/{1}_{2}.summary'.format(
+                       paths['GENECONV_{0}_dir'.format(classif)],classif, 'g2')
             if os.path.isfile(g0fl):
                 # Convert GENECONV output to Circos links track
                 geneconv2circoslinks(g0fl, paths['CurrentGFF'], outfile)
             if os.path.isfile(g1fl):
                 # Convert GENECONV output to Circos links track
-                geneconv2circoslinks(g1fl, paths['CurrentGFF'], outfile, append=True)
+                geneconv2circoslinks(g1fl, paths['CurrentGFF'], outfile, 
+                                                                 append = True)
             if os.path.isfile(g2fl):
                 # Convert GENECONV output to Circos links track
-                geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, append=True)
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Created links tracks for Circos from intra-cluster inter-element GENECONV output')
-
-        gff2heatmapCall = [ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', allGFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ]
-        makecall(gff2heatmapCall, stdout='{0}/all.heatmap.track'.format(paths['CircosTopDir']))
-        scriptpath = os.path.realpath(__file__)
-        lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Converted GFFs to heatmap tracks for Circos')
-
+                geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, 
+                                                                 append = True)
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                            ('Created links tracks for Circos from intra-cluster'
+                            ' inter-element GENECONV output'))
+        gff2heatmapCall = ['{0}/gff2circos-heatmap.py'.format(
+                                                paths['scriptsDir']), 
+                                                '-gff', allGFFoutPth, 
+                                                '-window', window, 
+                                                '-scafLens', scafLengthsFlPth]
+        makecall(gff2heatmapCall, stdout='{0}/all.heatmap.track'.format(
+                                                        paths['CircosTopDir']))
+        append2logfile(paths['output_top_dir'], mainlogfile, 
+                                 'Converted GFFs to heatmap tracks for Circos')
     elif CLUSTERS:
-
         if WICKERCLUST:
-            WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
-            paths['Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])] = '{0}/GENECONV'.format(WickerDir)
-            WickerGCdirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
+            WickerDir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])]
+            paths['Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(
+                    WickerParams['pId'], 
+                    WickerParams['percAln'], 
+                    WickerParams['minLen'])] = '{0}/GENECONV'.format(WickerDir)
+            WickerGCdirkey = 'Wicker_{0}_pId_{1}_percAln_{2}_minLen_GENECONVdir'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
             if not checkStatusFl(WickerGCdirkey):
                 sys.exit('Circos() not possible: geneconvClusters() not done yet.')
             geneconvOutputDir = WickerGCdirkey
-            MakeDir('CurrentTopDir', '{0}/WickerFam_{1}_pId_{2}_percAln_{3}_minLen'.format(paths['CircosTopDir'], WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen']))
+            MakeDir('CurrentTopDir', '{0}/WickerFam_{1}_pId_{2}_percAln_{3}_minLen'.format(
+                                            paths['CircosTopDir'], 
+                                            WickerParams['pId'], 
+                                            WickerParams['percAln'], 
+                                            WickerParams['minLen']))
         elif MCLCLUST:
             MCLdir = paths['MCL_I{0}'.format(I)]
             paths['MCL_I{0}_GENECONVdir'.format(I)] = '{0}/GENECONV'.format(MCLdir)
@@ -7034,49 +7100,85 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
                 sys.exit('Circos() not possible: geneconvClusters() not done yet.')
             geneconvOutputDir = 'MCL_I{0}_GENECONVdir'.format(I)
             MakeDir('CurrentTopDir', '{0}/MCL_I{1}'.format(paths['CircosTopDir'], I))
-
         # Create a Circos plot for each cluster
         heatmapcalls = []
         tilecalls = []
         circoscallsScafs = []
         circoscallsElmts = []
         for classif in classifs:
-
             # Geneconv output to circos links track
-            paths['GENECONV_{0}_dir'.format(classif)] = '{0}/{1}'.format(paths[geneconvOutputDir], classif)
+            paths['GENECONV_{0}_dir'.format(classif)] = '{0}/{1}'.format(
+                                             paths[geneconvOutputDir], classif)
             outfile = '{0}/{1}.testlinks'.format(paths['CurrentTopDir'], classif)
-            outfile_untransposed = '{0}/{1}.testlinks.untransposed'.format(paths['CurrentTopDir'], classif)
-            g0fl = '{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, 'g0')
-            g1fl = '{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, 'g1')
-            g2fl = '{0}/{1}_{2}.summary'.format(paths['GENECONV_{0}_dir'.format(classif)],classif, 'g2')
+            outfile_untransposed = '{0}/{1}.testlinks.untransposed'.format(
+                                               paths['CurrentTopDir'], classif)
+            g0fl = '{0}/{1}_{2}.summary'.format(
+                       paths['GENECONV_{0}_dir'.format(classif)],classif, 'g0')
+            g1fl = '{0}/{1}_{2}.summary'.format(
+                       paths['GENECONV_{0}_dir'.format(classif)],classif, 'g1')
+            g2fl = '{0}/{1}_{2}.summary'.format(
+                       paths['GENECONV_{0}_dir'.format(classif)],classif, 'g2')
             links = {}
             links_untransposed = {}
             if os.path.isfile(g0fl):
                 # Convert GENECONV output to Circos links track
-                links = geneconv2circoslinks(g0fl, paths['CurrentGFF'], outfile, append=False, output='return', linksdct=None)
-                links_untransposed = geneconv2circoslinks(g0fl, paths['CurrentGFF'], outfile, append=False, output='return', linksdct=None, transposeLinks=False)
+                links = geneconv2circoslinks(g0fl, 
+                                             paths['CurrentGFF'], 
+                                             outfile, 
+                                             append = False, 
+                                             output = 'return', 
+                                             linksdct = None)
+                links_untransposed  =  geneconv2circoslinks(g0fl, 
+                                             paths['CurrentGFF'], 
+                                             outfile, 
+                                             append = False, 
+                                             output = 'return', 
+                                             linksdct = None, 
+                                             transposeLinks = False)
             if os.path.isfile(g1fl):
                 # Convert GENECONV output to Circos links track
-                links = geneconv2circoslinks(g1fl, paths['CurrentGFF'], outfile, append=True, output='return', linksdct=links)
-                links_untransposed = geneconv2circoslinks(g1fl, paths['CurrentGFF'], outfile, append=True, output='return', linksdct=links_untransposed, transposeLinks=False)
+                links = geneconv2circoslinks(g1fl, 
+                                             paths['CurrentGFF'], 
+                                             outfile, 
+                                             append = True, 
+                                             output = 'return', 
+                                             linksdct = links)
+                links_untransposed  =  geneconv2circoslinks(g1fl, 
+                                             paths['CurrentGFF'], 
+                                             outfile, 
+                                             append = True, 
+                                             output = 'return', 
+                                             linksdct = links_untransposed, 
+                                             transposeLinks = False)
             if os.path.isfile(g2fl):
                 # Convert GENECONV output to Circos links track
-                links = geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, append=True, output='return', linksdct=links)
-                links_untransposed = geneconv2circoslinks(g2fl, paths['CurrentGFF'], outfile, append=True, output='return', linksdct=links_untransposed, transposeLinks=False)
-            scriptpath = os.path.realpath(__file__)
-            lineno = getframeinfo(currentframe()).lineno + 2
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
-            append2logfile(paths['output_top_dir'], mainlogfile, 'Created links tracks for Circos from intra-cluster inter-element GENECONV output')
-
+                links  =  geneconv2circoslinks(g2fl, 
+                                             paths['CurrentGFF'], 
+                                             outfile, 
+                                             append = True, 
+                                             output = 'return', 
+                                             linksdct = links)
+                links_untransposed  =  geneconv2circoslinks(g2fl, 
+                                             paths['CurrentGFF'], 
+                                             outfile, 
+                                             append = True, 
+                                             output = 'return', 
+                                             linksdct = links_untransposed, 
+                                             transposeLinks = False)
+            append2logfile(paths['output_top_dir'], mainlogfile, 
+                    ('Created links tracks for Circos from intra-cluster '
+                    'inter-element GENECONV output'))
             G_incl = [ ['g0'], ['g1'], ['g2'], ['g0', 'g1', 'g2'] ]
             for G in G_incl:
                 if MCLCLUST:
                     clusterPath =  paths['MCL_{0}_I{1}'.format(classif, I)]
                 elif WICKERCLUST:
-                    clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)]
-
-                clusters = [ clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n') ]
-
+                    clusterPath = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(
+                                             WickerParams['pId'], 
+                                             WickerParams['percAln'], 
+                                             WickerParams['minLen'], 
+                                             classif)]
+                clusters = [clust.split('\t') for clust in open(clusterPath,'r').read().strip().split('\n')]
                 totallengths = {}
                 element_coords = {}
                 for i in range(len(clusters)):
@@ -7085,10 +7187,12 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
                     clusterscafs = set()
                     outputlinks = []
                     outputlinks_untransposed = []
-                    GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CurrentTopDir'], classif, i)
+                    GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(
+                                            paths['CurrentTopDir'], classif, i)
                     if os.path.isfile(GFFoutPth):
                         os.remove(GFFoutPth)
-                    highlights_ltrs_fl = '{0}/{1}.cluster_{2}.LTR_highlights.track'.format(paths['CurrentTopDir'], classif, i)
+                    highlights_ltrs_fl = '{0}/{1}.cluster_{2}.LTR_highlights.track'.format(
+                                            paths['CurrentTopDir'], classif, i)
                     if os.path.isfile(highlights_ltrs_fl):
                         os.remove(highlights_ltrs_fl)
                     with open(paths['CurrentGFF']) as gffFl:
@@ -7116,7 +7220,8 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
                                     GFFoutFl.write(line)
                             # Write highlights track
                             elif '\tlong_terminal_repeat\t' in line:
-                                GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CurrentTopDir'], classif, i)
+                                GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(
+                                            paths['CurrentTopDir'], classif, i)
                                 gffLine = GFF3_line(line)
                                 start = int(gffLine.start)
                                 end = int(gffLine.end)
@@ -7124,84 +7229,118 @@ def Circos(window='1000000', plots='clusters', I=6, clustering_method='WickerFam
                                 newstart = start - element_coords[name][0] + 1
                                 newend = end - element_coords[name][0] + 1
                                 with open(highlights_ltrs_fl, 'a') as outFl:
-                                    outFl.write('{0}\t{1}\t{2}\tfill_color=black\n'.format(name, newstart, newend))
-
-
-                    gff2heatmapCallPacket = ([ '{0}/gff2circos-heatmap.py'.format(paths['scriptsDir']), '-gff', GFFoutPth, '-window', window, '-scafLens', scafLengthsFlPth ], '{0}.heatmap.track'.format(GFFoutPth), None, None)
-                    gff2tileCallPacket = ([ '{0}/gff2circos-tile.py'.format(paths['scriptsDir']), '-valueDef', 'LTR', '-gff', GFFoutPth ], '{0}.tile.track'.format(GFFoutPth), None, None)
-                    #gff2textLabelcallPacket = ([ '{0}/gff2circos-tile.py'.format(paths['scriptsDir']), '-valueDef', 'text', '-gff', GFFoutPth ], '{0}.tile.text.track'.format(GFFoutPth), None, None)
+                                    outFl.write('{0}\t{1}\t{2}\tfill_color=black\n'.format(
+                                                       name, newstart, newend))
+                    gff2heatmapCallPacket = (['{0}/gff2circos-heatmap.py'.format(
+                                                           paths['scriptsDir']), 
+                                                '-gff', 
+                                                GFFoutPth, 
+                                                '-window', 
+                                                window, 
+                                                '-scafLens', 
+                                                scafLengthsFlPth], 
+                                                '{0}.heatmap.track'.format(
+                                                        GFFoutPth), None, None)
+                    gff2tileCallPacket = (['{0}/gff2circos-tile.py'.format(
+                                                paths['scriptsDir']), 
+                                                '-valueDef', 
+                                                'LTR', 
+                                                '-gff', 
+                                                GFFoutPth], 
+                                                '{0}.tile.track'.format(
+                                                        GFFoutPth), None, None)
                     tilecalls.append(gff2tileCallPacket)
-                    #tilecalls.append(gff2textLabelcallPacket)
-                    append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-heatmap.py:\n{0}'.format(' '.join(gff2heatmapCallPacket[0])))
-                    append2logfile(paths['output_top_dir'], mainlogfile, 'gff2circos-tile.py:\n{0}'.format(' '.join(gff2tileCallPacket[0])))
+                    append2logfile(paths['output_top_dir'], mainlogfile, 
+                        'gff2circos-heatmap.py:\n{0}'.format(' '.join(
+                                                    gff2heatmapCallPacket[0])))
+                    append2logfile(paths['output_top_dir'], mainlogfile, 
+                        'gff2circos-tile.py:\n{0}'.format(' '.join(
+                                                       gff2tileCallPacket[0])))
                     heatmapcalls.append(gff2heatmapCallPacket)
-
-                    with open('{0}/{1}.cluster_{2}.geneconv_{3}.links.track'.format(paths['CurrentTopDir'], classif, i, '_'.join(G)), 'w') as outFl:
+                    with open('{0}/{1}.cluster_{2}.geneconv_{3}.links.track'.format(
+                                    paths['CurrentTopDir'], classif, 
+                                                i, '_'.join(G)), 'w') as outFl:
                         outFl.write('\n'.join(outputlinks))
-                    with open('{0}/{1}.cluster_{2}.geneconv_{3}.links_untransposed.track'.format(paths['CurrentTopDir'], classif, i, '_'.join(G)), 'w') as outFl:
+                    with open('{0}/{1}.cluster_{2}.geneconv_{3}.links_untransposed.track'.format(
+                                    paths['CurrentTopDir'], classif, i, 
+                                                   '_'.join(G)), 'w') as outFl:
                         outFl.write('\n'.join(outputlinks_untransposed))
-
                     # Write ideogram file for just scafs for this cluster
                     #chr - Sacu_v1.1_s0011    11    0    2262239    greys-6-seq-4
                     totalseq = 0
                     with open(allscafs, 'r') as inFl:
-                        ideoOut  = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CurrentTopDir'], classif, i)
+                        ideoOut  = '{0}/{1}.cluster_{2}.seq.track'.format(
+                                            paths['CurrentTopDir'], classif, i)
                         with open(ideoOut, 'w') as outFl:
                             for line in inFl:
                                 scaf = line.split()[2]
                                 if scaf in clusterscafs:
                                     contents = line.split()
-                                    totalseq += int(contents[-2]) - int(contents[-3])
+                                    totalseq += int(contents[-2]) - int(
+                                                                  contents[-3])
                                     outFl.write(line)
                     totallengths[i] = totalseq
-
-                    append2logfile(paths['output_top_dir'], mainlogfile, 'Created GFF files for each classification for converting to Circos heatmap tracks.')
-                        
+                    append2logfile(paths['output_top_dir'], mainlogfile, 
+                            ('Created GFF files for each classification for '
+                             'converting to Circos heatmap tracks.'))
                 chunk_size = ceil(len(heatmapcalls)/procs)
-                with Pool(processes=procs) as p:
-                    p.map(makecallMultiprocessing, heatmapcalls, chunksize=chunk_size)
+                with Pool(processes = procs) as p:
+                    p.map(makecallMultiprocessing, heatmapcalls, 
+                                                          chunksize = chunk_size)
                 p.join()
-                append2logfile(paths['output_top_dir'], mainlogfile, 'Converted GFFs to heatmap tracks for Circos.')
-
+                append2logfile(paths['output_top_dir'], mainlogfile, 
+                                'Converted GFFs to heatmap tracks for Circos.')
                 chunk_size = ceil(len(tilecalls)/procs)
-                with Pool(processes=procs) as p:
-                    p.map(makecallMultiprocessing, tilecalls, chunksize=chunk_size)
+                with Pool(processes = procs) as p:
+                    p.map(makecallMultiprocessing, tilecalls, 
+                                                          chunksize = chunk_size)
                 p.join()
-                append2logfile(paths['output_top_dir'], mainlogfile, 'Converted GFFs to tile tracks for Circos.')
-                
+                append2logfile(paths['output_top_dir'], mainlogfile, 
+                                   'Converted GFFs to tile tracks for Circos.')
                 # Circos plot 1: ideograms are scaffolds
                 for i in range(len(clusters)):
                     if len(clusters[i]) < MinCircosClusterSize:
                         continue
-                    GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CurrentTopDir'], classif, i)
+                    GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(
+                                            paths['CurrentTopDir'], classif, i)
                     tilefl = '{0}.tile.track'.format(GFFoutPth)
                     textfl = '{0}.tile.text.track'.format(GFFoutPth)
-                    linksfl = '{0}/{1}.cluster_{2}.geneconv_{3}.links.track'.format(paths['CurrentTopDir'], classif, i, '_'.join(G))
-                    seqfl = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CurrentTopDir'], classif, i)
-                    if os.stat(linksfl).st_size == 0 and not G == ['g0', 'g1', 'g2']: # If no links for this cluster, don't draw a Circos plot for the elements without scaffolds.unless this is the composite with all gscale values, to ensure at least one plot is drawn for each cluster.
+                    linksfl = '{0}/{1}.cluster_{2}.geneconv_{3}.links.track'.format(
+                               paths['CurrentTopDir'], classif, i, '_'.join(G))
+                    seqfl = '{0}/{1}.cluster_{2}.seq.track'.format(
+                                            paths['CurrentTopDir'], classif, i)
+                    # If no links for this cluster, don't draw a Circos 
+                    # plot for the elements without scaffolds.unless 
+                    # this is the composite with all gscale values, to 
+                    # ensure at least one plot is drawn for each cluster.
+                    if os.stat(linksfl).st_size == 0 and not G == ['g0', 'g1', 'g2']:
                         continue
-                    #if os.path.isfile(tilefl) and os.path.isfile(linksfl) and os.path.isfile(seqfl) and os.path.isfile(textfl):
-                    if os.path.isfile(tilefl) and os.path.isfile(linksfl) and os.path.isfile(seqfl):
+                    if (os.path.isfile(tilefl) and os.path.isfile(linksfl) 
+                        and os.path.isfile(seqfl)):
                         # Files exist. copy and run Circos.
-
                         # Plot with scaffolds
-                        circosdir = '{0}/circos.{1}.cluster_{2}.geneconv_{3}'.format(paths['CurrentTopDir'], classif, i, '_'.join(G))
+                        circosdir = '{0}/circos.{1}.cluster_{2}.geneconv_{3}'.format(
+                               paths['CurrentTopDir'], classif, i, '_'.join(G))
                         if not os.path.exists(circosdir):
-                            copytree('{0}/circos'.format(paths['scriptsDir']), circosdir) # copy circos conf files and dir structure
-                        newtilefl = '{0}/data/{1}'.format(circosdir, tilefl.split('/')[-1])
+                            # copy circos conf files and dir structure
+                            copytree('{0}/circos'.format(
+                                               paths['scriptsDir']), circosdir)
+                        newtilefl = '{0}/data/{1}'.format(circosdir, 
+                                                         tilefl.split('/')[-1])
                         if not os.path.isfile(newtilefl):
                             copyfile(tilefl, newtilefl)
-                        newlinksfl = '{0}/data/{1}'.format(circosdir, linksfl.split('/')[-1])
+                        newlinksfl = '{0}/data/{1}'.format(circosdir, 
+                                                        linksfl.split('/')[-1])
                         if not os.path.isfile(newlinksfl):
                             copyfile(linksfl, newlinksfl)
-                        newseqfl = '{0}/data/{1}'.format(circosdir, seqfl.split('/')[-1])
+                        newseqfl = '{0}/data/{1}'.format(circosdir, 
+                                                          seqfl.split('/')[-1])
                         if not os.path.isfile(newseqfl):
                             copyfile(seqfl, newseqfl)
-                        newtextfl = '{0}/data/{1}'.format(circosdir, textfl.split('/')[-1])
+                        newtextfl = '{0}/data/{1}'.format(circosdir, 
+                                                         textfl.split('/')[-1])
                         if not os.path.isfile(newtextfl):
                             copyfile(tilefl, newtextfl)
-
-
                         conffl = '{0}/etc/circos.conf'.format(circosdir)
                         confbasename = conffl.split('/')[-1]
                         tileblock = """
@@ -7297,7 +7436,10 @@ file       = data/{3}
 </links>
 
 <<include etc/housekeeping.conf>>
-data_out_of_range* = trim""".format(newseqfl.split('/')[-1], newtextfl.split('/')[-1],  plotblock, newlinksfl.split('/')[-1])
+data_out_of_range* = trim""".format(newseqfl.split('/')[-1], 
+                                    newtextfl.split('/')[-1], 
+                                    plotblock, 
+                                    newlinksfl.split('/')[-1])
                         with open(conffl, 'w') as outFl:
                             outFl.write(circos_conf_str)
                         
@@ -7323,10 +7465,14 @@ auto_alpha_colors = yes
 auto_alpha_steps  = 5""".format(imagesize)
                         with open(conffl, 'w') as outFl:
                             outFl.write(circosimageconfstr)
-                        #circos_call = [executables['circos'], '-silent', '-conf', confbasename]
                         circos_call = [executables['perl'], executables['circos']]
-                        circoscallsScafs.append([circosdir, circos_call, classif, i, '{0}/plots.scaffolds'.format(paths['CurrentTopDir']), G])
-
+                        circoscallsScafs.append([circosdir, 
+                                                 circos_call, 
+                                                 classif, 
+                                                 i, 
+                                                 '{0}/plots.scaffolds'.format(
+                                                   paths['CurrentTopDir']), 
+                                                 G])
                 # Circos plot 2: ideograms are elements
                 for i in range(len(clusters)):
                     if len(clusters[i]) < MinCircosClusterSize:
@@ -7336,20 +7482,30 @@ auto_alpha_steps  = 5""".format(imagesize)
                     seqfl = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CurrentTopDir'], classif, i)
                     highlights_ltrs_fl = '{0}/{1}.cluster_{2}.LTR_highlights.track'.format(paths['CurrentTopDir'], classif, i)
                     links_untransposedfl = '{0}/{1}.cluster_{2}.geneconv_{3}.links_untransposed.track'.format(paths['CurrentTopDir'], classif, i, '_'.join(G))
-                    if os.stat(links_untransposedfl).st_size == 0: # If no links for this cluster, don't draw a Circos plot for the elements without scaffolds.
+                    # If no links for this cluster, don't draw a Circos 
+                    # plot for the elements without scaffolds.
+                    if os.stat(links_untransposedfl).st_size == 0:
                         continue
-                    if os.path.isfile(highlights_ltrs_fl) and os.path.isfile(tilefl) and os.path.isfile(links_untransposedfl) and os.path.isfile(seqfl):
+                    if (os.path.isfile(highlights_ltrs_fl) 
+                        and os.path.isfile(tilefl) 
+                        and os.path.isfile(links_untransposedfl) 
+                        and os.path.isfile(seqfl)):
                         # Files exist. copy and run Circos.
-                        circosdir = '{0}/circos.{1}.cluster_{2}.geneconv_{3}.justelements'.format(paths['CurrentTopDir'], classif, i, '_'.join(G))
+                        circosdir = '{0}/circos.{1}.cluster_{2}.geneconv_{3}.justelements'.format(
+                               paths['CurrentTopDir'], classif, i, '_'.join(G))
                         if not os.path.exists(circosdir):
-                            copytree('{0}/circos'.format(paths['scriptsDir']), circosdir) # copy circos conf files and dir structure
-
+                            # copy circos conf files and dir structure
+                            copytree('{0}/circos'.format(
+                               paths['scriptsDir']), circosdir)
                         totallengthsLTRs = 0
-                        newseqfl = '{0}/data/{1}'.format(circosdir, '{0}.seq.track'.format('.'.join(tilefl.split('/')[-1].split('.')[:-2])))
-                        newhlfl = '{0}/data/{1}'.format(circosdir, '{0}.LTR_highlights.track'.format('.'.join(highlights_ltrs_fl.split('/')[-1].split('.')[:-2])))
+                        newseqfl = '{0}/data/{1}'.format(circosdir, 
+                            '{0}.seq.track'.format('.'.join(
+                                       tilefl.split('/')[-1].split('.')[:-2])))
+                        newhlfl = '{0}/data/{1}'.format(circosdir, 
+                            '{0}.LTR_highlights.track'.format('.'.join(
+                           highlights_ltrs_fl.split('/')[-1].split('.')[:-2])))
                         # Copy hl fl to circos dir
                         copyfile(highlights_ltrs_fl, newhlfl)
-
                         if os.path.isfile(newseqfl):
                             os.remove(newseqfl)
                         # Convert tile file to ideogram track
@@ -7360,25 +7516,15 @@ auto_alpha_steps  = 5""".format(imagesize)
                                     length = int(end) - int(start) + 1
                                     totallengthsLTRs += length
                                     color = 'dorange'
-                                    outline = 'chr - {0} {1} 0 {2} {3}\n'.format('LTR_retrotransposon{0}'.format(val), val, length, color)
+                                    outline = 'chr - {0} {1} 0 {2} {3}\n'.format(
+                                        'LTR_retrotransposon{0}'.format(val), 
+                                        val, length, color)
                                     outFl.write(outline)
-                                
-                                #==> Copia.cluster_0.gff.tile.track <==
-                                #Sacu_v1.1_s0016    1385103    1391765 123
-                                #
-                                #888> Copia.cluster_0.seq.track <==
-                                #chr - Sacu_v1.1_s0001    1    0    4132625    greys-6-seq-4
-
-                        newlinksuntransposedfl = '{0}/data/{1}'.format(circosdir, links_untransposedfl.split('/')[-1])
+                        newlinksuntransposedfl = '{0}/data/{1}'.format(circosdir, 
+                                           links_untransposedfl.split('/')[-1])
                         copyfile(links_untransposedfl, newlinksuntransposedfl)
-
-                        # Don't use this ideogram track
-                        #newseqfl = '{0}/data/{1}'.format(circosdir, seqfl.split('/')[-1])
-                        #if not os.path.isfile(newseqfl):
-                        #    copyfile(seqfl, newseqfl)
                         conffl = '{0}/etc/circos.conf'.format(circosdir)
                         circos_conf_str = """<<include colors_fonts_patterns.conf>>
-
 <<include ideogram.conf>>
 <<include ticks.conf>>
 
@@ -7419,10 +7565,11 @@ file       = data/{2}
 </links>
 
 <<include etc/housekeeping.conf>>
-data_out_of_range* = trim""".format(newseqfl.split('/')[-1], newhlfl.split('/')[-1], newlinksuntransposedfl.split('/')[-1])
+data_out_of_range* = trim""".format(newseqfl.split('/')[-1], 
+                                    newhlfl.split('/')[-1], 
+                                    newlinksuntransposedfl.split('/')[-1])
                         with open(conffl, 'w') as outFl:
                             outFl.write(circos_conf_str)
-                        
                         confbasename = conffl.split('/')[-1]
                         imagesize = totallengthsLTRs/10
                         if imagesize > 8000:
@@ -7447,10 +7594,14 @@ auto_alpha_colors = yes
 auto_alpha_steps  = 5""".format(imagesize)
                         with open(conffl, 'w') as outFl:
                             outFl.write(circosimageconfstr)
-                        #circos_call = [executables['circos'], '-silent', '-conf', confbasename]
                         circos_call = [executables['perl'], executables['circos']]
-                        circoscallsElmts.append([circosdir, circos_call, classif, i, '{0}/plots.elements'.format(paths['CurrentTopDir']), G])
-
+                        circoscallsElmts.append([circosdir, 
+                                                circos_call, 
+                                                classif, 
+                                                i, 
+                                                '{0}/plots.elements'.format(
+                                                   paths['CurrentTopDir']), 
+                                                G])
                         # Clean up
                         if not KEEP_UNUSED_FILES:
                             if os.path.isfile(tilefl):
@@ -7467,44 +7618,45 @@ auto_alpha_steps  = 5""".format(imagesize)
                                 os.remove(links_untransposedfl)
                             if os.path.isfile(GFFoutPth):
                                 os.remove(GFFoutPth)
-
-        MakeDir('plotdir', '{0}/plots.scaffolds'.format(paths['CurrentTopDir']))
-        paths['Circos_output_dir_scaffolds_{0}'.format(ClustMethod)] = paths['plotdir']
-        if not checkStatusFl('Circos_output_dir_scaffolds_{0}'.format(ClustMethod)):
-            chunk_size = ceil(len(circoscallsScafs)/procs)
+        MakeDir('plotdir', '{0}/plots.scaffolds'.format(
+                                                       paths['CurrentTopDir']))
+        paths['Circos_output_dir_scaffolds_{0}'.format(
+                                               ClustMethod)] = paths['plotdir']
+        if not checkStatusFl('Circos_output_dir_scaffolds_{0}'.format(
+                                                                 ClustMethod)):
+            chunk_size = ceil(len(circoscallsScafs) / procs)
             if not circoscallsScafs == []:
-                with Pool(processes=procs) as p:
-                    p.map(circosMultiprocessing, circoscallsScafs, chunksize=chunk_size)
+                with Pool(processes = procs) as p:
+                    p.map(circosMultiprocessing, circoscallsScafs, 
+                                                          chunksize = chunk_size)
                 p.join()
-
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format('Circos_output_dir_scaffolds_{0}'.format(ClustMethod), paths['plotdir']))
-
-        scriptpath = os.path.realpath(__file__)
-        lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                statusFlAppend.write('{0}\t{1}\n'.format(
+                    'Circos_output_dir_scaffolds_{0}'.format(ClustMethod), 
+                    paths['plotdir']))
         append2logfile(paths['output_top_dir'], mainlogfile, 'Made Circos plots.')
-
         MakeDir('plotdir', '{0}/plots.elements'.format(paths['CurrentTopDir']))
         paths['Circos_output_dir_elements_{0}'.format(ClustMethod)] = paths['plotdir']
         if not checkStatusFl('Circos_output_dir_elements_{0}'.format(ClustMethod)):
             if not circoscallsElmts == []:
                 chunk_size = ceil(len(circoscallsElmts)/procs)
-                with Pool(processes=procs) as p:
-                    p.map(circosMultiprocessing, circoscallsElmts, chunksize=chunk_size)
+                with Pool(processes = procs) as p:
+                    p.map(circosMultiprocessing, circoscallsElmts, 
+                                                          chunksize = chunk_size)
                 p.join()
-
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format('Circos_output_dir_elements_{0}'.format(ClustMethod), paths['plotdir']))
-
-        scriptpath = os.path.realpath(__file__)
-        lineno = getframeinfo(currentframe()).lineno + 2
-        append2logfile(paths['output_top_dir'], mainlogfile, 'Below log entry is from line {0} in {1}'.format(lineno, scriptpath))
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                statusFlAppend.write('{0}\t{1}\n'.format(
+                          'Circos_output_dir_elements_{0}'.format(ClustMethod),
+                           paths['plotdir']))
         append2logfile(paths['output_top_dir'], mainlogfile, 'Made Circos plots.')
 
 
 
-def summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80}):
+def summarizeClusters(I = 6, 
+                      clustering_method = 'WickerFam', 
+                      WickerParams = {'pId':80,'percAln':80,'minLen':80}):
     """
     Creates files related to each cluster.
 
