@@ -6007,7 +6007,14 @@ END;
             divc = div
             GC = 'No'
         if div > 5 or divc > 5:
-            print('{0} LTRs have estimated substitutions per site of {1} and {2} (gene conversion-corrected) using {3}. It was excluded from the summary table at: {4}'.format(el, div, divc, model, paths['DivergenceSummary']), file=sys.stderr)
+            print('({0} LTRs have estimated substitutions per site of {1} and '
+                  '{2} (gene conversion-corrected) using {3}. It was excluded '
+                  'from the summary table at: {4}').format(el, 
+                                                           div, 
+                                                           divc, 
+                                                           model, 
+                                                           paths['DivergenceSummary']), 
+                                                       file=sys.stderr)
             continue
         # Combine as new output
         with open(paths['DivergenceSummary'],'a') as divSummaryFl:
@@ -7657,140 +7664,224 @@ auto_alpha_steps  = 5""".format(imagesize)
 def summarizeClusters(I = 6, 
                       clustering_method = 'WickerFam', 
                       WickerParams = {'pId':80,'percAln':80,'minLen':80}):
-    """
-    Creates files related to each cluster.
+    """Creates files related to each cluster.
 
-    1. Creates a file for either MCL or WickerFam clustering at PhyLTR.output/<clustMethod>/<settings>/Clusters/<clustMethod>_<settings>.summary.tab
-    2. Creates GFF files for each cluster in PhyLTR.output/GFF_output/<superfamily>.<clustMethod>.<settings>/<superfamily>.<clustMethod>.<settings>.cluster_<i>.gff
-    3. Creates a text file tsv, 3-col: elementName    classification    cluster
+    1. Creates a file for either MCL or WickerFam clustering at 
+       PhyLTR.output/<clustMethod>/<settings>/Clusters/<clustMethod>_<settings>.summary.tab
+    2. Creates GFF files for each cluster in 
+       PhyLTR.output/GFF_output/<superfamily>.<clustMethod>.<settings>/<superfamily>.<clustMethod>.<settings>.cluster_<i>.gff
+    3. Creates a text file tsv, 3-col: elementName classification 
+       cluster
     """
-    
     if clustering_method == 'WickerFam':
-        wicker_top_dir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])]
-        settings = '{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-        ClusterSummaryFl = 'WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-        ClusterMembershipFl = 'WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-        paths[ClusterSummaryFl] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.summary.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-        paths[ClusterMembershipFl] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.membership.tab'.format(wicker_top_dir, WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'])
-        if not checkStatusFl(ClusterSummaryFl) or not checkStatusFl(ClusterMembershipFl):
+        wicker_top_dir = paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])]
+        settings = '{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
+        ClusterSummaryFl = 'WickerClusterSummary_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
+        ClusterMembershipFl = 'WickerClusterMembership_{0}_pId_{1}_percAln_{2}_minLen'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
+        paths[ClusterSummaryFl] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.summary.tab'.format(
+                                                        wicker_top_dir, 
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
+        paths[ClusterMembershipFl] = '{0}/Clusters/Wicker_{1}_pId_{2}_percAln_{3}_minLen.membership.tab'.format(
+                                                        wicker_top_dir, 
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'])
+        if not checkStatusFl(ClusterSummaryFl) or not checkStatusFl(
+                                                          ClusterMembershipFl):
             with open(paths[ClusterSummaryFl], 'w') as outFl:
                 outFl.write('classification\tcluster\tsize\n')
             with open(paths[ClusterMembershipFl], 'w') as outFl:
                 outFl.write('element\tclassification\tcluster\n')
             for classif in clusters_by_classif:
-                with open(paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(WickerParams['pId'], WickerParams['percAln'], WickerParams['minLen'], classif)], 'r') as inFl:
+                with open(paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(
+                                                        WickerParams['pId'], 
+                                                        WickerParams['percAln'], 
+                                                        WickerParams['minLen'], 
+                                                        classif)], 'r') as inFl:
                     c = 0
                     for line in inFl:
-                        clust_members = set([el.lstrip('LTR_retrotransposon') for el in line.strip().split()])
+                        clust_members = set([el.lstrip('LTR_retrotransposon') 
+                                               for el in line.strip().split()])
                         clust_size = len(clust_members)
                         # Write GFF3 for cluster
-                        MakeDir('{0}_cluster_GFF3s'.format(classif), '{0}/{1}.{2}.{3}'.format(paths['GFFByClassification'], classif, clustering_method, settings))
+                        MakeDir('{0}_cluster_GFF3s'.format(classif), 
+                                            '{0}/{1}.{2}.{3}'.format(
+                                                  paths['GFFByClassification'], 
+                                                  classif, 
+                                                  clustering_method, 
+                                                  settings))
                         with open(paths['CurrentGFF']) as gffFl:
-                            with open('{0}/{1}.{2}.{3}.cluster_{4}.gff'.format(paths['{0}_cluster_GFF3s'.format(classif)], classif, clustering_method, settings, c), 'w') as outFl:
+                            with open('{0}/{1}.{2}.{3}.cluster_{4}.gff'.format(
+                                                   paths['{0}_cluster_GFF3s'.format(
+                                                                     classif)], 
+                                                  classif, 
+                                                  clustering_method, 
+                                                  settings, 
+                                                             c), 'w') as outFl:
                                 for line in gffFl:
                                     if line.startswith('#'):
                                         continue
                                     gffLine = GFF3_line(line)
                                     if 'Parent' in gffLine.attributes:
-                                        if 'LTR_retrotransposon' in gffLine.attributes['Parent']:
-                                            elNum = gffLine.attributes['Parent'].lstrip('LTR_retrotransposon')
-                                        elif 'repeat_region' in gffLine.attributes['Parent']:
-                                            elNum = gffLine.attributes['Parent'].lstrip('repeat_region')
+                                        if ('LTR_retrotransposon' in 
+                                                 gffLine.attributes['Parent']):
+                                            elNum = gffLine.attributes[
+                                                       'Parent'].lstrip(
+                                                         'LTR_retrotransposon')
+                                        elif ('repeat_region' in 
+                                                 gffLine.attributes['Parent']):
+                                            elNum = gffLine.attributes['Parent'].lstrip(
+                                                               'repeat_region')
                                         else:
-                                            sys.exit('PROBLEM WITH summarizeClusters() Parent attribute for \n{0}'.format(str(gffLine)))
+                                            sys.exit(('Problem with summarizeClusters() '
+                                                'Parent attribute for \n{0}').format(
+                                                                 str(gffLine)))
                                     elif 'ID' in gffLine.attributes:
                                         if 'LTR_retrotransposon' in gffLine.attributes['ID']:
-                                            elNum = gffLine.attributes['ID'].lstrip('LTR_retrotransposon')
+                                            elNum = gffLine.attributes['ID'].lstrip(
+                                                         'LTR_retrotransposon')
                                         elif 'repeat_region' in gffLine.attributes['ID']:
-                                            elNum = gffLine.attributes['ID'].lstrip('repeat_region')
+                                            elNum = gffLine.attributes['ID'].lstrip(
+                                                               'repeat_region')
                                         else:
-                                            sys.exit('PROBLEM WITH summarizeClusters() ID attribute for \n{0}'.format(str(gffLine)))
+                                            sys.exit(('Problem with summarizeClusters() '
+                                                'ID attribute for \n{0}').format(
+                                                                 str(gffLine)))
                                     else:
-                                        sys.exit('sumarizeClusters(): No Parent or ID attribute for gff line: {0}'.format(str(gffLine)))
-
+                                        sys.exit(('sumarizeClusters(): No Parent '
+                                            'or ID attribute for gff line: {0}'.format(
+                                                                 str(gffLine)))
                                     if elNum in clust_members:
                                         if gffLine.type == 'repeat_region':
                                             outFl.write('###\n')
                                         outFl.write(line)
                         # Write line to summary file
                         with open(paths[ClusterSummaryFl], 'a') as outFl:
-                            outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
+                            outFl.write('{0}\t{1}\t{2}\n'.format(classif, 
+                                                                 c, 
+                                                                 clust_size))
                         with open(paths[ClusterMembershipFl], 'a') as outFl:
                             for el in clust_members:
-                                outFl.write('{0}\t{1}\t{2}\n'.format(el, classif, c))
+                                outFl.write('{0}\t{1}\t{2}\n'.format(el, 
+                                                                     classif, 
+                                                                     c))
                         c += 1
-
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format(ClusterSummaryFl, paths[ClusterSummaryFl]))
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format(ClusterMembershipFl, paths[ClusterMembershipFl]))
-
-
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                statusFlAppend.write('{0}\t{1}\n'.format(ClusterSummaryFl, 
+                                                      paths[ClusterSummaryFl]))
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                statusFlAppend.write('{0}\t{1}\n'.format(ClusterMembershipFl, 
+                                                   paths[ClusterMembershipFl]))
     elif clustering_method == 'MCL':
         mcl_top_dir = paths['MCL_I{0}'.format(I)]
         settings = 'I{0}'.format(I)
         ClusterSummaryFl = 'MCL_ClusterSummary_I{0}'.format(I)
         ClusterMembershipFl = 'MCL_ClusterMembership_I{0}'.format(I)
-        paths[ClusterSummaryFl] = '{0}/Clusters/MCL_I{1}.summary.tab'.format(mcl_top_dir, I)
-        paths[ClusterMembershipFl] = '{0}/Clusters/MCL_I{1}.membership.tab'.format(mcl_top_dir, I)
-
-        if not checkStatusFl(ClusterSummaryFl) or not checkStatusFl(ClusterMembershipFl):
+        paths[ClusterSummaryFl] = '{0}/Clusters/MCL_I{1}.summary.tab'.format(
+                                                                mcl_top_dir, I)
+        paths[ClusterMembershipFl] = '{0}/Clusters/MCL_I{1}.membership.tab'.format(
+                                                                mcl_top_dir, I)
+        if not checkStatusFl(ClusterSummaryFl) or not checkStatusFl(
+                                                          ClusterMembershipFl):
             with open(paths[ClusterSummaryFl], 'w') as outFl:
                 outFl.write('superfamily\tcluster\tsize\n')
             with open(paths[ClusterMembershipFl], 'w') as outFl:
                 outFl.write('element\tclassification\tcluster\n')
             for classif in clusters_by_classif:
-                with open(paths['MCL_{0}_I{1}'.format(classif, I)], 'r') as inFl:
+                with open(paths['MCL_{0}_I{1}'.format(
+                                                    classif, I)], 'r') as inFl:
                     c = 0
                     for line in inFl:
-                        clust_members = set([el.lstrip('LTR_retrotransposon') for el in line.strip().split()])
+                        clust_members = set([el.lstrip('LTR_retrotransposon') 
+                                               for el in line.strip().split()])
                         clust_size = len(clust_members)
                         # Write GFF3 for cluster
-                        MakeDir('{0}_cluster_GFF3s'.format(classif), '{0}/{1}.{2}.{3}'.format(paths['GFFByClassification'], classif, clustering_method, settings))
+                        MakeDir('{0}_cluster_GFF3s'.format(classif), 
+                                        '{0}/{1}.{2}.{3}'.format(
+                                                  paths['GFFByClassification'], 
+                                                  classif, 
+                                                  clustering_method, 
+                                                  settings))
                         with open(paths['CurrentGFF']) as gffFl:
-                            with open('{0}/{1}.{2}.{3}.cluster_{4}.gff'.format(paths['{0}_cluster_GFF3s'.format(classif)], classif, clustering_method, settings, c), 'w') as outFl:
+                            with open('{0}/{1}.{2}.{3}.cluster_{4}.gff'.format(
+                                                  paths['{0}_cluster_GFF3s'.format(
+                                                                     classif)], 
+                                                  classif, 
+                                                  clustering_method, 
+                                                  settings, 
+                                                  c), 'w') as outFl:
                                 for line in gffFl:
                                     if line.startswith('#'):
                                         continue
                                     gffLine = GFF3_line(line)
                                     if 'Parent' in gffLine.attributes:
-                                        if 'LTR_retrotransposon' in gffLine.attributes['Parent']:
-                                            elNum = gffLine.attributes['Parent'].lstrip('LTR_retrotransposon')
-                                        elif 'repeat_region' in gffLine.attributes['Parent']:
-                                            elNum = gffLine.attributes['Parent'].lstrip('repeat_region')
+                                        if ('LTR_retrotransposon' in 
+                                                 gffLine.attributes['Parent']):
+                                            elNum = gffLine.attributes['Parent'].lstrip(
+                                                         'LTR_retrotransposon')
+                                        elif ('repeat_region' in 
+                                                 gffLine.attributes['Parent']):
+                                            elNum = gffLine.attributes[
+                                                'Parent'].lstrip(
+                                                               'repeat_region')
                                         else:
-                                            sys.exit('PROBLEM WITH summarizeClusters() Parent attribute for \n{0}'.format(str(gffLine)))
+                                            sys.exit(('Problem with summarizeClusters() '
+                                                      'Parent attribute for \n{0}'.format(
+                                                                 str(gffLine)))
                                     elif 'ID' in gffLine.attributes:
                                         if 'LTR_retrotransposon' in gffLine.attributes['ID']:
-                                            elNum = gffLine.attributes['ID'].lstrip('LTR_retrotransposon')
+                                            elNum = gffLine.attributes['ID'].lstrip(
+                                                         'LTR_retrotransposon')
                                         elif 'repeat_region' in gffLine.attributes['ID']:
-                                            elNum = gffLine.attributes['ID'].lstrip('repeat_region')
+                                            elNum = gffLine.attributes['ID'].lstrip(
+                                                               'repeat_region')
                                         else:
-                                            sys.exit('PROBLEM WITH summarizeClusters() ID attribute for \n{0}'.format(str(gffLine)))
+                                            sys.exit(('PROBLEM WITH summarizeClusters() '
+                                                'ID attribute for \n{0}').format(
+                                                                 str(gffLine)))
                                     else:
-                                        sys.exit('sumarizeClusters(): No Parent or ID attribute for gff line: {0}'.format(str(gffLine)))
-
+                                        sys.exit(('sumarizeClusters(): No Parent '
+                                            'or ID attribute for gff line: {0}').format(
+                                                                 str(gffLine)))
                                     if elNum in clust_members:
                                         if gffLine.type == 'repeat_region':
                                             outFl.write('###\n')
                                         outFl.write(line)
-                                        
-                                    
-
                         # Write line to summary file
                         with open(paths[ClusterSummaryFl], 'a') as outFl:
-                            outFl.write('{0}\t{1}\t{2}\n'.format(classif, c, clust_size))
+                            outFl.write('{0}\t{1}\t{2}\n'.format(classif, 
+                                                                 c, 
+                                                                 clust_size))
                         with open(paths[ClusterMembershipFl], 'a') as outFl:
                             for el in clust_members:
-                                outFl.write('{0}\t{1}\t{2}\n'.format(el, classif, c))
+                                outFl.write('{0}\t{1}\t{2}\n'.format(el, 
+                                                                     classif, 
+                                                                     c))
                         c += 1
-
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusFlAppend:
-                statusFlAppend.write('{0}\t{1}\n'.format(ClusterSummaryFl, paths[ClusterSummaryFl]))
-            with open('{0}/status'.format(paths['output_top_dir']), 'a') as statusflappend:
-                statusflappend.write('{0}\t{1}\n'.format(ClusterMembershipFl, paths[ClusterMembershipFl]))
-
-
+            with open('{0}/status'.format(
+                              paths['output_top_dir']), 'a') as statusFlAppend:
+                statusFlAppend.write('{0}\t{1}\n'.format(ClusterSummaryFl, 
+                                                      paths[ClusterSummaryFl]))
+            with open('{0}/status'.format(
+                               paths['output_top_dir']), 'a') as statusflappend:
+                statusflappend.write('{0}\t{1}\n'.format(ClusterMembershipFl, 
+                                                   paths[ClusterMembershipFl]))
 
 
 def shortHelp():
@@ -7801,17 +7892,18 @@ def shortHelp():
           phyltr [options] --fasta <path> [options]
       ''', file=sys.stderr)
 
+
 def help2():
     print('''
-                        Default
+                                     Default
 General--------|--------------------------------------------
                | -h or --h    
                | -help or --help    
                | --logfile            log.txt
-               | --procs            1
-               | --output_dir            phyltr.output
+               | --procs              1
+               | --output_dir         phyltr.output
                | --keep_files    
-               | --min_clust_size        7
+               | --min_clust_size     7
                | --nosmalls    
 Input----------|--------------------------------------------
                | --fasta    
@@ -7820,59 +7912,59 @@ LTRharvest-----|--------------------------------------------
                | --del                -3
                | --ins                -3
                | --mis                -2
-               | --mat                2
-               | --xdrop            5
-               | --minlenltr            100
-               | --maxlenltr            1000
-               | --mindistltr            1000
-               | --maxdistltr            15000
-               | --similar            0.0
-               | --vic                60
-               | --mintsd            4
-               | --maxtsd            20
+               | --mat                 2
+               | --xdrop               5
+               | --minlenltr           100
+               | --maxlenltr           1000
+               | --mindistltr          1000
+               | --maxdistltr          15000
+               | --similar             0.0
+               | --vic                 60
+               | --mintsd              4
+               | --maxtsd              20
 LTRdigest------|--------------------------------------------
                | --ltrdigest    
-               | --ltrdigest_hmms        PhyLTR/RepeatDatabases/LTRdigest_HMMs/hmms
+               | --ltrdigest_hmms PhyLTR/RepeatDatabases/LTRdigest_HMMs/hmms
 ORFs-----------|--------------------------------------------
                | --findORFs    
-               | --min_orf_len            300
+               | --min_orf_len         300
 Classify-------|--------------------------------------------
                | --no_classification
                | --no_dfam    
                | --nhmmer_reporting_evalue    10
                | --nhmmer_inclusion_evalue    1e-5
                | --no_repbase    
-               | --repbase_tblastx_evalue    1e-5
+               | --repbase_tblastx_evalue     1e-5
                | --keep_no_classification    
                | --keep_conflicting_classifications    
 Cluster--------|--------------------------------------------
                | --wicker    
-               | --wicker_pId            80
-               | --wicker_pAln            80
-               | --wicker_minLen        80
+               | --wicker_pId         80
+               | --wicker_pAln        80
+               | --wicker_minLen      80
                | --wicker_no_ltrs    
                | --wicker_no_internals    
                | --mcl    
-               | --I                6
+               | --I                  6
 Solo LTR-------|--------------------------------------------
                | --soloLTRsearch    
-               | --soloLTRminPid        80.0
-               | --soloLTRminLen        80.0
-               | --soloLTRmaxEvalue        1e-3
+               | --soloLTRminPid      80.0
+               | --soloLTRminLen      80.0
+               | --soloLTRmaxEvalue   1e-3
 Alignment------|--------------------------------------------
-               | --mafft_align_region        entire
+               | --mafft_align_region           entire
                | --maxiterate_small_clusters    20
-               | --maxiterate_medium_clusters    3
-               | --mafft_smallAln_maxclustsize    50
-               | --mafft_mediumAln_maxclustsize    500
-               | --mafft_largeAln_maxclustsize    1000
+               | --maxiterate_medium_clusters   3
+               | --mafft_smallAln_maxclustsize  50
+               | --mafft_mediumAln_maxclustsize 500
+               | --mafft_largeAln_maxclustsize  1000
 LTR divergence-|--------------------------------------------
                |  (All alignment settings)
-               | --modeltest            off
-               | --model            hky85
+               | --modeltest                    off
+               | --model                        hky85
                | --geneconvltrs    
                | --geneconvclusters    
-               | --geneconv_g            g0,g1,g2
+               | --geneconv_g                   g0,g1,g2
                | --remove_GC_from_modeltest_aln    
                | --ltrdivergence    
                | --circos    
@@ -7881,18 +7973,18 @@ Phylo----------|--------------------------------------------
                | --phylo    
                | --LTT    
                | --rmhomoflank    
-               | --bpflank            500
-               | --flank_evalue            1e-5
+               | --bpflank              500
+               | --flank_evalue         1e-5
                | --flank_pId            70.0
-               | --flank_plencutoff        70.0
+               | --flank_plencutoff     70.0
                | --auto_outgroup    
-               | --bootstrap_reps        100
+               | --bootstrap_reps       100
                | --convert_to_ultrametric    
-'''.format('{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
+'''.format('{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir']), 
+                                                              file=sys.stderr))
 
 
 def help():
-
     print('''
 
       Usage:
@@ -7916,14 +8008,18 @@ def help():
       ------------------------------
       Global Options:
       ------------------------------
-      -f | --fasta            <path>    Sequences to analyze. Mandatory.
-      -p | --procs            <int>    Number of processors (default 1)
-      --keep_files                Default=no. Removes some large intermediate files, including raw
-                          nhmmer and tlbastx output, Circos files, input FASTA suffix array.
-      -o | --output_dir        <path>    Output directory. Default is "PhyLTR.output
-      --logfile            <path>  Path to where log file is written (default <output_dir>/log.txt)
-      -h                    Defaults
-      -help                    Long help
+      -f | --fasta       <path>    Sequences to analyze. Mandatory.
+      -p | --procs       <int>     Number of processors (default 1)
+      --keep_files                 Default=no. Removes some large 
+                                    intermediate files, including raw
+                                    nhmmer and tlbastx output, Circos 
+                                    files, input FASTA suffix array.
+      -o | --output_dir  <path>    Output directory name. Default is 
+                                    PhyLTR.output
+      --logfile          <path>    Path to where log file is written 
+                                    Default <output_dir>/log.txt
+      -h                           Output abbreviated help information
+      -help                        Output help information
       
       -------------------------
       Program-specific Options:
@@ -7931,20 +8027,34 @@ def help():
 
       LTRharvest
       ----------
-      -lh | --ltrharvest        Run LTRharvest on file given by --fasta (default ON)
-        --minlenltr    <int>        minimum length allowed for LTRs for element calling (default 100 bp)
-        --maxlenltr    <int>        maximum length allowed for LTRs for element caling (default 1000 bp)
-        --mindistltr    <int>        minimum distance allowed between LTRs for element calling (default 1000 bp)
-        --maxdistltr    <int>        maximum distance allowed between LTRs for element calling (default 15000 bp)
-        --similar    <int|float>    minimum % similarity for LTR calling (default 0.0)
-        --vic        <int>        # of nucleotides to left and right to search for TSDs (default 60)
-        --mintsd    <int>        minimum length allowed for TSDs (use with --maxtsd) (default 4)
-        --maxtsd    <int>        maximum length allowed for TSDs (use with --mintsd) (default 20)
-        --xdrop    <int>        xdropbelow score for extension-alignment (default 5)
-        --mat        <int>        matchscore score for extension-alignment (default 2)
-        --mis        <int>        mismatchscore score for extension-alignment (default -2)
-        --ins        <int>        insertionscore for extension-alignment (default -3)
-        --del        <int>        deletionscore for extension-alignment (default -3)
+      -lh | --ltrharvest          Run LTRharvest on file given by 
+                                   --fasta (default ON)
+        --minlenltr  <int>        minimum length allowed for LTRs for 
+                                   element calling (default 100 bp)
+        --maxlenltr  <int>        maximum length allowed for LTRs for 
+                                   element caling (default 1000 bp)
+        --mindistltr <int>        minimum distance allowed between LTRs 
+                                   for element calling (default 1000 bp)
+        --maxdistltr <int>        maximum distance allowed between LTRs 
+                                   for element calling (default 15000 bp)
+        --similar    <int|float>  minimum % similarity for LTR calling 
+                                   (default 0.0)
+        --vic        <int>        No. of nucleotides to left and right 
+                                   to search for TSDs (default 60)
+        --mintsd     <int>        minimum length allowed for TSDs (use 
+                                   with --maxtsd) (default 4)
+        --maxtsd     <int>        maximum length allowed for TSDs (use 
+                                   with --mintsd) (default 20)
+        --xdrop      <int>        xdropbelow score for extension-alignment 
+                                   (default 5)
+        --mat        <int>        matchscore score for extension-alignment 
+                                   (default 2)
+        --mis        <int>        mismatchscore score for extension-alignment 
+                                   (default -2)
+        --ins        <int>        insertionscore for extension-alignment 
+                                   (default -3)
+        --del        <int>        deletionscore for extension-alignment 
+                                   (default -3)
 
       ORF annotation
       --------------
