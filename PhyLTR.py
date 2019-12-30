@@ -275,8 +275,8 @@ def fastas2supermatrix(**kwargs):
                                                                file=sys.stderr)
             print('\n'.join(
                         ['sequence\tlength'] 
-                      + [ '{0}\t{1}'.format(seq, all_seqs_lengths[seq]) 
-                            for seq in all_seqs_lengths ] ), file=sys.stderr)
+                      + ['{0}\t{1}'.format(seq, all_seqs_lengths[seq]) 
+                            for seq in all_seqs_lengths]), file=sys.stderr)
             sys.exit()
         seq_lengths[fasta] = len(fasta_contents[0])
         # Add sequences to seqs_dct
