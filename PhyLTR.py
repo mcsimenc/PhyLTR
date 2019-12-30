@@ -72,7 +72,9 @@ class GFF3_line:
         if 'line_number' in kwargs:    
             self.line_number = kwargs['line_number']
 
-        # rename the name attribute so it conforms to GFF3 specifications, where Name is a reserved attribute key. The version of LTRDigest makes attribute key name
+        # rename the name attribute so it conforms to GFF3 specifications, 
+        # where Name is a reserved attribute key. The version of LTRDigest 
+        # makes attribute key name
         if 'name' in self.attributes:
             self.attributes['Name'] = self.attributes.pop('name')
             self.attributes_order[self.attributes_order.index('name')] = 'Name'
