@@ -7486,11 +7486,15 @@ auto_alpha_steps  = 5""".format(imagesize)
                 for i in range(len(clusters)):
                     if len(clusters[i]) < MinCircosClusterSize:
                         continue
-                    GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(paths['CurrentTopDir'], classif, i)
+                    GFFoutPth  = '{0}/{1}.cluster_{2}.gff'.format(
+                                            paths['CurrentTopDir'], classif, i)
                     tilefl = '{0}.tile.track'.format(GFFoutPth)
-                    seqfl = '{0}/{1}.cluster_{2}.seq.track'.format(paths['CurrentTopDir'], classif, i)
-                    highlights_ltrs_fl = '{0}/{1}.cluster_{2}.LTR_highlights.track'.format(paths['CurrentTopDir'], classif, i)
-                    links_untransposedfl = '{0}/{1}.cluster_{2}.geneconv_{3}.links_untransposed.track'.format(paths['CurrentTopDir'], classif, i, '_'.join(G))
+                    seqfl = '{0}/{1}.cluster_{2}.seq.track'.format(
+                                            paths['CurrentTopDir'], classif, i)
+                    highlights_ltrs_fl = '{0}/{1}.cluster_{2}.LTR_highlights.track'.format(
+                                            paths['CurrentTopDir'], classif, i)
+                    links_untransposedfl = '{0}/{1}.cluster_{2}.geneconv_{3}.links_untransposed.track'.format(
+                               paths['CurrentTopDir'], classif, i, '_'.join(G))
                     # If no links for this cluster, don't draw a Circos 
                     # plot for the elements without scaffolds.
                     if os.stat(links_untransposedfl).st_size == 0:
