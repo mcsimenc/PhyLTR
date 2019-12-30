@@ -8190,7 +8190,8 @@ def help():
 
       LTR divergence estimation
       -------------------------
-      --modeltest       Find best-supported model of nucleotide substitution and use it to estimate intra-element LTR divergences
+      --modeltest       Find best-supported model of nucleotide substitution
+                         and use it to estimate intra-element LTR divergences
                         Off by default.
       --model  <str>    Not implemented. Specify model to be used for 
                          estimating intra-element LTR divergences: One of:
