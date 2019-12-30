@@ -141,7 +141,6 @@ def rename_fasta_seq_headers(in_flpath,
     """
     fasta_file = list(SeqIO.parse(in_flpath, 'fasta'))
     in_header_pattern = re.compile(in_header_pattern)
-
     for seq in fasta_file:
         seq_id = re.search(in_header_pattern, seq.id).group(1)
         seq.id = header_to_name_map[seq_id]
@@ -156,11 +155,9 @@ def write_ltrs_gff3(data):
     if len(data) < 3:
         print('Less than 2 LTRs...?  ...GFF3 not written. DATA:\n{0}'.format(
                                              '\n'.join(data)), file=sys.stderr)
-
     elif len(data) > 3:
         print('More than 2 LTRs...?  ...GFF3 not written. DATA:\n{0}'.format(
                                              '\n'.join(data)), file=sys.stderr)
-
     else:
         # data[-1] should have the output filepath while data[0:2] are 
         # the GFF3 lines
@@ -197,8 +194,6 @@ def count_end_gaps(aln):
     # make sure input seqs are the same length
     if len(aln[0]) != len(aln[1]): 
         raise ValueError('Sequences in alignment have different length') 
-
-
     # Keys are all same in these dicts. The number from the key can be 
     # stripped and used as the index with which to access the sequence.
     # keeps track of how many gaps on each end of each sequence
@@ -259,7 +254,6 @@ def fastas2supermatrix(**kwargs):
     seqs_dct = {}
     # will hold the length of each alignment
     seq_lengths = {}
-
     # process each fasta seq
     for fasta in input_fastas:
         # read in alignment
@@ -296,11 +290,9 @@ def fastas2supermatrix(**kwargs):
                 # add sequence to nested dict with key as fasta file 
                 # name 
                 seqs_dct[seq.id] = { fasta:str(seq.seq) } 
-
     # print concatenated fasta supermatrix
     if 'output_fl' in kwargs:
         out_fl = open(kwargs['output_fl'], 'a')
-
     for seq in seqs_dct:
         output_seq = ''
         for fasta in input_fastas:
@@ -308,15 +300,12 @@ def fastas2supermatrix(**kwargs):
                 output_seq += 'N' * seq_lengths[fasta]
             else:
                 output_seq += seqs_dct[seq][fasta]
-        
         if 'output_fl' in kwargs:
             out_fl.write('>{0}\n'.format(seq))
             out_fl.write('{0}\n'.format(output_seq))
-
         else:
             print('>{0}'.format(seq))
             print(output_seq)
-
     if 'output_fl' in kwargs:
         out_fl.close()
 
@@ -346,23 +335,19 @@ def bedtoolsid2attr(gff_flpath,
                 end = fields[4]
                 strand = fields[6]
                 attr_value = re.search(attr_pat, fields[8]).group(1)
-                
                 if not lstrip == None:
                     attr_value = attr_value.lstrip(lstrip)
-
                 if STRAND:
                     map_dct['{0}:{1}-{2}({3})'.format(seqid,
                                                       start, 
                                                       end, 
                                                       strand)
                                                       ] = attr_value
-
                 else:
                     map_dct['{0}:{1}-{2}'.format(seqid, 
                                                  start, 
                                                  end)
                                                  ] = attr_value
-
     return map_dct
 
 
@@ -385,12 +370,10 @@ def rename_fasta_seq_headers(in_flpath,
     """
     fasta_file = list(SeqIO.parse(in_flpath, 'fasta'))
     in_header_pattern = re.compile(in_header_pattern)
-
     for seq in fasta_file:
         seq_id = re.search(in_header_pattern, seq.id).group(1)
         seq.id = header_to_name_map[seq_id]
         seq.description = ''
-    
     SeqIO.write(fasta_file, out_flpath, 'fasta')
 
 
@@ -417,7 +400,6 @@ def ChangeFastaHeadersMultiprocessing(bundle):
     inputFastaPath = bundle[0]
     inputGFFpath = bundle[1]
     attribute=bundle[2]
-
     bedtoolsIDmap = bedtoolsid2attr(inputGFFpath, attr=attribute)
     newFasta = '{0}.new.tmp'.format(inputFastaPath)
     header_pattern='(.+?:\d+?-\d+?)(?:$|\D)'
@@ -478,7 +460,7 @@ def write2summary(text):
         summaryFl.write('{0}\n'.format(text))
 
 
-def makecall(call, stdout=None, stderr=None, stdin=None):
+def makecall(call, stdout = None, stderr = None, stdin = None):
     """Handles running subprocess.call. Used when making calls without 
     multiprocessing
     """
@@ -502,7 +484,6 @@ def makecall(call, stdout=None, stderr=None, stdin=None):
                 else:
                     with open(stdin, 'r') as inFl:
                         subprocess.call(call, stdin=inFl, stdout=outfl)
-
     elif stderr != None and stdout == None:
         with open(stderr, 'w') as errfl:
             if stdin == None:
@@ -510,7 +491,6 @@ def makecall(call, stdout=None, stderr=None, stdin=None):
             else:
                 with open(stdin, 'r') as inFl:
                     subprocess.call(call, stdin=inFl,  stderr=errfl)
-        
     elif stdin != None and stderr == None and stdout == None:
         with open(stdin, 'r') as inFl:
             subprocess.call(call, stdin=inFl)
@@ -561,7 +541,6 @@ def MakeDir(pathsname, path):
     under the key pathsname and writes to logfile.
     """
     global paths
-
     paths[pathsname] = path
     if not os.path.exists(path): 
         os.makedirs(path)
@@ -584,7 +563,6 @@ def addStrandToGFF(strandDct, GFFpth):
     newgff = '{0}.updatingstrandinprocess'.format(GFFpth)
     if os.path.exists(newgff):
         os.remove(newgff)
-
     with open(GFFpth) as inFl:
         for line in inFl:
             if not line.startswith('#'):
@@ -609,7 +587,6 @@ def addStrandToGFF(strandDct, GFFpth):
                                 'Parent keys\n{0}\n{1}').format(GFFpth, 
                                                                line.strip()), 
                                 file=sys.stderr)
-
                     if elNum in strandDct:
                         if elNum == '?':
                             continue
@@ -662,7 +639,6 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl,
     FOUNDNONLTR = False
     Db_LTR_retrotransposon_features = {}
     Db_files = list(annotAttr2DbDict.values())
-
     for dbFlPth in Db_files:
         with open(dbFlPth) as dbFl:
             for line in dbFl:
@@ -672,7 +648,6 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl,
                 else:
                     Db_LTR_retrotransposon_features[flName] = set(
                                                                 [line.strip()])
-
     logfile = open(logFilePth, 'a')
     logfile.write(('#Conflicting annotations (e.g. Dfam->Copia Repbase->Gypsy) '
                    'are reported. If an annotation is Unknown it does not count '
@@ -714,10 +689,8 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl,
                     else:
                         # not homologous to a known LTR RT in given db.
                         NoClassification.append('None')
-
                 LTRmatching_values = list(LTRmatching.values())
                 if True in LTRmatching_values and False in LTRmatching_values:
-
                     # Found conflicting annotations: LTR and Non-LTR
                     if REPORTCONFLICTS:
                         logfile.write(
@@ -735,19 +708,16 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl,
                         del(LTR_retrotransposon_GFF_lines[
                                                  gffLine.attributes['Parent']])
                         continue
-
                 # no demonstrated homology to LTR RT in any db
                 elif 'None' in NoClassification and LTRmatching_values == []:
                         if KEEPNOCLASSIFICATION:
                             LTR_retrotransposon_GFF_lines[
                              gffLine.attributes['Parent']].append(line.strip())
                             continue
-
                         del(LTR_retrotransposon_GFF_lines[
                                                  gffLine.attributes['Parent']])
                         FOUNDNONLTR = True
                         continue
-
                 # no demonstratd homology to LTR RT in any db
                 elif NoClassification == [] and LTRmatching_values == []:
                     logfile.write('{0}\thas no classification\n'.format(
@@ -756,15 +726,12 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl,
                     del(LTR_retrotransposon_GFF_lines[
                                                  gffLine.attributes['Parent']])
                     continue
-
                 # homology to non-LTR retrotransposon in a db
                 elif False in LTRmatching_values:
-
                     del(LTR_retrotransposon_GFF_lines[
                                                  gffLine.attributes['Parent']])
                     FOUNDNONLTR = True
                     continue
-
                 else:
                     LTR_retrotransposon_GFF_lines[
                              gffLine.attributes['Parent']].append(line.strip())
@@ -772,16 +739,13 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl,
             else:
                 if FOUNDNONLTR:
                     continue
-
                 parent = gffLine.attributes['Parent']
-
                 if 'LTR_retrotransposon' in parent:
                     parent = 'repeat_region{0}'.format(parent.lstrip(
                                                         'LTR_retrotransposon'))
                 if not parent in LTR_retrotransposon_GFF_lines:
                     sys.exit(('Line\n{0}\nParent attribute not in LTR '
                               'retrotransposon dictionary').format(line.strip()))
-
                 LTR_retrotransposon_GFF_lines[parent].append(line.strip())
 
     with open(outputFlName, 'w') as outFl:
@@ -796,8 +760,8 @@ def RemoveNonLTRretrotransposons(LTRdigestGFFfl,
 
 def writeLTRretrotransposonInternalRegions(inputGFFpth, 
                                            outputGFFpth, 
-                                           elementSet=None, 
-                                           truncateParent=False):
+                                           elementSet = None, 
+                                           truncateParent = False):
     """Requires Class GFF3_line
     Writes GFF3 for region between two LTRs from a LTRharvest-type file
     Only for elements in elementSet if provided, if elementSet == None,
@@ -820,20 +784,17 @@ def writeLTRretrotransposonInternalRegions(inputGFFpth,
                                                         'Parent'].lstrip(
                                                          'LTR_retrotransposon')
                             currentNewElement.end = gffLine.start
-
                             if (currentNewElement.end 
                                 - currentNewElement.start 
                                 + 1) <= 0:
                                 currentNewElement = GFF3_line()
                                 continue
-
                             assert currentNewElement.attributes['Parent'] == gffLine.attributes['Parent'], (
                                     'GFF long_terminal_repeats may be out of '
                                     'order. Check near {0} or {1} in {2}').format(
                                         currentNewElement.attributes['Parent'],
                                         gffLine.attributes['Parent'],
                                         inputGFFpth)
-
                             currentNewElement.seqid = gffLine.seqid
                             currentNewElement.source = 'PhyLTR'
                             currentNewElement.type = \
@@ -862,9 +823,9 @@ def writeLTRretrotransposonInternalRegions(inputGFFpth,
 
 def writeLTRretrotransposonGFF(inputGFFpth, 
                                outputGFFpth, 
-                               elementSet=None, 
-                               REPEATREGION=False, 
-                               truncateParent=True):
+                               elementSet = None, 
+                               REPEATREGION = False, 
+                               truncateParent = True):
     """Requires Class GFF3_line
     Writes GFF3 for LTR_retrotransposon type features from a 
     LTRharvest-type file. Only for elements in elementSet if provided,
@@ -873,10 +834,8 @@ def writeLTRretrotransposonGFF(inputGFFpth,
     trimmed from it. If REPEATREGION==True, extract entire repeat region
     """
     global paths
-
     if os.path.isfile(outputGFFpth):
         os.remove(outputGFFpth)
-
     scriptpath = os.path.realpath(__file__)
     lineno = getframeinfo(currentframe()).lineno + 1
     if not elementSet == None:
@@ -926,10 +885,8 @@ def writeLTRsGFF(inputGFFpth, outputGFFpth, elementSet=None):
     has 'LTR_retrotranspson' trimmed from it
     """
     global paths
-
     if os.path.isfile(outputGFFpth):
         os.remove(outputGFFpth)
-
     scriptpath = os.path.realpath(__file__)
     lineno = getframeinfo(currentframe()).lineno + 1
     append2logfile(paths['output_top_dir'], 
@@ -975,7 +932,6 @@ def ltrharvest():
     """
     global paths
     global filenames
-
     if LTRHARVEST:
         # If this is in paths this step has been completed. Skip
         if not 'inputFastaSuffixArray' in paths:
@@ -1013,7 +969,6 @@ def ltrharvest():
                                                       paths['inputFasta'], 
                                                       gt_suffixerator_call_string, 
                                                       lineno, scriptpath))
-
             # Run suffixerator
             makecall(gt_suffixerator_call, 
                      '{0}/suffixerator.stdout'.format(
@@ -1043,7 +998,6 @@ def ltrharvest():
             paths['LTRharvestGFF'] = '{0}/{1}.ltrharvest.out.gff'.format(
                                                        paths['ltrharvest_dir'], 
                                                        filenames['inputFasta'])
-
             # Run LTRharvest
             gt_ltrharvest_call = [executables['genometools'], 
                                   'ltrharvest', 
@@ -1088,7 +1042,6 @@ def ltrharvest():
                            mainlogfile, 
                            'line {0} in {1}\nFinished gt ltrharvest'.format(
                                                            lineno, scriptpath))
-
             # Need to sort GFF3, sometimes it's not sorted like 
             # LTRdigest needs it sorted
             gt_sort_call = [executables['genometools'], 'gff3', '-sort', 
@@ -1121,7 +1074,6 @@ def ltrharvest():
                            'line {0} in {1}\nFinished sorting GFF3'.format(
                                                                    lineno, 
                                                                    scriptpath))
-
             # Add LTRharvest GFF3 path to status file (for resuming later)
             with open('{0}/status'.format(
                               paths['output_top_dir']), 'a') as statusFlAppend:
@@ -1263,8 +1215,8 @@ def bestORFs(fasta, outdir, gff, minLen=300):
     outseq = '{0}/{1}.orfs'.format(outdir, fasta.split('/')[-1])
     if os.path.isfile(outseq):
         os.remove(outseq)
-    getorf_call = [ executables['getorf'], '-sequence', fasta, 
-                                                            '-outseq', outseq ]
+    getorf_call = [executables['getorf'], '-sequence', fasta, 
+                                                            '-outseq', outseq]
     makecall(getorf_call)
     # read orf sequences into list of nonredundant orfs
     orfs = list(SeqIO.parse(outseq, 'fasta'))
@@ -1311,7 +1263,6 @@ def bestORFs(fasta, outdir, gff, minLen=300):
             length = end - start + 1
             if length < minLen:
                 continue
-
         if element in orfs_coords:
             if strand in orfs_coords[element]:
                 orfs_coords[element][strand][orfnum] = (start, end)
@@ -1351,7 +1302,6 @@ def bestORFs(fasta, outdir, gff, minLen=300):
                 orfs_seqs_dct[element][strand] = {orfnum:seq}
         else:
             orfs_seqs_dct[element] = {strand:{orfnum:seq}}
-
     # For each element, find ORFs for its strand or both strands if 
     # strand = ?
     # Order ORFs names in list from element/strand longest to shortest.
@@ -1589,7 +1539,7 @@ def addORFs(maingff, orfgff, newgff):
                                              orf.attributes['ID'], 
                                              orf.attributes['translated_seq']))
                                 internalparts.append(orf)
-                    internalparts.sort(key=lambda x:int(x.start))
+                    internalparts.sort(key = lambda x:int(x.start))
                     NewGFFLines += internalparts
                     NewGFFLines.append(gl)
                     firstLTRend = None
@@ -1614,7 +1564,6 @@ def AnnotateORFs(minLen):
     to the GFF3 if they don't overlap existing features.
     """
     global paths
-
     if not checkStatusFl('WithORFsGFF'):
         MakeDir('ORFsDir', '{0}/AnnotateORFs'.format(paths['output_top_dir']))
         internalGFF = '{0}/internals.gff'.format(paths['ORFsDir'])
@@ -1652,11 +1601,11 @@ def AnnotateORFs(minLen):
         paths['CurrentGFF'] = paths['WithORFsGFF']
 
 
-def classify_by_homology(KEEPCONFLICTS=False, 
-                         KEEPNOCLASSIFICATION=False, 
-                         repbase_tblastx_evalue=1e-5, 
-                         nhmmer_reporting_evalue=5e-2, 
-                         nhmmer_inclusion_evalue=1e-2):
+def classify_by_homology(KEEPCONFLICTS = False, 
+                         KEEPNOCLASSIFICATION = False, 
+                         repbase_tblastx_evalue = 1e-5, 
+                         nhmmer_reporting_evalue = 5e-2, 
+                         nhmmer_inclusion_evalue = 1e-2):
     """Parses results from tblastx->Repbase and/or nhmmer->Dfam,
     assigning the superfamily annotation from the highest scoring hit
     in the databases as the classification of the element queried.
@@ -1670,7 +1619,6 @@ def classify_by_homology(KEEPCONFLICTS=False,
     """
     global paths
     global filenames
-
     # Extract LTR_retrotransposon sequences for classification using 
     # homology
     if CLASSIFYDFAM or CLASSIFYREPBASE:
@@ -1786,7 +1734,6 @@ def classify_by_homology(KEEPCONFLICTS=False,
                 statusFlAppend.write('DfamTable\t{0}\n'.format(
                                                paths['nhmmer_DfamHits_table']))
             paths['DfamTable'] = paths['nhmmer_DfamHits_table']
-
         # add Dfam classifications to GFF
         # If this is in paths this step has been completed. Skip
         if not 'GFFwithDfamClassification' in paths:
@@ -1820,7 +1767,6 @@ def classify_by_homology(KEEPCONFLICTS=False,
                               paths['output_top_dir']), 'a') as statusFlAppend:
                 statusFlAppend.write('DfamResultsTableParsed\t{0}\n'.format(
                                               paths['DfamResultsTableParsed']))
-
             # Add best hits to GFF
             paths['GFFwithDfamClassification'] = (
                  '{0}/{1}.LTRdigest.withDfam.gff').format(paths['GFFOutputDir'], 
@@ -1855,7 +1801,6 @@ def classify_by_homology(KEEPCONFLICTS=False,
                            mainlogfile, 
                            ('Finished adding best hits from nhmmer on Dfam '
                                                      'results to LTRdigest GFF'))
-
             # Add LTRdigest GFF3 with Dfam classifications path to 
             # status file (for resuming later)
             with open('{0}/status'.format(paths['output_top_dir']), 
@@ -1876,7 +1821,6 @@ def classify_by_homology(KEEPCONFLICTS=False,
                                                         'a') as statusFlAppend:
                 statusFlAppend.write('RepbaseClassificationDir\t{0}\n'.format(
                                             paths['RepbaseClassificationDir']))
-
             # run tblastx of LTR_retrotransposon features from LTRdigest 
             # or LTRharvest on Repbase
             paths['tblastx_RepbaseHits_table'] = (
@@ -1918,7 +1862,6 @@ def classify_by_homology(KEEPCONFLICTS=False,
                 statusFlAppend.write('RepbaseTable\t{0}\n'.format(
                                            paths['tblastx_RepbaseHits_table']))
             paths['RepbaseTable'] = paths['tblastx_RepbaseHits_table']
-
         # add Repbase classifications to GFF
         # If this is in paths this step has been completed. Skip
         if not 'GFFwithRepbaseClassification' in paths:
@@ -1951,7 +1894,6 @@ def classify_by_homology(KEEPCONFLICTS=False,
             append2logfile(paths['output_top_dir'], 
               mainlogfile, 
               'Finished extracting best hits from  tblastx on Repbase results')
-
             # Add best hits to GFF
             if CLASSIFYDFAM:
                 gff_for_repbase_classification = paths[
@@ -1996,7 +1938,6 @@ def classify_by_homology(KEEPCONFLICTS=False,
                            mainlogfile, 
                            ('Finished adding best hits from tblastx on Repbase '
                                                      'results to LTRdigest GFF'))
-
             # Add LTRdigest GFF3 with Repbase classifications path to 
             # status file (for resuming later)
             with open('{0}/status'.format(paths['output_top_dir']), 
@@ -2038,7 +1979,6 @@ def classify_by_homology(KEEPCONFLICTS=False,
                       logFilePth='{0}/RemoveNonLTRretrotransposons.log'.format(
                                                         paths['GFFOutputDir']))
             paths['CurrentGFF'] = paths['LTRdigestClassifiedNoFP']
-
             if CLASSIFYDFAM:
                 strands = {}
                 with open(paths['DfamResultsTableParsed'], 'r') as inFl:
@@ -2047,7 +1987,6 @@ def classify_by_homology(KEEPCONFLICTS=False,
                         el = el.lstrip('LTR_retrotransposon')
                         strands[el] = strand
                 addStrandToGFF(strands, paths['CurrentGFF'])
-
             if CLASSIFYREPBASE:
                 strands = {}
                 with open(paths['RepbaseResultsTableParsed'], 'r') as inFl:
@@ -2055,9 +1994,6 @@ def classify_by_homology(KEEPCONFLICTS=False,
                         #el, hit, strand = line.strip().split()
                         el, hit = line.strip().split()
                         el = el.lstrip('LTR_retrotransposon')
-                        #strands[el] = strand
-                #addStrandToGFF(strands, paths['CurrentGFF'])
-
             append2logfile(paths['output_top_dir'], mainlogfile, 
              'Update strandedness in GFF3 based on Dfam and/or Repbase results')
             append2logfile(paths['output_top_dir'], mainlogfile, 
@@ -2070,7 +2006,6 @@ def classify_by_homology(KEEPCONFLICTS=False,
                                                         'a') as statusFlAppend:
                 statusFlAppend.write('LTRdigestClassifiedNoFP\t{0}\n'.format(
                                              paths['LTRdigestClassifiedNoFP']))
-
             # Remove large tblastx output and Dfam output. best hits are kept
             if not KEEP_UNUSED_FILES:
                 #rmtree(paths['RepbaseTable'])
@@ -2079,18 +2014,18 @@ def classify_by_homology(KEEPCONFLICTS=False,
                 os.remove(paths['DfamTable'])
 
 
-def shortClassif(ElNames=False):
+def shortClassif(ElNames = False):
     """- Opens Dfam and Repbase and associates short, class level names
       for elements with the elements in this annotation which have 
       significant homology to them
     - Opens GFF3 and assigns classification based on attributes. 
-      Conflicting attributes (e.g. Dfam=Gypsy, Repbase=Copia) are 
+      Conflicting attributes (e.g. Dfam = Gypsy, Repbase = Copia) are 
       resolved by using the Dfam classification.
     - Returns a dictionary with assignments as keys and a list of 
       elements as values.
-    - ElNames=True means this function will return a dict with LTR RT 
+    - ElNames = True means this function will return a dict with LTR RT 
        names as keys.
-    - ElNames=False means this function will return a dict with classifs 
+    - ElNames = False means this function will return a dict with classifs 
       as keys and sets of LTR RT names as values.
     """
     DfamNames = {}
@@ -2103,9 +2038,7 @@ def shortClassif(ElNames=False):
         for line in RepbaseFl:
             full, short = line.strip().split()
             RepbaseNames[full] = short
-    
     ElementNames = {}
-
     with open(paths['CurrentGFF']) as gffFl:
         for line in gffFl:
             if not line.startswith('#'):
@@ -2114,7 +2047,6 @@ def shortClassif(ElNames=False):
                     el = gffLine.attributes['ID']
                     for attr in gffLine.attributes:
                         annot = gffLine.attributes[attr]
-
                         # There is an annotation for this Dfam hit in 
                         # the paths['DfamShortNames'] file
                         if 'dfam' in attr:
@@ -2134,7 +2066,6 @@ def shortClassif(ElNames=False):
                                 # file
                                 if el not in ElementNames:
                                     ElementNames[el] = 'Unknown'
-
                         elif 'repbase' in attr:
                             if el in ElementNames:
                                 # Use Dfam classification if Repbase 
@@ -2158,7 +2089,6 @@ def shortClassif(ElNames=False):
         if os.path.exists(paths['GFFByClassification']):
             rmtree(paths['GFFByClassification'])
         MakeDir('GFFByClassification', paths['GFFByClassification'])
-
         with open(paths['CurrentGFF']) as gffFl:
             for line in gffFl:
                 if not line.startswith('#'):
@@ -2170,7 +2100,6 @@ def shortClassif(ElNames=False):
                     if 'repeat_region' in el:
                         el = 'LTR_retrotransposon{0}'.format(
                                                   el.split('repeat_region')[1])
-
                     # Write GFFs for each classification
                     with open('{0}/{1}.LTR_RTs.{2}.gff'.format(
                                               paths['GFFByClassification'], 
@@ -2179,7 +2108,6 @@ def shortClassif(ElNames=False):
                         if gffLine.type == 'repeat_region':
                             outFl.write('###\n')
                         outFl.write(line)
-
         with open('{0}/status'.format(paths['output_top_dir']), 
                                                         'a') as statusFlAppend:
             statusFlAppend.write("{0}\t{1}\n".format('GFFByClassification', 
@@ -2187,7 +2115,6 @@ def shortClassif(ElNames=False):
     # return 1
     if ElNames:
         return ElementNames
-
     Classifications = {}
     for el, clasif in ElementNames.items():
         if clasif in Classifications:
@@ -2221,7 +2148,6 @@ def graph2groups(G):
         nonlocal groups
         nonlocal group
         nonlocal G
-
         for node2 in G[node1]:
             if not node2 in visited:
                 visited.add(node2)
@@ -2291,7 +2217,6 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
         1. Write family designations (Like mcl output)
     """
     global paths
-    
     WICKERLTRS = use_ltrs
     WICKERINTERNAL = use_internal
     MakeDir('WickerFamDir', '{0}/WickerFamDir'.format(paths['output_top_dir']))
@@ -2306,7 +2231,6 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
     OutDirKey = 'WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen'.format(pId, 
                                                                      percAln, 
                                                                      minLen)
-
     if not checkStatusFl(OutDirKey):
         with open('{0}/status'.format(paths['output_top_dir']), 
                                                         'a') as statusFlAppend:
@@ -2318,15 +2242,12 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                                                                      pId, 
                                                                      percAln, 
                                                                      minLen)]))
-
     MakeDir('WickerFam_Cluster_dir', '{0}/Clusters'.format(OutDir))
     OutDir = paths['WickerFam_Cluster_dir']
     for classif in clusters_by_classif:
-
         if not checkStatusFl(
                      'WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(
                                                pId, percAln, minLen, classif)):
-
 
             MakeDir('WickerFam_{0}_dir'.format(classif), '{0}/{1}'.format(
                                                               OutDir, classif))
@@ -2334,7 +2255,6 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
             # Dictionary representation of a graph that will hold the 
             # blast results
             G = {} 
-
             if WICKERINTERNAL:
                 # Extract internal regions of selected elements
                 paths['InternalelementsGFF'] = '{0}/internals.gff'.format(
@@ -2363,26 +2283,23 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                 ChangeFastaHeaders(paths['InternalelementsFasta'], 
                                    paths['InternalelementsGFF'], 
                                    attribute='Parent')
-
                 # Get internals seq lengths
                 internal_seq_lengths = {s.id:len(s) for s in list(
                                     SeqIO.parse(paths['InternalelementsFasta'], 
                                     'fasta'))}
                 elements = list(internal_seq_lengths.keys())
-
                 # blast all by all internals
                 paths['Internals_{0}_selfBlastnOut'.format(classif)] = (
                                   '{0}/Internals_selfBlastn.tab').format(cOutDir)
-                runblast(query=paths['InternalelementsFasta'], 
-                               subject=paths['InternalelementsFasta'], 
-                               out=paths['Internals_{0}_selfBlastnOut'.format(
+                runblast(query = paths['InternalelementsFasta'], 
+                               subject = paths['InternalelementsFasta'], 
+                               out = paths['Internals_{0}_selfBlastnOut'.format(
                                                                      classif)], 
-                               evalue='1e-5', 
-                               outfmt='7', 
-                               percid=pId, 
-                               blast='blastn', 
-                               procs=procs)
-
+                               evalue = '1e-5', 
+                               outfmt = '7', 
+                               percid = pId, 
+                               blast = 'blastn', 
+                               procs = procs)
                 # Parse blast hits to define families
                 InternalsBlastPth = paths['Internals_{0}_selfBlastnOut'.format(
                                                                       classif)]
@@ -2391,7 +2308,6 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                     for line in blastFl:
                         if line.startswith('#'):
                             continue
-
                         (query, subj, percent_id, alignment_len, mismatches, 
                                             gap_opens, q_start, q_end, s_start, 
                                             s_end, E_value, 
@@ -2410,7 +2326,6 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                                 internal_aln_lens[aln_pair] = int(alignment_len) 
                         else:
                             internal_aln_lens[aln_pair] = int(alignment_len) 
-
                     # 4. Ignore any alignment with 
                     # alnLn[i]/seqLen[i][j] < percAln for each seq in 
                     # each alignment
@@ -2433,7 +2348,6 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                             G[el2].add(el1)
                         else:
                             G[el2] = set([el1])
-
             if WICKERLTRS:
                 # Extract all LTRs from CurrentGFF separated by classif
                 paths['LTRs_{0}_GFF'.format(classif)] = '{0}/LTRs_{1}.gff'.format(
@@ -2476,15 +2390,14 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                 # blast all by all LTRs
                 paths['LTRs_{0}_selfBlastnOut'.format(classif)] = (
                                       '{0}/LTRs_selfBlastn.tab').format(cOutDir)
-                runblast(query=paths['LTRs_{0}_Fasta'.format(classif)], 
-                         subject=paths['LTRs_{0}_Fasta'.format(classif)], 
-                         out=paths['LTRs_{0}_selfBlastnOut'.format(classif)], 
-                         outfmt='7', 
-                         evalue='1e-5', 
-                         percid=pId, 
-                         blast='blastn', 
-                         procs=procs)
-
+                runblast(query = paths['LTRs_{0}_Fasta'.format(classif)], 
+                         subject = paths['LTRs_{0}_Fasta'.format(classif)], 
+                         out = paths['LTRs_{0}_selfBlastnOut'.format(classif)], 
+                         outfmt = '7', 
+                         evalue = '1e-5', 
+                         percid = pId, 
+                         blast = 'blastn', 
+                         procs = procs)
                 # Parse blast hits to define families
                 LTRsBlastPth = paths['LTRs_{0}_selfBlastnOut'.format(classif)]
                 with open(LTRsBlastPth, 'r') as blastFl:
@@ -2492,11 +2405,9 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                     for line in blastFl:
                         if line.startswith('#'):
                             continue
-
                         (query, subj, percent_id, alignment_len, mismatches, 
                            gap_opens, q_start, q_end, s_start, s_end, E_value, 
                            bit_score) = line.strip().split('\t')
-
                         # 1. Ignore self-hits
                         if query == subj:
                             continue
@@ -2527,7 +2438,6 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                         else:
                             ltr_aln_lens[q_el] = {s_el:{aln_pair:int(
                                                                alignment_len)}}
-
                         if s_el in ltr_aln_lens:
                             if q_el in ltr_aln_lens[s_el]:
                                 if aln_pair in ltr_aln_lens[s_el][q_el]:
@@ -2544,7 +2454,6 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                         else:
                             ltr_aln_lens[s_el] = {q_el:{aln_pair:int(
                                                                alignment_len)}}
-
                     for el1 in ltr_aln_lens:
                         for el2 in ltr_aln_lens[el1]:
                             pairs = ltr_aln_lens[el1][el2]
@@ -2584,7 +2493,6 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                                     sys.exit(
                                 'Uknown element name LTR suffixes: {0}'.format( 
                                                                          pair))
-
                             len_both_ltrs = [element_combined_ltr_lengths[el1], 
                                              element_combined_ltr_lengths[el2]]
                             PASS = False
@@ -2610,7 +2518,6 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                                     G[el2].add(el1)
                                 else:
                                     G[el2] = set([el1])
-
             # 5. Report nodes in each connected component as each family
             if G != {}:
                 wicker_groups = graph2groups(G)
@@ -2624,7 +2531,6 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                     if el not in non_singletons:
                         group_num += 1
                         wicker_groups[group_num] = [el]
-
                 paths['Wicker_{0}'.format(classif)] = (
                                '{0}/wicker_groups_{1}').format(cOutDir, classif)
                 paths['WickerFamDir_{0}_pId_{1}_percAln_{2}_minLen_{3}'.format(
@@ -2670,7 +2576,7 @@ def WickerFam(pId=80, percAln=80, minLen=80, use_ltrs=True, use_internal=True):
                                                 'Wicker_{0}'.format(classif)]))
 
 
-def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
+def MCL(I = 6, minClustSize = 30, CombineIfTooFew = False):
     """CombineIfTooFew: Not available via command line flag.
     If there are less than minClustSize elements for a given 
     classification or for all classifications combined, they are put 
@@ -2683,7 +2589,6 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
     """
     global paths
     global filenames
-
     if USEMCL:
         if not 'LTRdigest_LTR_retrotransposons_fasta' in paths:
 
@@ -2704,7 +2609,6 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                            mainlogfile, 
                            'Began extracting LTR_retrotransposons from {0}'.format(
                                                           paths['CurrentGFF']))
-
             # Write GFF for just LTR_retrotransposon features
             with open(paths['CurrentGFF'], 'r') as gffFl:
                 for line in gffFl:
@@ -2715,12 +2619,10 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                     'a') as LTRdigest_LTR_retrotransposons_GFF:
                                 LTRdigest_LTR_retrotransposons_GFF.write(
                                                   '{0}\n'.format(str(gffLine)))
-
             append2logfile(paths['output_top_dir'], 
                            mainlogfile, 
                            'Finished extracting LTR_retrotransposons from {0}'.format(
                                                           paths['CurrentGFF']))
-
             # Extract sequences for true positive LTR_retrotransposon features
             getfasta_ltrretrotransposons_call = [executables['bedtools'], 
                                                  'getfasta', 
@@ -2755,18 +2657,15 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
             append2logfile(paths['output_top_dir'], mainlogfile, 
                                     ('Done changing FASTA headers from bedtools '
                                      'getfasta-style to LTR_retrotransposon ID'))
-
             with open('{0}/status'.format(
                               paths['output_top_dir']), 'a') as statusFlAppend:
                 statusFlAppend.write(
                         'LTRdigest_LTR_retrotransposons_fasta\t{0}\n'.format(
                                 paths['LTRdigest_LTR_retrotransposons_fasta'])) 
-
         AllFASTA = list(SeqIO.parse(
                                 paths['LTRdigest_LTR_retrotransposons_fasta'], 
                                 'fasta'))
         classifFastas = {}
-
         MakeDir('MCLdir', '{0}/MCL'.format(paths['output_top_dir'], I))
         # If all elements combined are less than the min clust size 
         # specified by the user, then all elements are put into one cluster.
@@ -2779,10 +2678,8 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                 c = []
                 for cls in classifs:
                     c += clusters_by_classif[cls]
-                    
                 with open(allClassifs, 'w') as outFl:
                     outFl.write('{0}\n'.format('\t'.join(c)))
-                
                 newRecord = 'MCL_{0}_I{1}'.format(classif, I)
                 if not checkStatusFl(newRecord):
                     paths['MCL_{0}_I{1}'.format(classif, I)] = (
@@ -2794,7 +2691,6 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                              paths['MCL_{0}_I{1}'.format(
                                                                  classif, I)])) 
                         return
-
         MakeDir('MCL_I{0}'.format(I), '{0}/I{1}'.format(paths['MCLdir'], I))
         if not checkStatusFl('MCL_I{0}'.format(I)):
             with open('{0}/status'.format(paths['output_top_dir']), 
@@ -2894,7 +2790,6 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                    mainlogfile, 
                                    ('Finished blastn all-by-all blast of {0} '
                                'LTR_retrotransposon sequences.').format(classif))
-
                     # Perform MCL clustering based on all-by-all blast 
                     # results convert blastn output  to abc format for mcl
                     paths['MCL_{0}_abc'.format(classif)] = (
@@ -2923,7 +2818,6 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                         statusFlAppend.write('MCL_{0}_abc\t{1}\n'.format(
                                          classif, 
                                          paths['MCL_{0}_abc'.format(classif)]))
-
                 # create network for mcl
                 paths['LTRretrotransposonNetworkmci'] = (
                                 '{0}/LTR_retrotransposon_{1}.mci').format(
@@ -2967,7 +2861,6 @@ def MCL(I=6, minClustSize=30, CombineIfTooFew=False):
                                mainlogfile, 
                                ('Finished creating network for {0} LTR RTs '
                                     'using mcxload.').format(classif))
-                
                 # cluster using MCL
                 current_wd = os.getcwd()
                 mcl_call = ['{0}/mcl'.format(executables['mcl']), 
@@ -3123,8 +3016,8 @@ def getfasta(inGFFpth, fastaRefPth, outFastaPth, headerKey='ID'):
             '-bed', inGFFpth]
     call_string = 'bedtools getfasta -fi {0} -s -bed {1} > {2}'.format(
                                             fastaRefPth, inGFFpth, outFastaPth)
-    makecall(call, stdout=outFastaPth)
-    ChangeFastaHeaders(outFastaPth, inGFFpth, attribute=headerKey)
+    makecall(call, stdout = outFastaPth)
+    ChangeFastaHeaders(outFastaPth, inGFFpth, attribute = headerKey)
     removeRedundant(outFastaPth)
 
 
@@ -3133,9 +3026,9 @@ def runblast(query,
              out, 
              evalue, 
              outfmt, 
-             percid=None, 
-             blast='blastn', 
-             procs=1):
+             percid = None, 
+             blast = 'blastn', 
+             procs = 1):
     """Runs blastn (not tested with other blast programs), creating a
     blast database using makeblastdb.
 
@@ -3330,12 +3223,12 @@ def reportpairswithhomologousflanks(blastqueryfasta,
 def elementsWithHomologousFlanks(ingff, 
                                  infasta, 
                                  outdir, 
-                                 bpflank=None, 
-                                 outfmt='7', 
-                                 percid=None, 
-                                 evalue=None, 
-                                 perc_len_cutoff=None, 
-                                 procs=None):
+                                 bpflank = None, 
+                                 outfmt = '7', 
+                                 percid = None, 
+                                 evalue = None, 
+                                 perc_len_cutoff = None, 
+                                 procs = None):
     """Coordinates discovering element pairs whose left and right 
     homologous flanking regions are homologous. The reason this is done
     is so elements which were duplicated by non-transpositional events
@@ -3372,26 +3265,26 @@ def elementsWithHomologousFlanks(ingff,
             os.remove(flankgff)
         # create a gff for all left and right flanks of each element in the
         # input gff (LTRdigest+ output)
-        full2flankgff(inGFFpth=ingff, outGFFpth=flankgff, bpflank=bpflank)
+        full2flankgff(inGFFpth = ingff, outGFFpth = flankgff, bpflank = bpflank)
         # extract sequences for each element's left and right flank
-        getfasta(inGFFpth=flankgff, fastaRefPth=infasta, 
-                                        outFastaPth=flankfasta, headerKey='ID')
+        getfasta(inGFFpth = flankgff, fastaRefPth = infasta, 
+                                        outFastaPth = flankfasta, headerKey = 'ID')
         # run blastn of each flank against each other flank
-        runblast(query=flankfasta, 
-                 subject=flankfasta, 
-                 out=blastout, 
-                 evalue=str(evalue), 
-                 outfmt=outfmt, 
-                 percid=percid, 
-                 blast='blastn', 
-                 procs=procs)
+        runblast(query = flankfasta, 
+                 subject = flankfasta, 
+                 out = blastout, 
+                 evalue = str(evalue), 
+                 outfmt = outfmt, 
+                 percid = percid, 
+                 blast = 'blastn', 
+                 procs = procs)
     # write pairs of output files whose flanks are homologous
-    reportfl = '{0}/LTR_element_pairs_with_homologous_flanks'.format(outdir)
-    reportpairswithhomologousflanks(blastqueryfasta=flankfasta, 
-                                                    blastResults=blastout, 
-                                                    outFlPth=reportfl, 
-                                                    bpflank=bpflank, 
-                                                    perc_len_cutoff=perc_len_cutoff)
+    reportfl  =  '{0}/LTR_element_pairs_with_homologous_flanks'.format(outdir)
+    reportpairswithhomologousflanks(blastqueryfasta = flankfasta, 
+                                                    blastResults = blastout, 
+                                                    outFlPth = reportfl, 
+                                                    bpflank = bpflank, 
+                                                    perc_len_cutoff = perc_len_cutoff)
 
 
 def CleanMafft(mafft_fasta):
@@ -3423,18 +3316,15 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
     5. Adds statsFlAlnKey to the status file.
     """
     global paths
-
     if part == 'entire':
         ENTIRE = True
         INTERNAL = False
     elif part == 'internal':
         INTERNAL = True
         ENTIRE = True
-
     dirKey = '{0}-dir'.format(statusFlAlnKey)
     MakeDir(dirKey, OutDir)
     if not checkStatusFl(statusFlAlnKey):
-
         if INTERNAL:
             paths['InternalelementsGFF'] = '{0}/elements.gff'.format(OutDir)
             paths['InternalelementsFasta'] = '{1}/elements.fasta'.format(OutDir)
@@ -3459,9 +3349,7 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
                                attribute = 'Parent')
             paths['AlnFasta'] = paths['InternalelementsFasta']
             paths['AlnPth'] = '{0}.aln'.format(paths['InternalelementsFasta'])
-
         elif ENTIRE:
-
             paths['EntireelementsGFF'] = '{0}/elements.gff'.format(OutDir)
             paths['EntireelementsFasta'] = '{0}/elements.fasta'.format(OutDir)
             writeLTRretrotransposonGFF(inputGFFpth = paths['CurrentGFF'], 
@@ -3565,21 +3453,21 @@ def aligner(elementList, OutDir, statusFlAlnKey, part):
                                                    paths['ClusterTrimmedAln']))
 
 
-def AutoAlign(I=6, 
-              part='entire', 
-              rmgeneconv=False, 
-              minClustSize=4, 
-              align='clusters', 
-              rmhomologflank=False, 
-              clustering_method='WickerFam', 
-              WickerParams={'pId':80,'percAln':80,'minLen':80}, 
-              auto_outgroup=False, 
-              bpflank=None, 
-              flank_pId=None, 
-              flank_evalue=None, 
-              flank_plencutoff=None, 
-              combine_and_do_small_clusters=True, 
-              LTRSONLY=False):
+def AutoAlign(I = 6, 
+              part = 'entire', 
+              rmgeneconv = False, 
+              minClustSize = 4, 
+              align = 'clusters', 
+              rmhomologflank = False, 
+              clustering_method = 'WickerFam', 
+              WickerParams = {'pId':80,'percAln':80,'minLen':80}, 
+              auto_outgroup = False, 
+              bpflank = None, 
+              flank_pId = None, 
+              flank_evalue = None, 
+              flank_plencutoff = None, 
+              combine_and_do_small_clusters = True, 
+              LTRSONLY = False):
     """AutoAlign handles aligning whole or internal regions of LTRharvest GFF3 
     LTR RTs that had been clustered using MCL() or WickerFam().
 
@@ -6340,7 +6228,8 @@ def phylo(removegeneconv = True,
             # clustersmall will be left out of OUTGROUP. No LTT for clustersmall
             if combine_and_do_small_clusters:
                 if WICKERCLUST:
-                    alnPth = 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_clustersmall_{4}'.format(WickerParams['pId'], 
+                    alnPth = 'WickerAln_{0}_pId_{1}_percAln_{2}_minLen_{3}_clustersmall_{4}'.format(
+                                                        WickerParams['pId'], 
                                                         WickerParams['percAln'], 
                                                         WickerParams['minLen'], 
                                                         classif, 
