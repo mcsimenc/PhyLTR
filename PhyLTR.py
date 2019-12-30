@@ -43,11 +43,17 @@ class GFF3_line:
         of the line from the GFF3_line object.
         """
         if line == None:
-            (self.seqid, self.source, self.type, self.start, self.end, self.score, 
-                self.strand, self.phase, self.attributes_str) = [None]*9
+            (self.seqid, 
+             self.source, 
+             self.type, 
+             self.start, 
+             self.end, 
+             self.score, 
+             self.strand, 
+             self.phase, 
+             self.attributes_str) = [None]*9
             self.attributes_order = []
             self.attributes = {}
-            
         else:
             (self.seqid, 
              self.source, 
@@ -64,14 +70,13 @@ class GFF3_line:
             self.coords = (self.start, self.end)
             self.length = self.end - self.start + 1
             attributes_list = self.attributes_str.split(';')
-            self.attributes_order = [attr.split('=')[0] for attr in attributes_list]
-            self.attributes = {attr.split('=')[0]:attr.split('=')[1] for attr in attributes_list}
-
+            self.attributes_order = [attr.split('=')[0] for attr in 
+                                                               attributes_list]
+            self.attributes = {attr.split('=')[0]:attr.split('=')[1] for 
+                                                       attr in attributes_list}
         self.line_number = None
-
         if 'line_number' in kwargs:    
             self.line_number = kwargs['line_number']
-
         # rename the name attribute so it conforms to GFF3 specifications, 
         # where Name is a reserved attribute key. The version of LTRDigest 
         # makes attribute key name
@@ -110,8 +115,10 @@ class GFF3_line:
                 self.attributes[attr_key] = attr_val
                 self.attributes_order.insert(attr_pos, attr_key)
                 self.refreshAttrStr()
-            else: # grow list
-                self.attributes[attr_key] = '{0},{1}'.format(self.attributes[attr_key], attr_val)
+            # grow list
+            else:
+                self.attributes[attr_key] = '{0},{1}'.format(
+                                           self.attributes[attr_key], attr_val)
                 self.refreshAttrStr()
         else:
             self.attributes[attr_key] = attr_val
