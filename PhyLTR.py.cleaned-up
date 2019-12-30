@@ -6007,7 +6007,7 @@ END;
             divc = div
             GC = 'No'
         if div > 5 or divc > 5:
-            print('({0} LTRs have estimated substitutions per site of {1} and '
+            print(('({0} LTRs have estimated substitutions per site of {1} and '
                   '{2} (gene conversion-corrected) using {3}. It was excluded '
                   'from the summary table at: {4}').format(el, 
                                                            div, 
@@ -7763,7 +7763,7 @@ def summarizeClusters(I = 6,
                                                                  str(gffLine)))
                                     else:
                                         sys.exit(('sumarizeClusters(): No Parent '
-                                            'or ID attribute for gff line: {0}'.format(
+                                            'or ID attribute for gff line: {0}').format(
                                                                  str(gffLine)))
                                     if elNum in clust_members:
                                         if gffLine.type == 'repeat_region':
@@ -7842,7 +7842,7 @@ def summarizeClusters(I = 6,
                                                                'repeat_region')
                                         else:
                                             sys.exit(('Problem with summarizeClusters() '
-                                                      'Parent attribute for \n{0}'.format(
+                                                      'Parent attribute for \n{0}').format(
                                                                  str(gffLine)))
                                     elif 'ID' in gffLine.attributes:
                                         if 'LTR_retrotransposon' in gffLine.attributes['ID']:
@@ -8010,10 +8010,6 @@ def help():
       ------------------------------
       -f | --fasta       <path>    Sequences to analyze. Mandatory.
       -p | --procs       <int>     Number of processors (default 1)
-      --keep_files                 Default=no. Removes some large 
-                                    intermediate files, including raw
-                                    nhmmer and tlbastx output, Circos 
-                                    files, input FASTA suffix array.
       -o | --output_dir  <path>    Output directory name. Default is 
                                     PhyLTR.output
       --logfile          <path>    Path to where log file is written 
@@ -8058,138 +8054,223 @@ def help():
 
       ORF annotation
       --------------
-      --findORFs            Turns on ORF annotation
-      --min_orf_len            <int>    (default 300)
+      --findORFs                  Turns on ORF annotation
+      --min_orf_len   <int>       (default 300)
 
       LTRdigest
       ---------
-      -ld | --ltrdigest            Run LTRdigest on file given by --fasta and --ltrharvest results (GFF) (default ON)
-      --ltrdigest_hmms        <path>    Path to a file with one or more protein profile HMMs for LTRdigest (HMMER)
-                          (default {0})
+      -ld | --ltrdigest           Run LTRdigest on file given by --fasta 
+                                   and --ltrharvest results (GFF) (default ON)
+      --ltrdigest_hmms   <path>   Path to a file with one or more protein 
+                                   profile HMMs for LTRdigest (HMMER)
+                                   (default {0})
 
-      Classification of LTR RTs to superfamily using homology to annotated sequences in Repbase and/or Dfam
-      -----------------------------------------------------------------------------------------------------
-      --no_classification            Do not classify LTR-Rs with Repbase or Dfam (on by default)
-      --no_dfam                Do not run hmmsearch on Dfam database (on by default)
-      --no_repbase                Do not run tblastx on Repbase database (on by default)
-      --keep_conflicting_classifications        If an element has two classifications that disagree (i.e. Repbase and Dfam) and one classification
-                              is an LTR RT hit and one is a non-LTR RT hit, and this flag is set, the element will be kept.
-                            (default OFF; the element is discarded as a false positive)
-      --keep_no_classification            If an element does not have evidence of homology to any sequence in Repbase or Dfam, keep it.
-                              (default OFF; elements without homology to LTR RT in a database are discarded as false positives)
-      --repbase_tblastx_evalue    <int|float>    Max allowed E-value for tblastx hits (default 1e-5)
-      --nhmmer_reporting_evalue    <int|float>     (default 10)
-      --nhmmer_inclusion_evalue    <int|float>    (default 1e-2)
+      Classification of LTR RTs to superfamily using homology to annotated 
+       sequences in Repbase and/or Dfam
+      --------------------------------------------------------------------
+      --no_classification                 Do not classify LTR-Rs with 
+                                           Repbase or Dfam (on by default)
+      --no_dfam                           Do not run hmmsearch on Dfam 
+                                           database (on by default)
+      --no_repbase                        Do not run tblastx on Repbase 
+                                           database (on by default)
+      --keep_conflicting_classifications  If an element has two 
+                                           classifications that disagree 
+                                            (i.e. Repbase and Dfam) and 
+                                            one classification is an LTR 
+                                            RT hit and one is a non-LTR 
+                                            RT hit, and this flag is set, 
+                                            the element will be kept.
+                                            (default OFF; the element is 
+                                            discarded as a false positive)
+      --keep_no_classification            If an element does not have 
+                                           evidence of homology to any 
+                                           sequence in Repbase or Dfam, 
+                                           keep it. (default OFF; elements 
+                                           without homology to LTR RT in 
+                                           a database are discarded as 
+                                           false positives)
+      --repbase_tblastx_evalue h <int|float>  Max allowed E-value for 
+                                               tblastx hits (default 1e-5)
+      --nhmmer_reporting_evalue  <int|float>  (default 10)
+      --nhmmer_inclusion_evalue  <int|float>  (default 1e-2)
 
       Clustering
       -----------
-      --min_clust_size            Minimum allowed cluster size. Clusters with < minclustsize elements get assembled together
-                          but no model testing, gene conversion, or outgroup/LTT analysis is done.
-        --mcl                    Cluster using MCL
-      --I                    Inflation/granularity parameter for MCL (default 6)
-        --wicker                Cluster using '80-80-80' rule, or custom values specified below.
-        --wicker_pId                Minimum % ID in pairwise alignment between any two elements (default 80)
-        --wicker_minLen            Minimum alignment length to considered. (default 80)
-        --wicker_pAln                Minimum percentage of whole sequence (LTRs or internal region) for alignment
-                          to be considered. (default 80)
-      --wicker_no_internals            (default OFF)
-      --wicker_no_ltrs            (default OFF)
+      --min_clust_size      Minimum allowed cluster size. Clusters with 
+                             < minclustsize elements get assembled together
+                             but no model testing, gene conversion, or 
+                             outgroup/LTT analysis is done.
+      --mcl                 Cluster using MCL
+      --I                   Inflation/granularity parameter for MCL 
+                             (default 6)
+      --wicker              Cluster using '80-80-80' rule, or custom values 
+                             specified below.
+      --wicker_pId          Minimum % ID in pairwise alignment between 
+                             any two elements (default 80)
+      --wicker_minLen       Minimum alignment length to considered. 
+                             (default 80)
+      --wicker_pAln         Minimum percentage of whole sequence (LTRs 
+                             or internal region) for alignment to be 
+                             considered. (default 80)
+      --wicker_no_internals (default OFF)
+      --wicker_no_ltrs      (default OFF)
 
 
-      MAFFT (for cluster, not LTR alignment): Default for very large clusters (clust_size > 200)
-      -----------------------------
+      MAFFT (for cluster, not LTR alignment): Default for very large 
+       clusters (clust_size > 200)
+      --------------------------------------------------------------------
 
-      NOTE: MAFFT uses a lot of RAM for large clusters. It repeatedly failed on tests of ~2.7k seqs of length >5kb using 256Gb RAM. The MAFFT algorthim FFT-NS-2 is used
-          for small and medium clusters with the user-specified --maxiterate option (see below) and FFT_NS-1 for large clusters, which is very inaccurate.
+      NOTE: MAFFT uses a lot of RAM for large clusters. It repeatedly 
+       failed on tests of ~2.7k seqs of length >5kb using 256Gb RAM. 
+      The MAFFT algorthim FFT-NS-2 is used for small and medium clusters 
+       with the user-specified --maxiterate option (see below) and 
+       FFT_NS-1 for large clusters, which is very inaccurate.
 
-      --mafft_align_region            <str>   Either 'internal' or 'entire', specifying the portions of each element to use for MAFFT alignments.
-                            Internal = the sequence region between the two LTRs. (default entire)
-      --maxiterate_small_clusters        <int>    Max number of iterations for MAFFT algorithm for clusters with < --min_clustsize_for_faster_aln  elements.
-                              1 is fastest; greater numbers will improve the alignment (default 30).
-      --maxiterate_medium_clusters        <int>    Number of iterations for MAFFT algorithm for large clusters (--min_clustsize_for_faster_aln  < clust_size) (default 3)
-      --mafft_smallAln_maxclustsize        <int>    Clusters this size and smaller will be aligned using the settings from --maxiterate_small_clusters. (default 50)
-      --mafft_mediumAln_maxclustsize    <int>    Clusters this size and smaller but larger than --mafft_smallAln_maxclustsize will be aligned using the settings from
-                              --maxiterate_medium_clusters. (default 500)
-      --mafft_largeAln_maxclustsize        <int>    Clusters this size and smaller but larger than --mafft_mediumAln_maxclustsize will be aligned using the MAFFT algorithm
-                              FFT-NS-1 (--retree 1). Clusters larger than this size will not be aligned and the downstream analyses that require
-                            an alignment will not be performed. Those analyses are (LTR divergence, gene conversion, and phylogenetic analyses).
-                            (default 1000)
-      --nosmalls                    Do not combine and assemble clusters smaller than --min_clust_size (see clustering options)
+      --mafft_align_region           <str> Either 'internal' or 'entire', 
+                                            specifying the portions of 
+                                            each element to use for 
+                                            MAFFT alignments.
+                                            Internal = the sequence region 
+                                            between the two LTRs. 
+                                            (default entire)
+      --maxiterate_small_clusters    <int> Max number of iterations for 
+                                            MAFFT algorithm for clusters 
+                                            with < --min_clustsize_for_faster_aln 
+                                            elements. 1 is fastest; greater 
+                                            numbers will improve the 
+                                            alignment (default 30).
+      --maxiterate_medium_clusters   <int> Number of iterations for MAFFT 
+                                            algorithm for large clusters 
+                                            (--min_clustsize_for_faster_aln < 
+                                            clust_size) (default 3)
+      --mafft_smallAln_maxclustsize  <int> Clusters this size and smaller 
+                                            will be aligned using the 
+                                            settings from 
+                                            --maxiterate_small_clusters. 
+                                            (default 50)
+      --mafft_mediumAln_maxclustsize <int> Clusters this size and smaller 
+                                            but larger than 
+                                            --mafft_smallAln_maxclustsize 
+                                            will be aligned using the 
+                                            settings from
+      --maxiterate_medium_clusters.        (default 500)
+      --mafft_largeAln_maxclustsize  <int> Clusters this size and smaller 
+                                            but larger than 
+                                            --mafft_mediumAln_maxclustsize 
+                                            will be aligned using the 
+                                            MAFFT algorithm FFT-NS-1 
+                                            (--retree 1). Clusters larger 
+                                            than this size will not be 
+                                            aligned and the downstream 
+                                            analyses that require an
+                                            alignment will not be performed. 
+                                            Those analyses are LTR 
+                                            divergence, gene conversion,
+                                            and phylogenetic analyses.
+                                            (default 1000)
+      --nosmalls                           Do not combine and assemble 
+                                            clusters smaller than 
+                                            --min_clust_size (see clustering 
+                                            options)
 
       GENECONV
-      --------
-      --geneconv_g    <comma-sep-list>    A comma-separated list of the values for the 'g' parameter of GENECONV. Valid values are g0, g1, and g2.
-                          (default g0,g1,g2)
+      --------------------------------------------------------------------
+      --geneconv_g <comma-sep-list> A comma-separated list of the 
+                                     values for the 'g' parameter 
+                                     of GENECONV. Valid values are 
+                                     g0, g1, and g2.
+                                     (default g0,g1,g2)
       --geneconvltrs
       --geneconvclusters
-      --circos                Make Circos plots for each cluster showing GENECONV results.
+      --circos                Make Circos plots for each cluster showing 
+                               GENECONV results.
 
       LTR divergence estimation
       -------------------------
-      --modeltest                Find best-supported model of nucleotide substitution and use it to estimate intra-element LTR divergences
+      --modeltest       Find best-supported model of nucleotide substitution and use it to estimate intra-element LTR divergences
                         Off by default.
-      --model            <str>    Specify model to be used for estimating intra-element LTR divergences: One of:
-                        jc, f81, tajnei, k2p, hky85, k3p, tamnei, gtr, logdet, upholt, neili
+      --model  <str>    Not implemented. Specify model to be used for 
+                         estimating intra-element LTR divergences: One of:
+                         jc, f81, tajnei, k2p, hky85, k3p, tamnei, gtr, 
+                         logdet, upholt, neili
                         See PAUP* manual for explanation. Default hky85.
-      --ltrdivergence            Estimate substitutions per site between LTRs for each element using best supported model from model test
-                        or --model (default hky85)
-      --remove_GC_from_modeltest_aln    Remove elements with suspected intra-cluster inter-element gene conversion tracts.
+      --ltrdivergence    Estimate substitutions per site between LTRs 
+                         for each element using best supported model 
+                         from model test or --model (default hky85)
+      --remove_GC_from_modeltest_aln  Remove elements with suspected 
+                                       intra-cluster inter-element gene 
+                                       conversion tracts.
 
       Solo LTR search
       -------------------
-    --soloLTRsearch                Turn on solo LTR search.
-    --soloLTRminPid            <num>    Minimum percent identity for inclusion of a solo LTR in a cluster (80.0)
-    --soloLTRminLen            <num>    Minimum percent of LTR length participating in alignment for inclusion of LTR in a cluster (80.0)
-    --soloLTRmaxEvalue        <num>    Maximum evalue allowed for blastn
-    
-    
+      --soloLTRsearch           Turn on solo LTR search.
+      --soloLTRminPid    <num>  Minimum percent identity for inclusion of 
+                                 a solo LTR in a cluster (80.0)
+      --soloLTRminLen    <num>  Minimum percent of LTR length participating 
+                                 in alignment for inclusion of LTR in a 
+                                 cluster (80.0)
+      --soloLTRmaxEvalue <num>  Maximum evalue allowed for blastn
 
       Finding pairs of elements within clusters that have homologous flanking regions
       -------------------------------------------------------------------------------
-      --rmhomoflank                Remove one of each pair of elements within each alignment (and therefore, each tree).
-                          (default OFF; Fixed ON when using --LTT)
-      --bpflank        <int>        Number of bases on either side of each element to search for homology. (default 500 bp)
-      --flank_evalue    <int|float>    E-value ceiling for considering blastn hits as evidence of homology. (default 1e-5)
-      --flank_pId        <int|float>    Minimum percent identity in blastn alignment to consider hit as evidence of homology. (default 70)
-      --flank_plencutoff    <int|float>    Minimum percentage of flanking region required to participate in alignment to consider
-                          blastn hit as evidence of homology. (default 70)
+      --rmhomoflank              Remove one of each pair of elements within 
+                                  each alignment (and therefore, each tree).
+                                  (default OFF; Fixed ON when using --LTT)
+      --bpflank      <int>       Number of bases on either side of each 
+                                  element to search for homology. (default 
+                                  500 bp)
+      --flank_evalue <int|float> E-value ceiling for considering blastn 
+                                  hits as evidence of homology. 
+                                  (default 1e-5)
+      --flank_pId    <int|float> Minimum percent identity in blastn 
+                                  alignment to consider hit as evidence 
+                                  of homology. (default 70)
+      --flank_plencutoff <int|float> Minimum percentage of flanking region 
+                                      required to participate in alignment 
+                                      to consider blastn hit as evidence 
+                                      of homology. (default 70)
       Phylogenetic analysis
       ---------------------
-      --phylo                ##### not implemented yet
-      --nosmalls                Do not combine and perform phylogentic analyses on clusters smaller than --min_clust_size.
-      --LTT                    Turns on --rmhomoflank, --convert_to_ultrametric, and --auto_outgroup. Produces ultrametric
-                        phylogeneis which are ready for use with external R scripts for generating LTT plots and other
+      --phylo                
+      --nosmalls        Do not combine and perform phylogentic analyses 
+                         on clusters smaller than --min_clust_size.
+      --LTT             Turns on --rmhomoflank, --convert_to_ultrametric, 
+                         and --auto_outgroup. Produces ultrametric
+                        phylogenies which are ready for use with external 
+                         R scripts for generating LTT plots and other
                         phylogenetic analyses.
-      --bootstrap_reps        <int>    Number of replicates to generate for bootstrapping (default 100)
-      --convert_to_ultrametric        Convert trees to ultrametric using PATHd8. (default OFF; ON when using --LTT)
-      --auto_outgroup            Pick an outgroup automatically:
-                         -The outgroup shall be a random element from cluster k where cluster k is the largest of the clusters
-                          that is not j if j is the first cluster then the next smallest cluster is k if there is no other
-                          cluster, no outgroup is used.
-'''.format('{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir']), file=sys.stderr))
+      --bootstrap_reps         <int>  Number of replicates to generate 
+                                       for bootstrapping (default 100)
+      --convert_to_ultrametric        Convert trees to ultrametric using 
+                                       PATHd8. (default OFF; ON when using 
+                                       --LTT)
+      --auto_outgroup                 Pick an outgroup automatically:
+'''.format('{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(
+                                   paths['selfDir']), file=sys.stderr))
+
 
 if __name__ == '__main__':
     args=sys.argv
-
-    # get executable paths from CONFIG file, which should be in the same directory as this script
+    # get executable paths from CONFIG file, which should be in the 
+    # same directory as this script
     executables = {}
     commentPattern = re.compile('#.*$')
-    # here, the CONFIG file, specifying paths.
-    with open('{0}/CONFIG'.format(os.path.dirname(os.path.realpath(__file__)))) as config_file:
-        paths = [ re.sub(commentPattern, '', line) for line in config_file.read().strip().split('\n') ]
+    # CONFIG file specifies paths to executables
+    with open('{0}/CONFIG'.format(os.path.dirname(os.path.realpath(
+                                                   __file__)))) as config_file:
+        paths = [re.sub(commentPattern, '', line) for line in 
+                                        config_file.read().strip().split('\n')]
         for path in paths:
             if not path == '':
                 p = path.split('=')
                 executables[p[0]] = p[1]
-        
     filenames = {}
     paths = {}
     paths_toClean = {}
     params = {}
-
     paths['selfDir'] = '/'.join(os.path.realpath(__file__).split('/')[:-1])
     paths['scriptsDir'] = '{0}/scripts'.format(paths['selfDir'])
-
     if '-h' in args or '--h' in args:
         help2()
         sys.exit(0)
@@ -8209,20 +8290,29 @@ if __name__ == '__main__':
         help()
         print('''
 
-            MUST SPECIFY INPUT FASTA WITH -f or --fasta
+            Must specify input fasta with -f or --fasta
 
             ''', file=sys.stderr)
         sys.exit(0)
-
-
-    # If any of these flags are specified, then only up to those processes are performed, otherwise they are all run.
-    main_flags = ('--ltrharvest','--ltrdigest','--classify','--wicker','--mcl','--geneconvclusters','--circos','--sololtrsearch','--geneconvltrs','--ltrdivergence','--phylo','--LTT')
+    # If any of these flags are specified, then only up to those 
+    # processes are performed, otherwise they are all run.
+    main_flags = ('--ltrharvest',
+                  '--ltrdigest',
+                  '--classify',
+                  '--wicker',
+                  '--mcl',
+                  '--geneconvclusters',
+                  '--circos',
+                  '--sololtrsearch',
+                  '--geneconvltrs',
+                  '--ltrdivergence',
+                  '--phylo',
+                  '--LTT')
     DEFAULT = True
     for flag in main_flags:
         if flag in args:
             DEFAULT = False
             break
-
     # Set default flags
     if DEFAULT:
         print('Running default settings (all analyses)', file=sys.stderr)
@@ -8241,19 +8331,12 @@ if __name__ == '__main__':
         LTT = True
         ULTRAMETRIC = True
         SOLOLTR = True
-
     if '--logfile' in args:
         mainlogfile = args[args.index('--logfile')+1]
     else:
         mainlogfile = 'log.txt'
-
     filenames['inputFasta'] = paths['inputFasta'].split('/')[-1]
-
     KEEP_UNUSED_FILES = True
-    #if '--keep_files' in args:
-    #else:
-    #    KEEP_UNUSED_FILES = False
-
     # Max number of processors for parallel flows
     procs = 1
     if '--procs' in args:
@@ -8266,18 +8349,18 @@ if __name__ == '__main__':
         MakeDir('output_top_dir', args[args.index('-o') + 1])
     else:
         MakeDir('output_top_dir', 'PhyLTR.output')
-
-    MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(paths['output_top_dir']))
-    MakeDir('GFFOutputDir', '{0}/GFF_output'.format(paths['output_top_dir']))
-
-    # Do not align and infer histories for small clusters (size(cluster) < --min_clust_size)
+    MakeDir('FastaOutputDir', '{0}/FASTA_output'.format(
+                                              paths['output_top_dir']))
+    MakeDir('GFFOutputDir', '{0}/GFF_output'.format(
+                                              paths['output_top_dir']))
+    # Do not align and infer phylogenies for small clusters (size(cluster) 
+    # < --min_clust_size)
     if '--nosmalls' in args:
         SMALLS = False
     else:
         SMALLS = True
-
     # 1. LTRharvest
-    if '--ltrharvest' in args or '-lh' in args or DEFAULT: # Turn on LTRharvest for file given by --fasta
+    if '--ltrharvest' in args or '-lh' in args or DEFAULT:
         LTRHARVEST = True
     else:
         LTRHARVEST = False
@@ -8313,8 +8396,9 @@ if __name__ == '__main__':
     if '--mindistltr' in args:
         ltrharvest_mindistltr = int(args[args.index('--mindistltr')+1])
     else:
-        # Terminal-repeat retrotransposons in miniature (TRIM) are involved in restructuring plant genomes. Witte et al. 2001, PNAS
-        # TRIM elements have internal regions of only 100-300 bp
+        # Terminal-repeat retrotransposons in miniature (TRIM) are 
+        # involved in restructuring plant genomes. Witte et al. 2001,
+        # PNAS. TRIM elements have internal regions of only 100-300 bp
         ltrharvest_mindistltr = 100
     if '--maxdistltr' in args:
         ltrharvest_maxdistltr = int(args[args.index('--maxdistltr')+1])
@@ -8339,16 +8423,17 @@ if __name__ == '__main__':
 
 
     # 2. LTRdigest
-    if '--ltrdigest' in args or '-ld' in args or DEFAULT: # Turn on LTRdigest for LTRharvest results
+    if '--ltrdigest' in args or '-ld' in args or DEFAULT:
         LTRDIGEST = True
     else:
         LTRDIGEST = False
-
-    if '--ltrdigest_hmms' in args: # Check for user-supplied location of HMMs for LTRdigest, set default otherwise (comes with package)
+    # Check for user-supplied location of HMMs for LTRdigest, set 
+    # default otherwise (comes with package)
+    if '--ltrdigest_hmms' in args:
         paths['LTRdigestHMMs'] = args[args.index('--ltrdigest_hmms') + 1]
     else:
-        paths['LTRdigestHMMs'] = '{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(paths['selfDir'])
-
+        paths['LTRdigestHMMs'] = '{0}/RepeatDatabases/LTRdigest_HMMs/hmms'.format(
+                                                             paths['selfDir'])
     # 3. ORF annotation
     if '--findORFs' in args or DEFAULT:
         FINDORFS = True
@@ -8358,9 +8443,9 @@ if __name__ == '__main__':
         min_orf_len = int(args[args.index('--min_orf_len')+1])
     else:
         min_orf_len = 300
-
     # 4. Classification
-    os.environ['BLASTDB'] = paths['FastaOutputDir'] # Solves can't find blastdbs problem
+    # Solves can't find blastdbs problem
+    os.environ['BLASTDB'] = paths['FastaOutputDir']
     if '--no_classification':
         CLASSIFYDFAM = False
         CLASSIFYREPBASE = False
@@ -8383,19 +8468,24 @@ if __name__ == '__main__':
         KEEPNOCLASSIFICATION=True
     else:
         KEEPNOCLASSIFICATION=False
-    if '--nhmmer_reporting_evalue' in args: # Dfam control
-        nhmmer_reporting_evalue = float(args[args.index('--nhmmer_reporting_evalue')+1])
+    # Dfam control
+    if '--nhmmer_reporting_evalue' in args:
+        nhmmer_reporting_evalue = float(
+                               args[args.index('--nhmmer_reporting_evalue')+1])
     else:
         nhmmer_reporting_evalue = 10
-    if '--nhmmer_inclusion_evalue' in args: # Dfam control
-        nhmmer_inclusion_evalue = float(args[args.index('--nhmmer_inclusion_evalue')+1])
+    # Dfam control
+    if '--nhmmer_inclusion_evalue' in args:
+        nhmmer_inclusion_evalue = float(
+                               args[args.index('--nhmmer_inclusion_evalue')+1])
+    # Repbase control
     else:
         nhmmer_inclusion_evalue = 1e-5
-    if '--repbase_tblastx_evalue' in args: # Repbase control
-        repbase_tblastx_evalue = float(args[args.index('--repbase_tblastx_evalue')+1])
+    if '--repbase_tblastx_evalue' in args:
+        repbase_tblastx_evalue = float(
+                                args[args.index('--repbase_tblastx_evalue')+1])
     else:
         repbase_tblastx_evalue = 1e-5
-
     # 5. Clustering
     if '--wicker' in args or DEFAULT:
         WICKER = True
@@ -8409,7 +8499,6 @@ if __name__ == '__main__':
         wicker_pAln = int(args[args.index('--wicker_pAln')+1])
     else:
         wicker_pAln = 80
-
     if '--wicker_minLen' in args:
         wicker_minLen = int(args[args.index('--wicker_minLen')+1])
     else:
@@ -8434,7 +8523,6 @@ if __name__ == '__main__':
         MinClustSize = int(args[args.index('--min_clust_size')+1])
     else:
         MinClustSize = 7
-
     # 6. Model testing for LTR divergence
     if '--modeltest' in args:
         MODELTEST = True
@@ -8444,7 +8532,6 @@ if __name__ == '__main__':
         remove_GC_from_modeltest_aln = True
     else:
         remove_GC_from_modeltest_aln = False
-
     # 7. LTR divergence and model testing
     if '--ltrdivergence' in args or DEFAULT:
         LTRDIVERGENCE = True
@@ -8455,13 +8542,11 @@ if __name__ == '__main__':
         model = args[args.index('--model')+1]
     else:
         model = 'hky85'
-
     # 8. Intra-element LTR gene conversion
     if '--geneconvltrs' in args or DEFAULT:
         GENECONVLTRS = True
     else:
         GENECONVLTRS = False
-
     # 9. Inter-element intra-cluster LTR gene conversion
     if '--geneconvclusters' in args or DEFAULT:
         GENECONVCLUSTERS = True
@@ -8485,7 +8570,6 @@ if __name__ == '__main__':
         GENECONV_G0 = True
         GENECONV_G1 = True
         GENECONV_G2 = True
-
     # 10. Circos
     if '--circos' in args or DEFAULT:
         CIRCOS = True
@@ -8494,7 +8578,6 @@ if __name__ == '__main__':
     # 10. Circos
     if '--nocircos' in args:
         CIRCOS = False
-
     # 11. Phylogenetic inference on clusters
     if '--phylo' in args or DEFAULT:
         PHYLO = True
@@ -8542,7 +8625,6 @@ if __name__ == '__main__':
         flank_plencutoff = float(args[args.index('--flank_plencutoff')+1])
     else:
         flank_plencutoff = 70.0
-
     # 12. Solo LTR search parameters
     if '--soloLTRsearch' in args or DEFAULT:
         SOLOLTR = True
@@ -8560,52 +8642,55 @@ if __name__ == '__main__':
         soloLTRmaxEvalue = float(args[args.index('--soloLTRmaxEvalue')+1])
     else:
         soloLTRmaxEvalue = 1e-3
-        
-
     # MAFFT parameters
     if '--mafft_align_region' in args:
         mafft_align_region = args[args.index('--mafft_align_region')+1]
         if not mafft_align_region == 'entire' or mafft_align_region == 'internal':
-            sys.exit('ERROR: --mafft_align_region must be either \'internal\' or \'entire\'')
+            sys.exit(('Error: --mafft_align_region must be either \'internal\' '
+                        'or \'entire\''))
     else:
         mafft_align_region = 'entire' 
     if '--maxiterate_small_clusters' in args:
-        mafft_smallAln_maxiterate = int(args[args.index('--maxiterate_small_clusters')+1])
+        mafft_smallAln_maxiterate = int(
+                             args[args.index('--maxiterate_small_clusters')+1])
     else:
         mafft_smallAln_maxiterate = 20
     if '--maxiterate_medium_clusters' in args:
-        mafft_mediumAln_maxiterate = int(args[args.index('--maxiterate_medium_clusters')+1])
+        mafft_mediumAln_maxiterate = int(
+                            args[args.index('--maxiterate_medium_clusters')+1])
     else:
         mafft_mediumAln_maxiterate = 3
     if '--mafft_smallAln_maxclustsize' in args:
-        mafft_smallAln_maxclustsize = int(args[args.index('--mafft_smallAln_maxclustsize')+1])
+        mafft_smallAln_maxclustsize = int(
+                           args[args.index('--mafft_smallAln_maxclustsize')+1])
     else:
         mafft_smallAln_maxclustsize = 50
     if '--mafft_mediumAln_maxclustsize' in args:
-        mafft_mediumAln_maxclustsize = int(args[args.index('--mafft_mediumAln_maxclustsize')+1])
+        mafft_mediumAln_maxclustsize = int(
+                          args[args.index('--mafft_mediumAln_maxclustsize')+1])
     else:
         mafft_mediumAln_maxclustsize = 500
     if '--mafft_largeAln_maxclustsize' in args:
-        mafft_largeAln_maxclustsize = int(args[args.index('--mafft_largeAln_maxclustsize')+1])
+        mafft_largeAln_maxclustsize = int(
+                           args[args.index('--mafft_largeAln_maxclustsize')+1])
     else:
         mafft_largeAln_maxclustsize = 1000
-    #if '--retree' in args:
-    #    mafft_retree = int(args[args.index('--retree')+1])
-    #else:
-    #    mafft_retree = 2
-
-    paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta'.format(paths['selfDir'])
-    paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(paths['selfDir'])
-    paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF'.format(paths['selfDir'])
-
-    paths['DfamDB'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm'.format(paths['selfDir'])
-    paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.list'.format(paths['selfDir'])
-    paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF'.format(paths['selfDir'])
-
-    LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL', 'Tas', 'Suzu', 'Sinbad', 'Unknown']
-
-    paths['CurrentGFF'] = None # This path will have the path to the best GFF3 to use.
-
+    paths['RepbaseDB'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.fasta'.format(
+                                                              paths['selfDir'])
+    paths['RepbaseTruePosLTRlist'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.list'.format(
+                                                              paths['selfDir'])
+    paths['RepbaseShortNames'] = '{0}/RepeatDatabases/Repbase/Repbase_ERV_LTR.SF'.format(
+                                                              paths['selfDir'])
+    paths['DfamDB'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.hmm'.format(
+                                                              paths['selfDir'])
+    paths['DfamTruePosLTRlist'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.list'.format(
+                                                              paths['selfDir'])
+    paths['DfamShortNames'] = '{0}/RepeatDatabases/Dfam/Dfam_ERV_LTR.SF'.format(
+                                                              paths['selfDir'])
+    LTR_SFs = ['Copia', 'Gypsy', 'ERV', 'Pao', 'BEL', 'Tas', 'Suzu', 'Sinbad', 
+                                                                     'Unknown']
+    # This path will have the path to the best GFF3 to use.
+    paths['CurrentGFF'] = None
     try:
         statusFlRead = open('{0}/status'.format(paths['output_top_dir']), 'r')
     except:
@@ -8614,8 +8699,8 @@ if __name__ == '__main__':
     def write2summary(text):
         with open('{0}/summary'.format(paths['output_top_dir']), 'a') as summaryFl:
             summaryFl.write('{0}\n'.format(text))
-
-    # Check for status file. if exists parse it and skip the sections that are done.
+    # Check for status file. if exists parse it and skip the sections 
+    # that are done.
     try:
         statusContents = statusFlRead.read()
         if not statusContents == '':
@@ -8624,7 +8709,6 @@ if __name__ == '__main__':
                 paths[pair[0]] = pair[1]
     except:
         pass
-
     if 'LTRdigestClassifiedNoFP' in paths:
         paths['CurrentGFF'] = paths['LTRdigestClassifiedNoFP']
     elif 'GFFwithRepbaseClassification' in paths:
@@ -8637,104 +8721,266 @@ if __name__ == '__main__':
         paths['CurrentGFF'] = paths['LTRdigestGFF']
     elif 'LTRharvestGFF' in paths:
         paths['CurrentGFF'] = paths['LTRharvestGFF']
-
     sys.setrecursionlimit(50000) # For WickerFam() recursive subroutine
-
-################################################################################################################### Begin
-
-    ltrharvest()    # Predict LTR retrotransposons using structural criteria
-
-    ltrdigest()    # Identify parts of element internal regions with evidence of homology to LTR RT protein coding domains
-
+    # Predict LTR retrotransposons using structural criteria
+    ltrharvest()
+    # Identify parts of element internal regions with evidence of 
+    # homology to LTR RT protein coding domains
+    ltrdigest()
     if FINDORFS:
         AnnotateORFs(minLen=min_orf_len)
-
-    classify_by_homology(KEEPCONFLICTS=KEEPCONFLICTS, KEEPNOCLASSIFICATION=KEEPNOCLASSIFICATION, repbase_tblastx_evalue=repbase_tblastx_evalue, nhmmer_reporting_evalue=nhmmer_reporting_evalue, nhmmer_inclusion_evalue=nhmmer_inclusion_evalue)  # Extract LTR_retrotransposon sequences for classification using homology
-
+    # Extract LTR_retrotransposon sequences for classification using homology
+    classify_by_homology(KEEPCONFLICTS = KEEPCONFLICTS, 
+                         KEEPNOCLASSIFICATION = KEEPNOCLASSIFICATION, 
+                         repbase_tblastx_evalue = repbase_tblastx_evalue, 
+                         nhmmer_reporting_evalue = nhmmer_reporting_evalue, 
+                         nhmmer_inclusion_evalue = nhmmer_inclusion_evalue) 
     clusters_by_classif = shortClassif()
     classifs_by_element = shortClassif(ElNames=True)
     classifs = set(list(clusters_by_classif.keys()))
-
     if WICKER:
-
-        WickerFam(pId=wicker_pId, percAln=wicker_pAln, minLen=wicker_minLen, use_ltrs=wicker_use_ltrs, use_internal=wicker_use_internal)
-
-        summarizeClusters(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
-
+        WickerFam(pId = wicker_pId, 
+                  percAln = wicker_pAln, 
+                  minLen = wicker_minLen, 
+                  use_ltrs = wicker_use_ltrs, 
+                  use_internal = wicker_use_internal)
+        summarizeClusters(I = 6, 
+                          clustering_method = 'WickerFam', 
+                          WickerParams = {'pId':80,'percAln':80,'minLen':80})
         if GENECONVCLUSTERS or LTRDIVERGENCE:
             if not LTRDIVERGENCE:
-                AutoAlign(I=None, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
+                AutoAlign(I = None, 
+                          part = mafft_align_region, 
+                          rmgeneconv = False, 
+                          minClustSize = MinClustSize, 
+                          align = 'clusters', 
+                          rmhomologflank = False, 
+                          clustering_method = 'WickerFam', 
+                          WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, 
+                          auto_outgroup = False, 
+                          bpflank = bpflank, 
+                          combine_and_do_small_clusters = SMALLS, 
+                          flank_pId = flank_pId, 
+                          flank_evalue = flank_evalue, 
+                          flank_plencutoff = flank_plencutoff, 
+                          LTRSONLY = True)
             else:
-                AutoAlign(I=None, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
-
+                AutoAlign(I = None, 
+                          part = mafft_align_region, 
+                          rmgeneconv = False, 
+                          minClustSize = MinClustSize, 
+                          align = 'clusters', 
+                          rmhomologflank = False, 
+                          clustering_method = 'WickerFam', 
+                          WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, 
+                          auto_outgroup = False, 
+                          bpflank = bpflank, 
+                          combine_and_do_small_clusters = SMALLS, 
+                          flank_pId = flank_pId, 
+                          flank_evalue = flank_evalue, 
+                          flank_plencutoff = flank_plencutoff, 
+                          LTRSONLY = False)
                 if MODELTEST:
-                    modeltest(iters=1, I=None, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-
+                    modeltest(iters = 1, 
+                              I = None, 
+                              removegeneconv = remove_GC_from_modeltest_aln, 
+                              part = mafft_align_region, 
+                              clustering_method = 'WickerFam', 
+                              WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, 
+                              minClustSize = MinClustSize, 
+                              bpflank = bpflank, 
+                              combine_and_do_small_clusters = SMALLS)
             if GENECONV_G0:
-                geneconvClusters(g='/g0', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+                geneconvClusters(g = '/g0', 
+                                 clust = None, 
+                                 I = None, 
+                                 minClustSize = MinClustSize, 
+                                 clustering_method = 'WickerFam', 
+                                 WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, 
+                                 combine_and_do_small_clusters = SMALLS)
             if GENECONV_G1:
-                geneconvClusters(g='/g1', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
+                geneconvClusters(g = '/g1', 
+                                 clust = None, 
+                                 I = None, 
+                                 minClustSize = MinClustSize, 
+                                 clustering_method = 'WickerFam', 
+                                 WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, 
+                                 combine_and_do_small_clusters = SMALLS)
             if GENECONV_G2:
-                geneconvClusters(g='/g2', clust=None, I=None, minClustSize=MinClustSize, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, combine_and_do_small_clusters=SMALLS)
-
+                geneconvClusters(g = '/g2', 
+                                 clust = None, 
+                                 I = None, 
+                                 minClustSize = MinClustSize, 
+                                 clustering_method = 'WickerFam', 
+                                 WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, 
+                                 combine_and_do_small_clusters = SMALLS)
         if SOLOLTR:
-            SoloLTRsearch(I=6, clustering_method='WickerFam', WickerParams={'pId':80,'percAln':80,'minLen':80})
-
+            SoloLTRsearch(I = 6, 
+                          clustering_method = 'WickerFam', 
+                          WickerParams = {'pId':80,'percAln':80,'minLen':80})
         if CIRCOS:
-            Circos(window='1000000', plots='clusters', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-
-        align_ltrs(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})    # Runs if need to use geneconvLTRs or estimate divergences
-
+            Circos(window = '1000000', 
+                   plots = 'clusters', 
+                   I = None, 
+                   clustering_method = 'WickerFam', 
+                   WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+        # Runs if need to use geneconvLTRs or estimate divergences
+        align_ltrs(I = None, 
+                   clustering_method = 'WickerFam', 
+                   WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}) 
         if GENECONV_G0:
-            geneconvLTRs(g='/g0', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+            geneconvLTRs(g = '/g0', 
+                         I = None, 
+                         clustering_method = 'WickerFam', 
+                         WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
         if GENECONV_G1:
-            geneconvLTRs(g='/g1', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+            geneconvLTRs(g = '/g1', 
+                         I = None, 
+                         clustering_method = 'WickerFam', 
+                         WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
         if GENECONV_G2:
-            geneconvLTRs(g='/g2', I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
-
-        ltr_divergence(I=None, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, model=model)
-        
-        phylo(removegeneconv=False, BOOTSTRAP=True, I=None, align='cluster', removehomologouspair=RMHOMOFLANK, part=mafft_align_region, clustering_method='WickerFam', WickerParams={'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, auto_outgroup=AUTO_OUTGROUP, bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-
+            geneconvLTRs(g = '/g2', 
+                         I = None, 
+                         clustering_method = 'WickerFam', 
+                         WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen})
+        ltr_divergence(I = None, 
+                         clustering_method = 'WickerFam', 
+                         WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, 
+                         model = model)
+        phylo(removegeneconv = False, 
+              BOOTSTRAP = True, 
+              I = None, 
+              align = 'cluster', 
+              removehomologouspair = RMHOMOFLANK, 
+              part = mafft_align_region, 
+              clustering_method = 'WickerFam', 
+              WickerParams = {'pId':wicker_pId,'percAln':wicker_pAln,'minLen':wicker_minLen}, 
+              auto_outgroup = AUTO_OUTGROUP, 
+              bootstrap_reps = bootstrap_reps, 
+              minClustSize = MinClustSize, 
+              convert_to_ultrametric = ULTRAMETRIC, 
+              bpflank = bpflank, 
+              combine_and_do_small_clusters = SMALLS)
     if USEMCL:
-
-        MCL(I=MCL_I, minClustSize=MinClustSize, CombineIfTooFew=False)    
-
-        summarizeClusters(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
-
+        MCL(I = MCL_I, 
+            minClustSize = MinClustSize, 
+            CombineIfTooFew = False)    
+        summarizeClusters(I = MCL_I, 
+                          clustering_method = 'MCL', 
+                          WickerParams = {'pId':80,'percAln':80,'minLen':80})
         if GENECONVCLUSTERS or LTRDIVERGENCE:
-
             if not LTRDIVERGENCE:
-                AutoAlign(I=MCL_I, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=True)
+                AutoAlign(I = MCL_I, 
+                          part = mafft_align_region, 
+                          rmgeneconv = False, 
+                          minClustSize = MinClustSize, 
+                          align = 'clusters', 
+                          rmhomologflank = False, 
+                          clustering_method = 'MCL', 
+                          WickerParams = None, 
+                          auto_outgroup = False, 
+                          bpflank = bpflank, 
+                          combine_and_do_small_clusters = SMALLS, 
+                          flank_pId = flank_pId, 
+                          flank_evalue = flank_evalue, 
+                          flank_plencutoff = flank_plencutoff, 
+                          LTRSONLY = True)
             else:
-                AutoAlign(I=MCL_I, part=mafft_align_region, rmgeneconv=False, minClustSize=MinClustSize, align='clusters', rmhomologflank=False, clustering_method='MCL', WickerParams=None, auto_outgroup=False, bpflank=bpflank, combine_and_do_small_clusters=SMALLS, flank_pId=flank_pId, flank_evalue=flank_evalue, flank_plencutoff=flank_plencutoff, LTRSONLY=False)
+                AutoAlign(I = MCL_I, 
+                          part = mafft_align_region, 
+                          rmgeneconv = False, 
+                          minClustSize = MinClustSize, 
+                          align = 'clusters', 
+                          rmhomologflank = False, 
+                          clustering_method = 'MCL', 
+                          WickerParams = None, 
+                          auto_outgroup = False, 
+                          bpflank = bpflank, 
+                          combine_and_do_small_clusters = SMALLS, 
+                          flank_pId = flank_pId, 
+                          flank_evalue = flank_evalue, 
+                          flank_plencutoff = flank_plencutoff, 
+                          LTRSONLY = False)
                 if MODELTEST:
-                    modeltest(iters=1, I=MCL_I, removegeneconv=remove_GC_from_modeltest_aln, part=mafft_align_region, clustering_method='MCL', WickerParams=None, minClustSize=MinClustSize, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-
+                    modeltest(iters = 1, 
+                              I = MCL_I, 
+                              removegeneconv = remove_GC_from_modeltest_aln, 
+                              part = mafft_align_region, 
+                              clustering_method = 'MCL', 
+                              WickerParams = None, 
+                              minClustSize = MinClustSize, 
+                              bpflank = bpflank, 
+                              combine_and_do_small_clusters = SMALLS)
             if GENECONV_G0:
-                geneconvClusters(g='/g0', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+                geneconvClusters(g = '/g0', 
+                                 clust = None, 
+                                 I = MCL_I, 
+                                 minClustSize = MinClustSize, 
+                                 clustering_method = 'MCL', 
+                                 WickerParams = None, 
+                                 combine_and_do_small_clusters = SMALLS)
             if GENECONV_G1:
-                geneconvClusters(g='/g1', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+                geneconvClusters(g = '/g1', 
+                                 clust = None, 
+                                 I = MCL_I, 
+                                 minClustSize = MinClustSize, 
+                                 clustering_method = 'MCL', 
+                                 WickerParams = None, 
+                                 combine_and_do_small_clusters = SMALLS)
             if GENECONV_G2:
-                geneconvClusters(g='/g2', clust=None, I=MCL_I, minClustSize=MinClustSize, clustering_method='MCL', WickerParams=None, combine_and_do_small_clusters=SMALLS)
+                geneconvClusters(g = '/g2', 
+                                 clust = None, 
+                                 I = MCL_I, 
+                                 minClustSize = MinClustSize, 
+                                 clustering_method = 'MCL', 
+                                 WickerParams = None, 
+                                 combine_and_do_small_clusters = SMALLS)
         if SOLOLTR:
-            SoloLTRsearch(I=MCL_I, clustering_method='MCL', WickerParams={'pId':80,'percAln':80,'minLen':80})
-
+            SoloLTRsearch(I = MCL_I, 
+                          clustering_method = 'MCL', 
+                          WickerParams = {'pId':80,'percAln':80,'minLen':80})
         if CIRCOS:
-            Circos(window='1000000', plots='clusters', I=MCL_I, clustering_method='MCL', WickerParams=None)
-
-        align_ltrs(I=MCL_I, clustering_method='MCL', WickerParams=None)    # Runs if need to use geneconvLTRs or estimate divergences
-
+            Circos(window = '1000000', 
+                   plots = 'clusters', 
+                   I = MCL_I, 
+                   clustering_method = 'MCL', 
+                   WickerParams = None)
+        # Runs if need to use geneconvLTRs or estimate divergences
+        align_ltrs(I = MCL_I, 
+                   clustering_method = 'MCL', 
+                   WickerParams = None)
         if GENECONV_G0:
-            geneconvLTRs(g='/g0', I=MCL_I, clustering_method='MCL', WickerParams=None)
+            geneconvLTRs(g = '/g0', 
+                         I = MCL_I, 
+                         clustering_method = 'MCL', 
+                         WickerParams = None)
         if GENECONV_G1:
-            geneconvLTRs(g='/g1', I=MCL_I, clustering_method='MCL', WickerParams=None)
+            geneconvLTRs(g = '/g1', 
+                         I = MCL_I, 
+                         clustering_method = 'MCL', 
+                         WickerParams = None)
         if GENECONV_G2:
-            geneconvLTRs(g='/g2', I=MCL_I, clustering_method='MCL', WickerParams=None)
-
-        ltr_divergence(I=MCL_I, clustering_method='MCL', WickerParams=None, model=model)
-
-        phylo(removegeneconv=False, BOOTSTRAP=True, I=MCL_I, align='cluster', removehomologouspair=RMHOMOFLANK, part=mafft_align_region, clustering_method='MCL', WickerParams=None, auto_outgroup=AUTO_OUTGROUP,  bootstrap_reps=bootstrap_reps, minClustSize=MinClustSize, convert_to_ultrametric=ULTRAMETRIC, bpflank=bpflank, combine_and_do_small_clusters=SMALLS)
-
+            geneconvLTRs(g = '/g2', 
+                         I = MCL_I, 
+                         clustering_method = 'MCL', 
+                         WickerParams = None)
+        ltr_divergence(I = MCL_I, 
+                         clustering_method = 'MCL', 
+                         WickerParams = None, 
+                         model = model)
+        phylo(removegeneconv = False, 
+              BOOTSTRAP = True, 
+              I = MCL_I, 
+              align = 'cluster', 
+              removehomologouspair = RMHOMOFLANK, 
+              part = mafft_align_region, 
+              clustering_method = 'MCL', 
+              WickerParams = None, 
+              auto_outgroup = AUTO_OUTGROUP, 
+              bootstrap_reps = bootstrap_reps, 
+              minClustSize = MinClustSize, 
+              convert_to_ultrametric = ULTRAMETRIC, 
+              bpflank = bpflank, 
+              combine_and_do_small_clusters = SMALLS)
     print('fin!')
     sys.exit()
