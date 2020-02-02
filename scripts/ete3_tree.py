@@ -743,7 +743,7 @@ ts.show_branch_support = True
 if ULTRAMETRIC:
     t.convert_to_ultrametric()
 # render the output tree and diagrams
-t.render("{0}_phylo_uncorrectedDivergences.png".format(treeName), w=35,
+t.render("{0}_phylo_uncorrectedDivergences.pdf".format(treeName), w=35,
                                                      units="in", tree_style=ts)
 # repeat the process again using gene conversion-scaled ltr divergences
 t = Tree(tree_flpath)
@@ -860,4 +860,4 @@ else:
 ts.show_branch_support = True
 if ULTRAMETRIC:
     t.convert_to_ultrametric()
-t.render("{0}_phylo_correctedDivergences.png".format(treeName),w=35, units='in', tree_style=ts)
+t.render("{0}_phylo_correctedDivergences.pdf".format(treeName),w=35, units='in', tree_style=ts)
