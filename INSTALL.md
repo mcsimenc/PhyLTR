@@ -61,7 +61,7 @@ mcl=directory # the bin/ directory in the MCL installation
 
 ### Dfam
 
-##### A.Download http://dfam.org/releases/Dfam_3.0/families/Dfam.hmm.gz and unpack it
+##### A.Download http://dfam.org/releases/Dfam_3.1/families/Dfam.hmm.gz and unpack it
 
 ##### B. Run: `PhyLTR/scripts/DfamExtractLTRelements.py < Dfam.hmm > Dfam_ERV_LTR.hmm`
 
