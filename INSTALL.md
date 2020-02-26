@@ -65,7 +65,7 @@ mcl=directory # the bin/ directory in the MCL installation
 
 ##### B. Run: `PhyLTR/scripts/DfamExtractLTRelements.py < Dfam.hmm > Dfam_ERV_LTR.hmm`
 
-##### C. Run: `PhyLTR/scripts/DfamHMM2SuperFamTable.py < Dfam_ERV_LTR.hmm > Dfam_ERV_LTR.SF`
+##### C. Run: `PhyLTR/scripts/Dfam3.xHMM2SuperFamTable.py < Dfam_ERV_LTR.hmm > Dfam_ERV_LTR.SF`
 
 ##### D. Run: `cut -f1  < Dfam_ERV_LTR.SF > Dfam_ERV_LTR.list`
 
@@ -78,7 +78,7 @@ PhyLTR/RepeatDatabases/Dfam/Dfam_ERV_LTR.list
 
 ### Repbase
 
-##### A. Get an [account with GIRI](https://www.girinst.org/accountservices/register.php)
+##### A. Get an [account with GIRI](https://www.girinst.org/accountservices/register.php) No longer free.
 1. Go to http://www.girinst.org/repbase/update/browse.php
 2. Select LTR Retrotransposon from the Repeat class dropdown list.
 3. Select FASTA from the Output format drop down list.
