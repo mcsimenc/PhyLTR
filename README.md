@@ -1,8 +1,8 @@
 ![](https://github.com/mcsimenc/PhyLTR/blob/master/_web/GraphicTree.png)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4256534.svg)](https://doi.org/10.5281/zenodo.4256534)
-
 PhyLTR was designed and created mainly in the [Der Lab](http://www.fullerton.edu/biology/People/faculty/derjp.php) at California State University, Fullerton. The main program is written in Python 3 and tested on Scientific and Ubuntu Linux. Many of the routines in PhyLTR are parallelized for a single computer using Python's multiprocessing module. As the pipeline runs, paths to intermediate results are stored in the file `PhyLTR.output/status`. If the execution is interrupted and restarted, this file is used to allow PhyLTR to resume approximately where it left off.
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4256534.svg)](https://doi.org/10.5281/zenodo.4256534)
 
 ## Input
 A nucleotide FASTA file (e.g. genome assembly)
