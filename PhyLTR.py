@@ -8439,6 +8439,8 @@ if __name__ == '__main__':
     if '--ltrdivergence' in args or DEFAULT:
         LTRDIVERGENCE = True
         MODELTEST = True
+        MODELTEST = False
+        model = 'hky85'
     else:
         LTRDIVERGENCE = False
     if '--model' in args:
